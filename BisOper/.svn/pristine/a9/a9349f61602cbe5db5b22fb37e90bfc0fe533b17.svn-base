@@ -1,0 +1,261 @@
+$(document).ready(function(){
+	appendLoader("로딩중...");
+	initBox();
+	initGrid();
+	initEvent();
+});
+
+var buslist_model = [
+	{label:"버스ID",		name:"busid",		index:"busid",		width:"90",		align:"center",	sorttype:"text"},
+	{label:"차량번호",		name:"carregno",	index:"carregno",	width:"95",		align:"center",	sorttype:"text", type:"I"},
+	{label:"등록상태",		name:"busstatcd",	index:"busstatcd",	width:"80",		align:"center",	sorttype:"text"}
+];
+
+var violence_model = [
+	{label:"발생일시",		name:"evt_occurdt",	index:"occurdt",		width:"140",	align:"center",	sorttype:"text",	type:"I"},
+	{label:"버스회사",		name:"compnm",		index:"compnm",			width:"100",	align:"center",	sorttype:"text",	type:"I"},
+	{label:"버스ID",		name:"busid",		index:"busid",			width:"80",		align:"center",	sorttype:"text"},
+	{label:"차량번호",		name:"carno",		index:"carno",			width:"100",	align:"center",	sorttype:"text",	type:"I"},
+	{label:"노선번호",		name:"routeno",		index:"routeno",		width:"60",		align:"center",	sorttype:"text",	type:"I"},
+	{label:"위반유형",		name:"runvioltype",	index:"runvioltype",	width:"100",	align:"left",	sorttype:"text",	type:"I"},
+	{label:"링크ID",		name:"llinkid",		index:"llinkid",		width:"100",	align:"center",	sorttype:"text"},
+	{label:"발생위치",		name:"posnm",		index:"posnm",			width:"300",	align:"left",	sorttype:"text"},
+	// 지도이동기능을 위한 좌표
+	{name:"posx",		index:"posx",		type:"I",	hidden:true},
+	{name:"posy",		index:"posy",		type:"I",	hidden:true},
+	// penalty 등록을 위한 data
+	{name:"compid",		index:"compid",		type:"I",	hidden:true},
+	{name:"routeid",	index:"routeid",	type:"I",	hidden:true},
+	{name:"runvioltpcd",index:"runvioltpcd",type:"I",	hidden:true}
+];
+
+var penalty_model = [
+	{label:"이력순번",		name:"histno",		index:"histno",			width:"70",		align:"center",	sorttype:"text"},
+	{label:"패널티유형",	name:"penaltytype",	index:"pen_type",		width:"100",	align:"center",	sorttype:"text"},
+	{label:"등록일시",		name:"regdt",		index:"regdt",			width:"140",	align:"center",	sorttype:"text"},
+	{label:"발생일시",		name:"occurdt",		index:"occurdt",		width:"140",	align:"center",	sorttype:"text"},
+	{label:"위반유형",		name:"runvioltype",	index:"viol_type",		width:"100",	align:"center",	sorttype:"text"},
+	{label:"버스회사",		name:"compnm",		index:"compnm",			width:"100",	align:"center",	sorttype:"text"},
+	{label:"노선번호",		name:"routeno",		index:"routeno",		width:"80",		align:"center",	sorttype:"text"},
+	{label:"차량번호",		name:"carno",		index:"carno",			width:"100",	align:"center",	sorttype:"text"},
+	{label:"처리내역",		name:"treat_detail",index:"detail",			width:"300",	align:"left",	sorttype:"text"}
+];
+
+
+/**
+ * GLOBAL VARIABLES
+ */
+var cur_busid;
+var selected_violence;
+
+
+//function for initalizing boxes - first, second
+function initBox(){
+	// initializing first box - bus company
+	ajaxCall("./route/selectCompList.do", null, null, dealwithCompany, null);
+	// initializing second box - bus route
+	ajaxCall("./route/selectRouteList.do", null, null, dealwithRoute, null);
+}
+
+//function for company selection box
+function dealwithCompany(data){
+	var parsedData = data.companyList;
+	var select = document.getElementById("busCompany");
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].compid;
+		opt.text = parsedData[i].compnm;
+		select.appendChild(opt);
+	}
+}
+
+//function for route selection box
+function dealwithRoute(data){	
+	var select = document.getElementById("busRoute");
+	select.options.length = 0;
+	var opt = document.createElement("option");
+	opt.value = "";
+	opt.text = "전체";
+	select.appendChild(opt);
+	select.options[0].selected = "selected";
+	var parsedData = data.resultList;
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].routeid;
+		opt.text = parsedData[i].routeno;
+		select.appendChild(opt);
+	}
+}
+
+function initGrid(){
+	makeGrid("#bus_list", buslist_model, 600, "resultList", select_bus, loadBus_completed, null);
+	makeGrid("#violent_operation_list", violence_model, 400, "resultList", select_violence, loadViolence_completed, null);
+	makeGrid("#penalty_process_list", penalty_model, 200, "resultList", null, null, null);
+	
+	function select_bus(rowid){
+		var selected_bus = $("#bus_list").jqGrid("getRowData", rowid);
+		cur_busid = selected_bus.busid;
+		load_violence_grid(cur_busid);
+		load_penalty_grid(cur_busid);
+	}
+	
+	function select_violence(rowid){
+		selected_violence = $("#violent_operation_list").jqGrid("getRowData", rowid);
+	}
+	
+	function loadBus_completed(data){
+		$("#bus_search_result").text("검색결과 " + data.records + "건");
+	}
+	
+	function loadViolence_completed(data){
+		$("#violent_search_result").text("운행위반내역검색결과 " + data.records + "건");
+	}
+	
+	$(window).bind('resize', function() {
+		$("#bus_list").jqGrid('setGridHeight', $("#bus_chart").height() - 23);
+		$("#bus_list").jqGrid('setGridWidth', $("#bus_chart").width());
+		$("#violent_operation_list").jqGrid('setGridHeight', $("#violent_chart").height() - 23);
+		$("#violent_operation_list").jqGrid('setGridWidth', $("#violent_chart").width());
+		$("#penalty_process_list").jqGrid('setGridHeight', $("#penalty_chart").height() - 23);
+		$("#penalty_process_list").jqGrid('setGridWidth', $("#penalty_chart").width());
+	}).trigger('resize');
+	
+	load_buslist_grid("", "");
+}
+
+function load_buslist_grid(compID, routeID){
+	showLoader();
+	reloadGrid("#bus_list", "./route/selectBusListtoNotify.do", {compid:compID, routeid:routeID}, "resultList");
+}
+
+function load_violence_grid(busID){
+	showLoader();
+	var param = {
+		evt_occurdt:$("#inputDate").val(),		
+		busid:busID,
+		evttpcd:"",
+		runvioltpcd:$("#violenceType").val()
+	}
+	reloadGrid("#violent_operation_list", "./evaluation/selectViolentOperHistList.do", param, "resultList");
+}
+
+function load_penalty_grid(busID){
+	var param = {
+		busid:busID
+	}
+	reloadGrid("#penalty_process_list", "./penalty/selectPenaltyProcessList.do", param, "resultList");
+}
+
+function initEvent(){
+	
+	// 새로고침
+	$("#btn_refresh").click(function(){
+		location.reload();
+	});
+	
+	// when you change company
+	$("#busCompany").change(function(){
+		var compID = $("#busCompany option:selected").val();
+		if(compID == ""){
+			ajaxCall("./route/selectRouteList.do", null, null, dealwithRoute, null);
+			load_buslist_grid("", "");
+		}
+		else ajaxCall("./route/selectRouteListbyCompany.do", {compid:compID}, null, refreshRoute, null);
+		function refreshRoute(data){
+			dealwithRoute(data);
+			var compID = $("#busCompany option:selected").val();
+			var routeID = $("#busRoute option:selected").val();
+			load_buslist_grid(compID, routeID);
+		}
+		cur_busid = null;
+	});
+	
+	// when you change route
+	$("#busRoute").change(function(){
+		var compID = $("#busCompany option:selected").val(); 
+		var routeID = $("#busRoute option:selected").val();
+		load_buslist_grid(compID, routeID);
+		cur_busid = null;
+	});
+	
+	// 운행위반내역검색결과
+	$("#btn_search").click(function(){
+		if(cur_busid == null)
+			alert("좌측 표에서 버스를 선택해주세요.");
+		else	load_violence_grid(cur_busid);
+	});
+	
+	// 지도이동
+	$(".topBtn_map").on("click", function(){
+		var rowid = $("#violent_operation_list").jqGrid('getGridParam', "selrow");
+		if(!rowid){
+			showAlert("부당운행이력을 선택해주세요.");
+			return false;
+		}
+		var rowData = $("#violent_operation_list").jqGrid('getRowData', rowid);
+		console.log("지도이동예정(좌표)"+rowData.posx+" / "+rowData.posy);
+		opener.setCenterPosition(rowData.posy, rowData.posx);
+	});
+	
+	$(".btn_regi").click(function(){
+		var param = {
+			penaltytpcd	:$("#select_penaltyType").val(),
+//			regdt		:new Date(),
+			occurdt		:$("#input_evt_occurdt").val(),
+			runvioltpcd	:selected_violence.runvioltpcd,
+			compid		:selected_violence.compid,
+			routeid		:selected_violence.routeid,
+			busid		:selected_violence.busid,
+			treat_detail:$("#process_detail").val()
+		}
+		console.log(param);
+		ajaxCall("./penalty/registerNewPenalty.do", param, null, onCompleted, null);
+		function onCompleted(data){
+			if(data.result == 1) showAlert("정상적으로 추가되었습니다!");
+			else showAlert("Error: 추가에 실패했습니다.");
+		}
+//		load_penalty_grid(selected_violence.busid);
+	});
+	
+	// 엑셀 다운로드
+	$("#btn_excel").click(function(){
+		if(0 < $("#violent_operation_list").getGridParam("reccount"))
+			excelDownload($(".pop_title h2").text(), "#violent_operation_list");
+		else
+			showAlert("조회된 내용이 없습니다.");
+	});
+	
+	// 다운로드 함수
+	function excelDownload(title, grid_id){
+		$("#excelDown").remove();
+		var grid = $(grid_id);
+		
+		var form = document.createElement("FORM");
+		form.setAttribute("id", "excelDown");
+		form.action = "./stop/downloadExcelFile.do";
+		form.method = "POST";
+		
+		var fileName = JSON.stringify(title);
+		var param = document.createElement("INPUT");
+		var rowData = grid.jqGrid("getRowData");
+		var columnData = JSON.stringify(rowData);
+		
+		var columnLabel = JSON.stringify(grid.jqGrid("getGridParam", "colNames"));
+		
+		var idData = grid.jqGrid("getGridParam", "colModel");
+		var columnName = [];
+		$.each(idData, function(index, value){
+			columnName.push(value.name);
+		})
+		columnName = JSON.stringify(columnName);
+		
+		param.type = "HDDEN";
+		param.name = "json";
+		param.value = fileName + columnLabel + columnName + columnData;
+		
+		form.appendChild(param);
+		
+		document.body.appendChild(form);
+		inquiryFileDownload("excelDown", true);
+	}
+}

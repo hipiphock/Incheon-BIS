@@ -1,0 +1,131 @@
+package com.bis.service;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import com.bis.vo.BisParameterVO;
+import com.bis.vo.SystemInformationVO;
+import com.bis.vo.TableSpaceVO;
+import com.bis.vo.re.TbEcmExorgVO;
+import com.bis.vo.re.TbEcmExorgresponVO;
+import com.bis.vo.re.TbOmcMdtfileregVO;
+import com.bis.vo.re.TbOmmAdminareaVO;
+import com.bis.vo.re.TbOmmCodeVO;
+import com.bis.vo.re.TbOmmProcessVO;
+import com.bis.vo.re.TbOmmUserVO;
+import com.bis.vo.re.TbOmmViolparamVO;
+import com.bis.vo.re.TbServerStatusVO;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 운영단말
+ * Business Name  : 
+ * Class Name 	  : SystemService.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                        수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2017.09.20	    황중모                       최초생성
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+public interface SystemService {
+	
+	List<TbEcmExorgVO> selectRelatorgList(TbEcmExorgVO vo) throws SQLException;
+	
+	TbEcmExorgVO selectMaxRelatorgid() throws SQLException;
+	
+	int insertRelatorg(TbEcmExorgVO vo) throws SQLException;
+	
+	int updateRelatorg(TbEcmExorgVO vo) throws SQLException;
+	
+	int deleteRelatorg(TbEcmExorgVO vo) throws SQLException;
+	
+	int deleteExorgrespon(TbEcmExorgVO vo) throws SQLException;
+	
+	List<TbEcmExorgresponVO> selectExorgresponList(TbEcmExorgresponVO vo) throws SQLException;
+	
+	int insertExorgrespon(TbEcmExorgresponVO vo) throws SQLException;
+	
+	int updateExorgrespon(TbEcmExorgresponVO vo) throws SQLException;
+	
+	List<TbEcmExorgVO> selectRelatorgInfo(TbEcmExorgVO vo) throws SQLException;
+	
+	List<TbOmcMdtfileregVO> selectUptodateVer(TbOmcMdtfileregVO vo) throws SQLException;
+	
+	int updateUptodateVer(TbOmcMdtfileregVO vo) throws SQLException;
+	
+	int insertUptodateVer(TbOmcMdtfileregVO vo) throws SQLException;
+	
+	List<TbOmmCodeVO> selectCodeCateList(TbOmmCodeVO vo) throws SQLException;
+	
+	List<TbOmmCodeVO> selectCodeList(TbOmmCodeVO vo) throws SQLException;
+	
+	TbOmmCodeVO selectNewCodeCd(TbOmmCodeVO vo) throws SQLException;
+	
+	List<TbOmmCodeVO> selectRelatorgidList(TbOmmCodeVO vo) throws SQLException;
+	
+	int saveCode(List<TbOmmCodeVO> list, TbOmmCodeVO vo) throws SQLException;
+	
+	int deleteCode(TbOmmCodeVO vo) throws SQLException;
+	
+	int insertCode(List<TbOmmCodeVO> list) throws SQLException;	
+
+	List<TbServerStatusVO> selectServerStateList() throws SQLException;
+
+	List<TbServerStatusVO> selectBitServerStatList() throws SQLException;
+	
+	int deleteCodecategory(TbOmmCodeVO vo) throws SQLException;
+	
+	int updateCodecategory(List<TbOmmCodeVO> list) throws SQLException;
+	
+	int insertCodecategory(TbOmmCodeVO vo) throws SQLException;
+	
+	List<TbOmmAdminareaVO> selectAdminareaList(TbOmmAdminareaVO vo) throws SQLException; // 행정구역 정보조회 - 행정구역 조회
+	
+	List<TbOmmProcessVO> selectProcessList(TbOmmProcessVO vo) throws SQLException; // 운영파라미터관리 - 프로세스조회
+	
+	int insertProcess(TbOmmProcessVO vo) throws SQLException; // 운영파라미터관리 - 프로세스입력
+
+	int updateProcess(TbOmmProcessVO vo) throws SQLException; // 운영파라미터관리 - 프로세스수정
+
+	int deleteProcess(TbOmmProcessVO vo) throws SQLException; // 운영파라미터관리 - 프로세스삭제
+	
+	List<TbOmmViolparamVO> selectViolateList(TbOmmViolparamVO vo) throws SQLException; //운영위반기준정보관리 - 운행위반기준정보검색
+	
+	int insertViolate(TbOmmViolparamVO vo) throws SQLException; //운영위반기준정보관리 - 운행위반기준정보 신규등록
+
+	int updateViolate(TbOmmViolparamVO vo) throws SQLException; //운영위반기준정보관리 - 운행위반기준정보 수정
+
+	int deleteViolate(TbOmmViolparamVO vo) throws SQLException; //운영위반기준정보관리 - 운행위반기준정보 삭제
+	
+	
+	//######################## 이하 구 버전 / 수정 코드 위로 올리기 #####################
+	
+
+	List<TableSpaceVO> selectTableSpaceList() throws SQLException;
+	 
+	
+	int insertSysInfo(SystemInformationVO vo) throws SQLException;
+	List<BisParameterVO> selectParamGrpList() throws SQLException;
+	
+	List<BisParameterVO> selectParamList(BisParameterVO vo) throws SQLException;
+	
+	List<TbOmmUserVO> selectLoginHisList(TbOmmUserVO vo) throws SQLException;
+	
+	int updateParameter(List<BisParameterVO> list) throws SQLException;
+
+
+
+	
+
+	
+
+	
+
+	
+	
+
+}

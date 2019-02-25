@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="USER">
+	<!-- 사용자 목록 조회  -->
+	<select id="selectUserList" parameterType="TbOmmUserVO" resultType="TbOmmUserVO">
+		SELECT 
+    		U.*,
+    		BC.COMPNM,
+    		A.AUTHNM,
+    		A.AUTHID,
+    		C.CDNM
+		FROM 
+			TB_OMM_USER U, TB_ADM_BUSCOMP BC, TB_OMM_USERAUTH R, TB_OMM_AUTH A, 
+			(SELECT CD, CDNM
+			 FROM TB_OMM_CODE
+			 WHERE CDCATEGID = 'USERTPCD') C
+		WHERE 
+			U.COMPID = BC.COMPID(+)
+  			AND U.USERID = R.USERID
+  			AND R.AUTHID = A.AUTHID
+  			AND U.USERTPCD = C.CD(+)
+ 			<if test="useyn != null and !useyn.equalsIgnoreCase('')">
+  				AND U.USEYN = #{useyn}
+  			</if>
+		ORDER BY U.USERID
+	</select>
+	
+	<!-- 사용자 조회 -->
+	<select id="selectUserInfo" parameterType="TbOmmUserVO" resultType="TbOmmUserVO">
+		SELECT 
+    		U.*,
+    		BC.COMPNM,
+    		A.AUTHNM,
+    		A.AUTHID,
+    		C.CDNM
+		FROM 
+			TB_OMM_USER U, TB_ADM_BUSCOMP BC, TB_OMM_USERAUTH R, TB_OMM_AUTH A, 
+			(SELECT CD, CDNM
+			 FROM TB_OMM_CODE
+			 WHERE CDCATEGID = 'USERTPCD') C
+		WHERE 
+			U.COMPID = BC.COMPID(+)
+  			AND U.USERID = R.USERID
+  			AND R.AUTHID = A.AUTHID
+  			AND U.USERTPCD = C.CD(+)
+  			AND U.USERID = #{userid}
+	</select>
+	
+	<!-- 사용자 등급 조회  -->
+	<select id="selectUserRankList" parameterType="TbOmmUserVO" resultType="TbOmmUserVO">
+		SELECT 
+			TRIM(AUTHID) AUTHID,
+			AUTHNM
+		FROM 
+			TB_OMM_AUTH
+		ORDER BY AUTHID
+	</select>
+
+	<!-- 사용자 정보 수정 -->
+	<update id="updatetUser" parameterType="TbOmmUserVO">
+		UPDATE  
+			TB_OMM_USER
+		SET
+			<if test="usernm != null and !usernm.equalsIgnoreCase('')">
+				USERNM = #{usernm} 
+			</if>
+			<if test="new_passwd != null and !new_passwd.equalsIgnoreCase('')">
+				PASSWD = #{new_passwd} 
+			</if>
+			<if test="useyn != null and !useyn.equalsIgnoreCase('')">
+	            USEYN = #{useyn}
+			</if>
+       	WHERE
+       		USERID = #{userid}
+	</update>
+	
+	<!-- 사용자 권한 수정 -->
+	<update id="updateUserAuth" parameterType="TbOmmUserVO">
+		UPDATE
+			TB_OMM_USERAUTH
+		SET
+			AUTHID = #{authid}
+		WHERE
+			USERID = #{userid}
+	</update>
+	
+	<!-- 사용자 등록 -->
+	<insert id="insertUser" parameterType="TbOmmUserVO">
+		INSERT INTO 
+			TB_OMM_USER 
+		( 
+			USERID, 
+			USERNM, 
+			PASSWD, 
+            USEYN 
+       	) 
+        VALUES 
+        ( 
+        	#{userid}, 
+        	#{usernm}, 
+        	#{passwd}, 
+            '1' 
+      	)
+	</insert>
+	
+	<!-- 사용자 삭제 -->
+	<insert id="deleteUser" parameterType="TbOmmUserVO">
+		DELETE FROM
+			TB_OMM_USER
+		WHERE
+			USERID = #{userid}
+	</insert>
+	
+	<!-- 사용자 권한 등록 -->
+	<insert id="insertUserAuth" parameterType="TbOmmUserVO">
+		INSERT INTO 
+			TB_OMM_USERAUTH 
+		( 
+			USERID,
+			AUTHID
+       	) 
+        VALUES 
+        ( 
+        	#{userid},
+        	#{authid}
+      	)
+	</insert>
+	
+	<!-- 사용자 권한 삭제(사용자 삭제시)-->
+	<insert id="deleteUserAuth" parameterType="TbOmmUserVO">
+		DELETE FROM
+			TB_OMM_USERAUTH 
+		WHERE
+			USERID = #{userid}
+	</insert>
+	
+	<!-- 등급 별 메뉴 권한 목록 조회 -->
+	<select id="selectMenuRightList" parameterType="TbOmmUserVO" resultType="TbOmmUserVO">
+		SELECT DISTINCT
+		    U.*, 
+		    M.MENUNM,
+		    M.SYSTPCD,
+		    M.MENULVL,
+		    M.HIGH_MENUID,
+		    C.CDNM
+		FROM 
+			TB_OMM_BITAUTHMENU U, TB_OMM_BITMENU M,  <!-- TEST TABLE, 기존은 TB_OMM_AUTHMENU, TB_OMM_MENU -->
+			(SELECT CD, CDNM FROM TB_OMM_CODE WHERE CDCATEGID = 'SYSTPCD') C
+		WHERE 
+			U.MENUID = M.MENUID
+			AND M.SYSTPCD = C.CD(+)
+			AND TRIM(AUTHID) = #{authid}
+		ORDER BY U.MENUID
+	</select>
+	
+	<!-- 등급 수정 -->
+	<update id="updateRank" parameterType="TbOmmUserVO">
+		UPDATE  
+			TB_OMM_AUTH
+		SET
+            AUTHNM = #{authnm}
+       	WHERE
+       		TRIM(AUTHID) = #{authid}
+	</update>
+	
+	<!-- 신규 등급 아이디 조회 -->
+	<select id="selectNewRankId" resultType="TbOmmUserVO">
+		SELECT LPAD(NVL(MAX(TRIM(AUTHID) +1),0), 10, '0') AS AUTHID FROM TB_OMM_AUTH
+	</select>
+	
+	<!-- 권한 등록 -->
+	<insert id="insertRank" parameterType="TbOmmUserVO">
+		INSERT INTO 
+			TB_OMM_AUTH 
+		( 
+			AUTHID,
+			AUTHNM
+       	) 
+        VALUES 
+        ( 
+        	#{authid, jdbcType=VARCHAR}, 
+        	#{authnm} 
+      	)
+	</insert>
+	
+	
+	<!-- 등급 메뉴 생성 -->
+	<insert id="initUserMenu" parameterType="TbOmmUserVO">
+		INSERT INTO 
+			TB_OMM_BITAUTHMENU  
+    	(
+       		SELECT 
+       			#{authid}, 
+       			MENUID 
+       			,'0' AS CRE_AUTHYN
+       			,'0' AS READ_AUTHYN
+       			,'0' AS UPD_AUTHYN
+       			,'0' AS DEL_AUTHYN
+    		FROM 
+    			TB_OMM_BITMENU  
+    	)
+	</insert>
+	
+	<!-- 등급 삭제-->
+	<delete id="deleteRank" parameterType="TbOmmUserVO">
+		DELETE  
+			TB_OMM_AUTH
+       	WHERE
+       		TRIM(AUTHID) = #{authid}
+	</delete>
+
+	<!-- 등급 메뉴 권한 삭제-->
+	<delete id="deleteUserMenu" parameterType="TbOmmUserVO">
+		DELETE  
+			TB_OMM_BITAUTHMENU  
+       	WHERE
+       		0 = 0
+       		AND TRIM(AUTHID) = #{authid}
+       		<if test="menuid != null and !menuid.equalsIgnoreCase('')">
+	            AND TRIM(MENUID) = #{menuid}
+			</if>
+	</delete>
+	
+	<!-- 등급 메뉴 권한 등록 -->
+	<insert id="insertUserMenu" parameterType="TbOmmUserVO">
+		INSERT INTO 
+				TB_OMM_BITAUTHMENU 
+	    	(
+	    		AUTHID,
+	    		MENUID,
+	    		CRE_AUTHYN, 
+				READ_AUTHYN,
+				UPD_AUTHYN, 
+				DEL_AUTHYN 
+	    	)
+    	VALUES
+    		(
+    			#{authid},
+    			#{menuid},
+    			#{cre_authyn},
+       			#{read_authyn},
+       			#{upd_authyn},
+       			#{del_authyn}
+    		)
+	</insert>
+	
+	<!-- 이력번호 조회 -->
+	<select id="selectHistNo" resultType="TbOmmUserVO">
+		SELECT NVL(MAX(TRIM(HISTNO) +1),0) AS HISTNO 
+		FROM TB_OMH_BITUSERLOGIN
+	</select>
+	
+	<!-- 사용자 접속 기록 등록 -->
+	<insert id="insertUserLogin" parameterType="TbOmmUserVO">
+	INSERT INTO TB_OMH_BITUSERLOGIN
+	(
+		HISTNO,
+		USERID,
+		LOGIN_STARTDT,
+		LOGIN_ENDDT,
+		IPADDR
+	) VALUES (
+		#{histno},
+		#{userid},
+		SYSDATE,
+		NULL,
+		#{ipaddr}	
+	)
+	</insert>
+	
+	<!-- 사용자 로그아웃 기록 업데이트 -->
+	<update id="updateUserLogin" parameterType="TbOmmUserVO">
+	UPDATE TB_OMH_BITUSERLOGIN
+	SET 
+		LOGIN_ENDDT = SYSDATE
+	WHERE 
+		HISTNO = #{histno}
+		AND USERID = #{userid} 
+	</update>
+	
+	<!-- 사용자의 메뉴 권한 조회 -->
+	<select id="selectUserMenuAuth" parameterType="TbOmmUserVO" resultType="TbOmmUserVO">
+		SELECT
+		    A.*
+		FROM 
+			TB_OMM_BITAUTHMENU A, 
+			TB_OMM_USERAUTH U
+		WHERE 
+			U.USERID = #{userid}
+			AND U.AUTHID = A.AUTHID
+		ORDER BY MENUID
+	</select>
+		
+	 <!-- ***********************************이하 수정 전 -->
+	 
+	<!-- 사용자 목록 조회  -->
+	<!-- <select id="selectUserList" parameterType="UsersVO" resultType="UsersVO">
+		SELECT 
+    		U.USER_ID, 
+    		U.USER_NAME, 
+    		U.PWD, 
+    		U.RANK_ID,
+    		REGIST_USER_ID, 
+    		TO_DATE(U.REGIST_DT, 'YYYY-MM-DD HH24:MI:SS') AS REGIST_DT,    
+    		TO_DATE(U.UPDATE_DT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DT,
+    		U.UPDATE_USER_ID, 
+    		U.USE_FLAG, 
+    		U.COMPANY_ID,
+    		BC.COMPANY_NAME,
+    		R.RANK_NAME
+		FROM 
+			USERS U, BUS_COMPANY BC, USER_RANK R
+		WHERE 
+			U.COMPANY_ID = BC.COMPANY_ID(+)
+  			AND U.RANK_ID = R.RANK_ID
+ 			AND U.AREA_CODE = #{area_code}
+ 			<if test="use_flag != null and !use_flag.equalsIgnoreCase('')">
+  				AND U.USE_FLAG = #{use_flag}
+  			</if>
+		ORDER BY USER_ID
+	</select> -->
+	
+	<!-- 사용자 등급 조회  -->
+	<!-- <select id="selectUserRankList" parameterType="UsersVO" resultType="UsersVO">
+		SELECT 
+			TRIM(RANK_ID) RANK_ID,
+			RANK_NAME,
+			REMARK,
+			RANKING
+		FROM 
+			USER_RANK
+		<if test="use_flag != null and !use_flag.equalsIgnoreCase('')">
+  			WHERE TRIM(RANK_ID) <![CDATA[>]]> 0
+		</if>
+		ORDER BY RANKING
+	</select> -->
+
+	<!-- 사용자 별 메뉴 권한 목록 조회 -->
+	<!-- <select id="selectMenuRightList" parameterType="UsersVO" resultType="UsersVO">
+		SELECT DISTINCT
+		    U.MENU_ID, 
+		    M.MENU_NAME,
+		    M.USE_FLAG,
+		    U.RANK_ID, 
+		    U.SEARCH_FLAG, 
+		    U.INPUT_FLAG, 
+		    U.MODIFY_FLAG, 
+		    U.DELETE_FLAG,
+		    M.ADMIN_ONLY
+		FROM 
+			USER_RANK_MENU U, USER_MENU M
+		WHERE 
+			U.MENU_ID = M.MENU_ID
+			AND PROGRAM_ID = 200
+			AND M.USE_FLAG = 1
+			AND TRIM(RANK_ID) = #{rank_id}
+			AND M.ADMIN_ONLY = 0
+		ORDER BY MENU_ID
+	</select> -->
+	
+	<!-- 사용자 등록 -->
+	<!-- <insert id="insertUser" parameterType="UsersVO">
+		INSERT INTO 
+			USERS 
+		( 
+			USER_ID, 
+			USER_NAME, 
+			PWD, 
+            RANK_ID, 
+            REGIST_USER_ID, 
+            REGIST_DT, 
+            USE_FLAG, 
+            SYSTEM_ID, 
+            AREA_CODE
+       	) 
+        VALUES 
+        ( 
+        	#{user_id}, 
+        	#{user_name}, 
+        	#{pwd}, 
+            #{rank_id}, 
+            #{regist_user_id}, 
+            TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), 
+            '1', 
+            #{system_id}, 
+            #{area_code}
+      	)
+	</insert> -->
+	
+	<!-- 사용자 수정 -->
+	<!-- <update id="updatetUser" parameterType="UsersVO">
+		UPDATE  
+			USERS
+		SET
+            UPDATE_DT = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS') 
+            ,UPDATE_USER_ID = #{regist_user_id} 
+			<if test="user_name != null and !user_name.equalsIgnoreCase('')">
+				,USER_NAME = #{user_name} 
+			</if>
+			<if test="new_pwd != null and !new_pwd.equalsIgnoreCase('')">
+				,PWD = #{new_pwd} 
+			</if>
+			<if test="rank_id != null and !rank_id.equalsIgnoreCase('')">
+	            ,RANK_ID = #{rank_id} 
+			</if>
+			<if test="use_flag != null and !use_flag.equalsIgnoreCase('')">
+	            ,USE_FLAG = #{use_flag}
+			</if>
+       	WHERE
+       		USER_ID = #{user_id}
+	</update> -->
+	
+	<!-- 로그인 사용자 조회 -->
+	<!-- <select id="selectUserInfo" parameterType="UsersVO" resultType="UsersVO">
+		SELECT 
+    		U.USER_ID, 
+    		U.USER_NAME, 
+    		U.PWD, 
+    		U.RANK_ID,
+    		REGIST_USER_ID, 
+    		TO_DATE(U.REGIST_DT, 'YYYY-MM-DD HH24:MI:SS') AS REGIST_DT,    
+    		TO_DATE(U.UPDATE_DT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DT,
+    		U.UPDATE_USER_ID, 
+    		U.USE_FLAG, 
+    		U.COMPANY_ID,
+    		BC.COMPANY_NAME,
+    		R.RANK_NAME
+		FROM 
+			USERS U, BUS_COMPANY BC, USER_RANK R
+		WHERE 
+			U.COMPANY_ID = BC.COMPANY_ID(+)
+  			AND U.RANK_ID = R.RANK_ID
+ 			AND U.USER_ID = #{user_id}
+	</select> -->
+	
+	<!-- 신규 등급 아이디 조회 -->
+	<!-- <select id="selectNewRankId" resultType="UsersVO">
+		SELECT NVL(MAX(TRIM(RANK_ID) +1),0) AS RANK_ID FROM USER_RANK
+	</select> -->
+	
+	
+	<!-- 등급 등록 -->
+	<!-- <insert id="insertRank" parameterType="UsersVO">
+		INSERT INTO 
+			USER_RANK 
+		( 
+			RANK_ID, 
+			RANK_NAME, 
+			RANKING,
+			REMARK
+       	) 
+        VALUES 
+        ( 
+        	#{rank_id, jdbcType=VARCHAR}, 
+        	#{rank_name}, 
+            #{rank_id},  
+        	#{remark, jdbcType=VARCHAR}
+      	)
+	</insert> -->
+	
+	<!-- 등급 수정 -->
+	<!-- <update id="updateRank" parameterType="UsersVO">
+		UPDATE  
+			USER_RANK
+		SET
+            RANK_NAME = #{rank_name}
+       	WHERE
+       		TRIM(RANK_ID) = #{rank_id}
+	</update> -->
+	
+	<!-- 등급 삭제-->
+	<!-- <delete id="deleteRank" parameterType="UsersVO">
+		DELETE  
+			USER_RANK
+       	WHERE
+       		TRIM(RANK_ID) = #{rank_id}
+	</delete> -->
+	
+	<!-- 등급 메뉴 생성 -->
+	<!-- <insert id="initUserMenu" parameterType="UsersVO">
+		INSERT INTO 
+			USER_RANK_MENU 
+    	(
+       		SELECT 
+       			MENU_ID 
+       			,#{rank_id} 
+       			,'0' AS SEARCH_FLAG
+       			,'0' AS INPUT_FLAG
+       			,'0' AS MODIFY_FLAG
+       			,'0' AS DELETE_FLAG
+    		FROM 
+    			USER_MENU
+    	)
+	</insert> -->
+	
+	<!-- 등급 메뉴 권한 삭제-->
+	<!-- <delete id="deleteUserMenu" parameterType="UsersVO">
+		DELETE  
+			USER_RANK_MENU
+       	WHERE
+       		0 = 0
+       		AND TRIM(RANK_ID) = #{rank_id}
+       		<if test="menu_id != null and !menu_id.equalsIgnoreCase('')">
+	            AND TRIM(MENU_ID) = #{menu_id}
+			</if>
+	</delete> -->
+	
+	<!-- 등급 메뉴 권한 등록 -->
+	<!-- <insert id="insertUserMenu" parameterType="UsersVO">
+		INSERT INTO 
+				USER_RANK_MENU 
+	    	(
+	    		MENU_ID,
+	    		RANK_ID,
+	    		SEARCH_FLAG,
+       			INPUT_FLAG,
+	       		MODIFY_FLAG,
+	       		DELETE_FLAG
+	    	)
+    	VALUES
+    		(
+    			#{menu_id},
+    			#{rank_id},
+    			#{search_flag},
+       			#{input_flag},
+       			#{modify_flag},
+       			#{delete_flag}
+    		)
+	</insert> -->
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

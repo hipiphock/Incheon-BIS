@@ -1,0 +1,304 @@
+$(document).ready(function(){
+	appendLoader("조희중..")
+	initGrid(); 
+	initEvent();
+});
+
+var bottom_title1 = "()"; 
+var bottom_title2 = "()";
+var bottom_title3 = "()";
+var bottom_title4 = "()";
+var bottom_title5 = "()";
+
+var models1 = [
+               {label:"관리ID", 		name:"bitmid", 			index:"bitmid",		 	width: "70", 	align:"center", sorttype:"text"},
+               {label:"안내기ID", 		name:"bitid", 			index:"bitid", 			width: "70", 	align:"center", sorttype:"text"},
+               {label:"설치위치", 		name:"installloc", 		index:"installloc", 	width: "80", 	align:"center", sorttype:"text"},
+               {label:"안내기유형", 		name:"bittype", 		index:"bittype", 		width: "120", 	align:"center", sorttype:"text"},
+               {label:"단축ID", 		name:"short_bstopid", 	index:"short_bstopid", 	width: "65", 	align:"center", sorttype:"text"},
+               {label:"센터전송일시", 	name:"issuedt", 		index:"issuedt", 		width: "100", 	align:"center", sorttype:"text"},
+               {label:"메세지순번", 		name:"msgseq", 			index:"msgseq", 		width: "60", 	align:"center", sorttype:"text"},
+               {label:"서버전송일시", 	name:"snddt", 			index:"snddt", 			width: "100", 	align:"center", sorttype:"text"},
+               {label:"전송결과", 		name:"sndrslt", 		index:"sndrslt", 		width: "70", 	align:"center", sorttype:"text"},
+               {label:"통신오류", 		name:"commerr", 		index:"commerr", 		width: "60", 	align:"center", sorttype:"text"},
+               {label:"응답일시", 		name:"reply_colldt", 	index:"reply_colldt", 	width: "100", 	align:"center", sorttype:"text"},
+               {label:"내용", 		name:"msgcontent", 		index:"msgcontent", 	width: "600",  align:"left",   sorttype:"text"}
+];
+
+var models2 = [ 
+               {label:"센터전송일시", 	name:"issuedt", 		index:"issuedt", 		width: "100", 	align:"center", sorttype:"text"},
+               {label:"메세지순번", 		name:"msgseq", 			index:"msgseq", 		width: "60", 	align:"center", sorttype:"text"},
+               {label:"서버전송일시", 	name:"snddt", 			index:"snddt", 			width: "100", 	align:"center", sorttype:"text"},
+               {label:"전송결과", 		name:"sndrslt", 		index:"sndrslt", 		width: "70", 	align:"center", sorttype:"text"},
+               {label:"통신오류", 		name:"commerr", 		index:"commerr", 		width: "60", 	align:"center", sorttype:"text"},
+               {label:"응답일시", 		name:"reply_colldt", 	index:"reply_colldt", 	width: "100", 	align:"center", sorttype:"text"},
+               {label:"내용", 		name:"msgcontent",	 	index:"msgcontent", 	width: "1000",  align:"left", 	sorttype:"text"}
+];
+
+var models3 = [ 
+		  	   {label:"관리ID", 		name:"bitmid", 			index:"bitmid", 		width: "70", 	align:"center", sorttype:"text"},
+		  	   {label:"안내기ID", 		name:"bitid", 			index:"bitid", 			width: "70", 	align:"center", sorttype:"text"},
+			   {label:"설치위치", 		name:"bstopnm", 		index:"stopnm", 		width: "90", 	align:"center", sorttype:"text"},
+			   {label:"안내기유형", 		name:"bittype", 		index:"bittype", 		width: "120", 	align:"center", sorttype:"text"},
+			   {label:"단축ID", 		name:"short_bstopid", 	index:"short_stopid", 	width: "60", 	align:"center", sorttype:"text"},
+			   {label:"센터전송일시", 	name:"issuedt", 		index:"issuedt", 		width: "110", 	align:"center", sorttype:"text"},
+			   {label:"메세지순번", 		name:"msgseq", 			index:"msgseq", 		width: "70", 	align:"center", sorttype:"text"},
+               {label:"표출시작시간", 	name:"start_time", 		index:"start_time", 	width: "110", 	align:"center", sorttype:"text"},
+               {label:"표출유지시간", 	name:"view_time", 		index:"view_time", 		width: "70", 	align:"center", sorttype:"text"},
+               {label:"전송내용", 		name:"msgcontent", 		index:"msgcontent", 	width: "300", 	align:"center", sorttype:"text"},
+               {label:"TTS여부",	 	name:"is_tts", 			index:"is_tts", 		width: "80", 	align:"center", sorttype:"text"},
+               {label:"TTS파일명", 	name:"file_names", 		index:"file_names", 	width: "250", 	align:"center", sorttype:"text"},
+];
+
+function initGrid() {
+	makeGrid("#table1_top", models1, 300, "resultList", onSelected1, onComplete1, null); 
+	makeGrid("#table1_bottom", models2, 300, "resultList", null, onComplete2, null); 
+	makeGrid("#table2_top", models1, 300, "resultList", onSelected2, onComplete3, null); 
+	makeGrid("#table2_bottom", models2, 300, "resultList", null, onComplete4, null); 
+	makeGrid("#table3_top", models1, 300, "resultList", onSelected3, onComplete5, null); 
+	makeGrid("#table3_bottom", models2, 300, "resultList", null, onComplete6, null); 
+	makeGrid("#table4_top", models1, 300, "resultList", onSelected4, onComplete7, null); 
+	makeGrid("#table4_bottom", models2, 300, "resultList", null, onComplete8, null); 
+	makeGrid("#table5_top", models3, 300, "resultList", onSelected5, onComplete9, null); 
+	makeGrid("#table5_bottom", models2, 300, "resultList", null, onComplete10, null); 
+
+	// 수동메세지
+	function onComplete1(data) {
+		$(".sub_title").eq(0).find("span").text(data.records);
+		$("#table1_top").jqGrid("setSelection",1);
+		hideLoader(); 
+	}
+	
+	function onSelected1(data) {
+		showLoader(); 
+		var rowData = $("#table1_top").jqGrid('getRowData',data);
+		bottom_title1 = rowData.installloc + "(" + rowData.bitid+ ")"; 
+		var bitid = rowData.bitid;
+		reloadGrid("#table1_bottom", "./bit/selectManualMsg.do", {bitid:bitid}, "resultList");
+	}
+	
+	function onComplete2(data) {
+		$(".sub_title").eq(1).find("h3").remove();
+		$(".sub_title").eq(1).append("<h3>"+bottom_title1+" 수동메시지 전송이력 <span> "+data.records+"</span>"+" 건</h3>");
+		hideLoader(); 
+	}
+	
+	// 파라미터
+	function onComplete3(data) {
+		$(".sub_title").eq(2).find("span").text(data.records);
+		$("#table2_top").jqGrid("setSelection",1);
+		 
+	}
+	
+	function onSelected2(data) {
+		showLoader(); 
+		var rowData = $("#table2_top").jqGrid('getRowData',data);
+		bottom_title2 = rowData.installloc + "(" + rowData.bitid+ ")"; 
+		var bitid = rowData.bitid;
+		reloadGrid("#table2_bottom", "./bit/selectParamControl.do", {bitid:bitid, ctrltpcd:'2'}, "resultList");
+	}
+	
+	function onComplete4(data) {
+		$(".sub_title").eq(3).find("h3").remove();
+		$(".sub_title").eq(3).append("<h3> "+bottom_title2+" 파라미터 전송이력 <span> "+data.records+"</span>"+" 건</h3>");
+		hideLoader(); 
+	}
+	
+	//안내기제어
+	function onComplete5(data) {
+		$(".sub_title").eq(4).find("span").text(data.records);
+		$("#table3_top").jqGrid("setSelection",1);
+		
+	}
+	
+	function onSelected3(data) {
+		showLoader(); 
+		var rowData = $("#table3_top").jqGrid('getRowData',data);
+		bottom_title3 = rowData.installloc + "(" + rowData.bitid+ ")"; 
+		var bitid = rowData.bitid;
+		reloadGrid("#table3_bottom", "./bit/selectParamControl.do", {bitid:bitid, ctrltpcd:'1'}, "resultList");
+	}
+	
+	function onComplete6(data) {
+		$(".sub_title").eq(5).find("h3").remove();
+		$(".sub_title").eq(5).append("<h3> "+bottom_title3+" 안내기제어 전송이력<span> "+data.records+"</span>"+" 건</h3>");
+		hideLoader(); 
+	}
+	
+	//파일다운로드
+	function onComplete7(data) {
+		$(".sub_title").eq(6).find("span").text(data.records);
+		$("#table4_top").jqGrid("setSelection",1);
+		
+	}
+	
+	function onSelected4(data) {
+		showLoader(); 
+		var rowData = $("#table4_top").jqGrid('getRowData',data);
+		bottom_title4 = rowData.installloc + "(" + rowData.bitid+ ")"; 
+		var bitid = rowData.bitid;
+		reloadGrid("#table4_bottom", "./bit/selectFileDownload.do", {bitid:bitid}, "resultList");
+	}
+	
+	function onComplete8(data) {
+		$(".sub_title").eq(7).find("h3").remove();
+		$(".sub_title").eq(7).append("<h3> "+bottom_title4+" 파일다운로드 전송이력 <span> "+data.records+"</span>"+" 건</h3>");
+		hideLoader(); 
+	}
+	
+	//광역BIT 수동메시지
+	function onComplete9(data) {
+		$(".sub_title").eq(8).find("span").text(data.records);
+		$("#table5_top").jqGrid("setSelection",1);
+	
+	}
+	
+	function onSelected5(data) {
+		showLoader(); 
+		var rowData = $("#table5_top").jqGrid('getRowData',data);
+		bottom_title5 = rowData.bstopnm + "(" + rowData.bitid+ ")"; 
+		var bitid = rowData.bitid;
+		reloadGrid("#table5_bottom", "./bit/selectWbitManual.do", {bitid:bitid}, "resultList");
+	}
+	
+	function onComplete10(data) {
+		$(".sub_title").eq(9).find("h3").remove();
+		$(".sub_title").eq(9).append("<h3> "+bottom_title5+" 광역BIT 수동메시지 전송이력<span> "+data.records+"</span>"+" 건</h3>");
+		hideLoader(); 
+	}
+	
+	$(window).bind('resize',function() {
+		$("#table1_top").jqGrid('setGridHeight', $(".main_chart").height()-23);
+		$("#table1_top").jqGrid('setGridWidth', $(".main_chart").width());
+		$("#table1_bottom").jqGrid('setGridHeight', $(".main_chart2").height()-23);
+		$("#table1_bottom").jqGrid('setGridWidth', $(".main_chart2").width());
+		$("#table2_top").jqGrid('setGridHeight', $(".main_chart").height()-23);
+		$("#table2_top").jqGrid('setGridWidth', $(".main_chart").width());
+		$("#table2_bottom").jqGrid('setGridHeight', $(".main_chart2").height()-23);
+		$("#table2_bottom").jqGrid('setGridWidth', $(".main_chart2").width());
+		$("#table3_top").jqGrid('setGridHeight', $(".main_chart").height()-23);
+		$("#table3_top").jqGrid('setGridWidth', $(".main_chart").width());
+		$("#table3_bottom").jqGrid('setGridHeight', $(".main_chart2").height()-23);
+		$("#table3_bottom").jqGrid('setGridWidth', $(".main_chart2").width());
+		$("#table4_top").jqGrid('setGridHeight', $(".main_chart").height()-23);
+		$("#table4_top").jqGrid('setGridWidth', $(".main_chart").width());
+		$("#table4_bottom").jqGrid('setGridHeight', $(".main_chart2").height()-23);
+		$("#table4_bottom").jqGrid('setGridWidth', $(".main_chart2").width());
+		$("#table5_top").jqGrid('setGridHeight', $(".main_chart").height()-23);
+		$("#table5_top").jqGrid('setGridWidth', $(".main_chart").width());
+		$("#table5_bottom").jqGrid('setGridHeight', $(".main_chart2").height()-23);
+		$("#table5_bottom").jqGrid('setGridWidth', $(".main_chart2").width()); 
+	}).trigger('resize');
+	
+	showLoader(); 
+	reloadGrid("#table1_top", "./bit/selectManualMsg.do", null, "resultList");
+	reloadGrid("#table2_top", "./bit/selectParamControl.do", {ctrltpcd:'2'}, "resultList");
+	reloadGrid("#table3_top", "./bit/selectParamControl.do", {ctrltpcd:'1'}, "resultList");
+	reloadGrid("#table4_top", "./bit/selectFileDownload.do", null, "resultList");
+	reloadGrid("#table5_top", "./bit/selectWbitManual.do", null, "resultList");
+}
+
+function initEvent(){
+	//파일저장
+	$("#btn_excel").click(function () {
+			
+		if($(".tab li").hasClass("tab1 click")){
+			if( 0 < $("#table1_top").getGridParam("reccount") )
+				excelDownload("수동메시지 전송현황", "#table1_top");
+			else
+				showAlert("조회된 전송현황이 없습니다.");
+			
+			if( 0 < $("#table1_bottom").getGridParam("reccount") )
+				excelDownload(bottom_title1+" 전송이력", "#table1_bottom");
+			else
+				showAlert("조회된 전송이력이 없습니다.");
+		}
+		
+		//아래 4개 파일다운로드 시 그리드의 크기가 작아지는 오류가 있음. 
+		else if($(".tab li").hasClass("tab2 click")){
+			if( 0 < $("#table2_top").getGridParam("reccount") )
+				excelDownload("파라미터 전송현황", "#table2_top");
+			else
+				showAlert("조회된 전송현황이 없습니다.");
+			
+			if( 0 < $("#table2_bottom").getGridParam("reccount") )
+				excelDownload(bottom_title2+" 전송이력", "#table2_bottom");
+			else
+				showAlert("조회된 전송이력이 없습니다.");
+		}
+		
+		else if($(".tab li").hasClass("tab3 click")){
+			if( 0 < $("#table3_top").getGridParam("reccount") )
+				excelDownload("안내기제어 전송현황", "#table3_top");
+			else
+				showAlert("조회된 전송현황이 없습니다.");
+			
+			if( 0 < $("#table3_bottom").getGridParam("reccount") )
+				excelDownload(bottom_title3+" 전송이력", "#table3_bottom");
+			else
+				showAlert("조회된 전송이력이 없습니다.");
+		}
+		
+		else if($(".tab li").hasClass("tab4 click")){
+			if( 0 < $("#table4_top").getGridParam("reccount") )
+				excelDownload("파일다운로드 전송현황", "#table4_top");
+			else
+				showAlert("조회된 전송현황이 없습니다.");
+			
+			if( 0 < $("#table4_bottom").getGridParam("reccount") )
+				excelDownload(bottom_title4+" 전송이력", "#table4_bottom");
+			else
+				showAlert("조회된 전송이력이 없습니다.");
+		}
+		
+		else if($(".tab li").hasClass("tab5 click")){
+			if( 0 < $("#table5_top").getGridParam("reccount") )
+				excelDownload("광역BIT 수동메시지 전송현황", "#table5_top");
+			else
+				showAlert("조회된 전송현황이 없습니다.");
+			
+			if( 0 < $("#table5_bottom").getGridParam("reccount") )
+				excelDownload(bottom_title5+" 전송이력", "#table5_bottom");
+			else
+				showAlert("조회된 전송이력이 없습니다.");
+		}
+	}); 
+	
+	//새로고침
+	$("#btn_refresh").click(function() {
+		location.reload();
+	});
+}
+
+
+function excelDownload(title, grid_id) {
+	$("#excelDown").remove();
+	var grid = $(grid_id);
+	var form = document.createElement("FORM");
+	form.setAttribute("id", "excelDown");
+	form.action = "./stop/downloadExcelFile.do";
+	form.method = "POST"; 
+	
+	var fileName = JSON.stringify(title);
+	var param = document.createElement('INPUT');
+	var rowData = grid.jqGrid("getRowData");
+	var columnData = JSON.stringify(rowData);
+	
+	var columnLabel = JSON.stringify(grid.jqGrid('getGridParam','colNames'));
+	
+	var idData = grid.jqGrid('getGridParam', 'colModel');
+	var columnName = []; 
+	$.each(idData, function (index,value){
+		columnName.push(value.name);
+	})
+	columnName = JSON.stringify(columnName);
+	
+	param.type = 'HIDDEN'; 
+	param.name = 'json';
+	param.value = fileName + columnLabel + columnName + columnData; 
+	
+	form.appendChild(param);
+	
+	document.body.appendChild(form);
+	inquiryFileDownload("excelDown", true); 
+}

@@ -1,0 +1,168 @@
+var first_orgnm; 
+
+$(document).ready(function() {
+	appendLoader("조회중..");
+	ajaxCall("./comp/selectCompCateList.do", null, null, load_complist, null); 
+	ajaxCall("./sys/selectBitManageCodeList.do",null, null, load_orglist, null);
+	first_orgnm = $("#select_orgnm").find("option").eq(0).val(); 
+	initGrid();
+	initEvent(); 
+});
+
+function load_complist(data) { 
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.compnm; 
+		temp.value = value.compid; 
+		$("#comp_option").append(temp);
+	});
+}
+
+function load_orglist(data) {
+	$.each(data.relatorgid, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.orgnm; 
+		temp.value = value.relatorgid; 
+		$("#select_orgnm").append(temp);
+	});
+}
+
+var models = [
+              {label:"단말기ID", 		name:"mdtid", 			index:"mdtid",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"단말기시리얼번호",	name:"macaddr", 		index:"macaddr",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"모뎀시리얼번호", 	name:"modem_serialno", 	index:"modem_serialno",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"설치버스회사", 		name:"compnm", 			index:"compnm",		 	width: "70", 	align:"center", sorttype:"text"},
+              {label:"설치차량번호", 		name:"carregno", 		index:"carregno",		 	width: "70", 	align:"center", sorttype:"text"},
+              {label:"모델명", 		name:"modelnm", 		index:"modelnm",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"설치일자", 		name:"installdt", 		index:"installdt",		 	width: "70", 	align:"center", sorttype:"text", type:"D"},
+              {label:"유지보수기관", 		name:"orgnm", 			index:"orgnm",		 	width: "70", 	align:"center", sorttype:"text", type:"S"},
+              {label:"사용여부", 		name:"useyn", 			index:"useyn",		 	width: "70", 	align:"center", sorttype:"text", type:"S"},
+              {label:"시설물ID", 		name:"facilid", 		index:"facilid",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"버스ID", 		name:"busid", 			index:"busid",		 	width: "70", 	align:"center", sorttype:"text"},
+              {label:"IP주소", 		name:"ipaddr_1", 		index:"ipaddr_1",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"설치위치", 		name:"installloc", 		index:"installloc",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"구매일", 		name:"purchdt", 		index:"purchdt",		 	width: "70", 	align:"center", sorttype:"text", type:"D"},
+              {label:"비고", 			name:"descr", 			index:"descr",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"사용종료일시", 		name:"use_enddt", 		index:"use_enddt",		 	width: "70", 	align:"center", sorttype:"text", type:"T"},
+              ];
+
+function initGrid() {
+	makeFilterGrid("#main_table", models, 300, "resultList", onSelected, onComplete, null);
+	
+	function onSelected(data) { 
+		var rowData = $("#main_table").jqGrid('getRowData', data);
+		$(".chart v0601Chart select option").removeAttr("selected");
+		if(rowData.useyn) 
+			$("#select_useyn option:contains('"+rowData.useyn+"')").attr("selected","selected");
+		if(rowData.orgnm) 
+			$("#select_orgnm option:contains('"+rowData.orgnm+"')").attr("selected","selected");
+		$("#btn_new").attr("class", "disabled");
+		$("#btn_modify").attr("class", ""); 
+	}
+	
+	function onComplete(data) {
+		$(".sub_title").eq(0).find("h3").remove();
+		$(".sub_title").eq(0).append("<h3>차량단말기 검색  <span>"+data.records+"<span>건</h3>");
+		$("#main_table").jqGrid("setSelection",1);
+		hideLoader(); 
+	}
+	
+	$(window).bind('resize',function() {
+		$("#main_table").jqGrid('setGridHeight', $(".main_chart").height()-47);
+		$("#main_table").jqGrid('setGridWidth', $(".main_chart").width());
+	}).trigger('resize');
+	
+	setFilter("main_table", true); 
+}
+
+function initEvent() {
+	//파일저장
+	$("#btn_excel").click(function () {
+		if( 0 < $("#main_table").getGridParam("reccount") )
+			excelDownload($(".pop_title h2").text(), "#main_table");
+		else
+			showAlert("조회된 내용이 없습니다.");
+	}); 
+	
+	//새로고침
+	$("#btn_refresh").click(function () {
+		location.reload();
+	});
+	
+	//검색
+	$("#btn_search").click(function() {
+		var params = {
+				compid:($("#comp_option option:selected").val() == "-1") ? "" : $("#comp_option option:selected").val(),
+				carregno:$("#input1").val(), 
+				mdtid:$("#input2").val(), 
+				modem_serialno:$("#input3").val(),
+				useyn:($("#use_option option:selected").val()=="-1") ? "" : $("#use_option option:selected").val()  
+		}
+		showLoader(); 
+		reloadGrid("#main_table", "./bit/selectBusTerminal.do", params, "resultList");
+	});
+	
+	//초기화
+	$("#btn_reset").click(function () {
+		$("#input_mdtid").val(""); 
+		$("#input_facilid").val("");
+		$("#input_ipaddr_1").val("");
+		$("#input_modelnm").val("");
+		$("#input_purchdt").val(new Date().toISOString().substring(0, 10));
+		$("#input_installdt").val(new Date().toISOString().substring(0, 10));
+		$("#input_macaddr").val(""); 
+		$("#input_modem_serialno").val("");
+		$("#input_installloc").val("");
+		$("#input_use_enddt").val("");
+		$("#input_descr").val("");
+		$("#select_useyn").val("0");
+		$("#select_orgnm").val(first_orgnm);
+		
+		$("#btn_modify").attr("class", "disabled");
+		$("#btn_new").attr("class", ""); 
+		
+		$("#main_table").jqGrid("resetSelection");
+	});
+	
+	//신규등록
+	$("#btn_new").click(function () {
+		
+	});
+	
+	//수정
+	$("#btn_modify").click(function () {
+		
+	});
+}
+
+function excelDownload(title, grid_id) {
+	$("#excelDown").remove();
+	var grid = $(grid_id);
+	var form = document.createElement("FORM");
+	form.setAttribute("id", "excelDown");
+	form.action = "./stop/downloadExcelFile.do";
+	form.method = "POST"; 
+	
+	var fileName = JSON.stringify(title);
+	var param = document.createElement('INPUT');
+	var rowData = grid.jqGrid("getRowData");
+	var columnData = JSON.stringify(rowData);
+	
+	var columnLabel = JSON.stringify(grid.jqGrid('getGridParam','colNames'));
+	
+	var idData = grid.jqGrid('getGridParam', 'colModel');
+	var columnName = []; 
+	$.each(idData, function (index,value){
+		columnName.push(value.name);
+	})
+	columnName = JSON.stringify(columnName);
+	
+	param.type = 'HIDDEN'; 
+	param.name = 'json';
+	param.value = fileName + columnLabel + columnName + columnData; 
+	
+	form.appendChild(param);
+	
+	document.body.appendChild(form);
+	inquiryFileDownload("excelDown", true); 
+}

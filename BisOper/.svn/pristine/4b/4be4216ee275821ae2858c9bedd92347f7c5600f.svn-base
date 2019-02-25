@@ -1,0 +1,71 @@
+package com.bis.controller;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.bis.service.BusstopService;
+import com.bis.service.RunService;
+import com.bis.vo.re.TbDmhBusrunrecVO;
+
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 회차
+ * Business Name  : BIT 관련
+ * Class Name 	  : CtlrRun.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.30	박주언		created new file
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Controller
+@RequestMapping(value = "/run")
+public class CtlrRun {
+	
+	@Resource(name = "runService")
+	private RunService runService;
+	
+	private Logger logger = LogManager.getLogger(this.getClass());
+	
+	/**
+	 * 이력통계/분석 - 운행이력조회 - 부당운행이력조회
+	 * @param model
+	 * @param request
+	 * @param vo
+	 * @return
+	 */
+	@RequestMapping(value="/selectBusRunList.do")
+	public ModelAndView selectBusRunList(Model model, HttpServletRequest request, TbDmhBusrunrecVO vo){
+
+		ModelAndView mv = new ModelAndView();
+		Map<String, List<TbDmhBusrunrecVO>> resultMap = new HashMap<String, List<TbDmhBusrunrecVO>>();
+
+		try {
+			List<TbDmhBusrunrecVO> resultList = runService.selectBusRunList(vo);
+			resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectBusRunEvent exception " + e.toString());
+		}
+		mv.addAllObjects(resultMap);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+}

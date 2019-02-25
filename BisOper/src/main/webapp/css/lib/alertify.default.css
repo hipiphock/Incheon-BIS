@@ -1,0 +1,66 @@
+/**
+ * Default Look and Feel
+ */
+.alertify,
+.alertify-log {
+	font-family: 'Dotum';
+}
+.alertify {
+	background: #FFF;
+	border: 1px solid #7e7e7e; /* browsers that don't support rgba */
+	border-radius: 8px;
+	box-shadow:2px 2px 3px 0 rgba(0,0,0,0.3);
+}
+	.alertify-text {
+		border: 1px solid #CCC;
+		padding: 10px;
+		border-radius: 4px;
+	}
+	.alertify-button {
+		border-radius: 4px;
+		color: #FFF;
+		font-weight: bold;
+		font-size:13px;
+		padding: 6px 25px;
+		text-decoration: none;
+	}
+	.alertify-button:hover,
+	.alertify-button:focus {
+		outline: none;
+		
+	}
+	
+	.alertify-button:active {
+		position: relative;
+	}
+		.alertify-button-cancel,
+		.alertify-button-cancel:hover,
+		.alertify-button-cancel:focus {font-size:13px;
+			background-color: #626262;
+			border: 1px solid #3d3d3d; margin-right: 5px;
+		}
+		.alertify-button-ok,
+		.alertify-button-ok:hover,
+		.alertify-button-ok:focus {font-size:13px;
+			background-color: #4594e5;
+			border: 1px solid #1963af;
+		}
+
+.alertify-log {
+	background: #1F1F1F;
+	background: rgba(0,0,0,.9);
+	padding: 15px;
+	border-radius: 4px;
+	color: #FFF;
+	text-shadow: -1px -1px 0 rgba(0,0,0,.5);
+}
+	.alertify-log-error {
+		background: #FE1A00;
+		background: rgba(254,26,0,.9);
+	}
+	.alertify-log-success {
+		background: #5CB811;
+		background: rgba(92,184,17,.9);
+	}
+	
+	.alertify-message{font-size: 12px;}

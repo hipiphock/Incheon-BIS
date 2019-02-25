@@ -1,0 +1,159 @@
+$(document).ready(function(){
+	appendLoader("조회중..");
+	ajaxCall("./comp/selectCompCateList.do",null,null,comp_list,null);
+	ajaxCall("./stop/selectRouteListWithComp.do",null,null,route_list,null);
+	initGrid(); 
+	initEvent(); 
+})
+
+function comp_list(data) { 
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.compnm;
+		temp.value = value.compid; 
+		$("#option1").append(temp);
+	})
+}
+
+function route_list(data) {
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.routeno;
+		temp.value = value.routeid; 
+		$("#option2").append(temp);
+	})
+}
+
+var selected_lat;
+var selected_lng; 
+var selected_rno="";
+var selected_cno="";
+
+var models1 = [ 
+               {label:"버스회사",		name:"compnm",				index:"compnm",				width: "75", align:"center", sorttype:"text"},
+               {label:"노선번호",		name:"rno",					index:"rno",				width: "65", align:"center", sorttype:"text"},
+               {label:"차량번호",		name:"cno",					index:"cno",				width: "80", align:"center", sorttype:"text"},
+               {label:"운행회차",		name:"ord",					index:"ord",				width: "65", align:"center", sorttype:"text"},
+               {label:"운행시작시간",		name:"tm",					index:"tm",					width: "75", align:"center", sorttype:"text"},
+               {label:"운행거리",		name:"rundist",				index:"rundist",			width: "65", align:"center", sorttype:"text"},
+               {label:"운행시간",		name:"runtm",				index:"runtm",				width: "65", align:"center", sorttype:"text"},
+               {label:"운행상태",		name:"rundistin4cttype",	index:"rundistin4cttype",	width: "70", align:"center", sorttype:"text"},
+               
+               {name:"busid",		index:"busid",	 type: "I", hidden: true},
+               {name:"routeid",		index:"routeid", type: "I", hidden: true},
+               {name:"posy",		index:"posy",	 type: "I", hidden: true},
+               {name:"posx",		index:"posx",	 type: "I", hidden: true}
+]
+
+var models2 = [ 
+               {label:"정류소ID",		name:"bstopid",				index:"bstopid",			width: "75", align:"center", sorttype:"text"},
+               {label:"정류소명",		name:"snm",					index:"snm",				width: "150", align:"center", sorttype:"text"},
+               {label:"평균통행속도",		name:"avg_trvspd",			index:"avg_trvspd",			width: "80", align:"center", sorttype:"text"},
+               {label:"평균통행시간",		name:"avg_stoptm",			index:"avg_stoptm",			width: "80", align:"center", sorttype:"text"},
+               {label:"서비스시간(초)",	name:"avg_trvltm",			index:"avg_trvltm",			width: "75", align:"center", sorttype:"text"}    
+]
+
+var models3 = [ 
+               {label:"위반사항",		name:"rt",					index:"rt",				width: "75", align:"center", sorttype:"text"},
+               {label:"위반시간",		name:"dt",					index:"dt",				width: "100", align:"center", sorttype:"text"},
+               {label:"위반구역",		name:"lnm",					index:"lnm",			width: "150", align:"center", sorttype:"text"},
+               {label:"위반지점",		name:"nnm",					index:"nnm",			width: "130", align:"center", sorttype:"text"}
+]
+
+
+function initGrid() {
+	makeGrid("#left_table", models1, 500, "resultList", onSelected, onComplete, dbClick);
+	makeGrid("#right_top", models2, 300, "resultList", null, onComplete2, null); 
+	makeGrid("#right_bottom", models3, 300, "resultList", null, onComplete3, null);
+	
+	function onComplete(data) {
+		$(".sub_title").eq(0).find("h3").remove();
+		$(".sub_title").eq(0).append("<h3>버스운행현황 검색 결과 <span>"+data.records+"<span>건</h3>");
+		hideLoader(); 
+	}
+	
+	function onSelected(data) {
+		var rowData = $("#left_table").jqGrid('getRowData',data); 
+		selected_lat = rowData.posy;
+		selected_lng = rowData.posx; 
+	}
+	
+	function dbClick(data) {
+		var rowData = $("#left_table").jqGrid('getRowData',data);
+		var rid = rowData.routeid; 
+		var bid = rowData.busid;
+		selected_rno = rowData.rno;
+		selected_cno = rowData.cno;
+		showLoader(); 
+		reloadGrid("#right_top", "./stop/selectBusStopComunication.do",{routeid:rid}, "resultList");
+		reloadGrid("#right_bottom", "./bus/selectBusViolList.do", {busid:bid}, "resultList");
+	}
+	
+	function onComplete2(data) {
+		$(".sub_title").eq(1).find("h3").remove();
+		$(".sub_title").eq(1).append("<h3>"+selected_rno+" 정류소 소통정보 <span>"+data.records+"<span>건</h3>");
+		hideLoader(); 
+	}
+	
+	function onComplete3(data) {
+		$(".sub_title").eq(2).find("h3").remove();
+		$(".sub_title").eq(2).append("<h3>"+selected_cno+" 부당운행정보 <span>"+data.records+"<span>건</h3>");
+		hideLoader(); 
+	}
+	
+	$(window).bind('resize',function() {
+		$("#left_table").jqGrid('setGridHeight', $(".main_chart").height()-55);
+		$("#left_table").jqGrid('setGridWidth', $(".main_chart").width());
+		$("#right_top").jqGrid('setGridHeight', $(".main_chart2").height()-23);
+		$("#right_top").jqGrid('setGridWidth', $(".main_chart2").width());
+		$("#right_bottom").jqGrid('setGridHeight', $(".main_chart3").height()-35);
+		$("#right_bottom").jqGrid('setGridWidth', $(".main_chart3").width());
+	}).trigger('resize');
+
+	$("#left_table").jqGrid('filterToolbar',
+    {
+			autosearch: true,
+			stringResult: true,
+			searchOnEnter: true,
+			defaultSearch: "cn"
+    });
+	setFilter("left_table", true);
+}
+
+function initEvent() {
+	//버스회사 변경시 노선 변경
+	$("#option1").change(function() {
+		load_route_list($("#option1 option:selected").val());
+	})
+	
+	
+	//검색
+	$("#btn_search").click(function() {
+		showLoader(); 
+		var rid = $("#option2 option:selected").val(); 
+		if(rid == "-1")
+			reloadGrid("#left_table","./route/selectBusOperList.do", null, "resultList");
+		else
+			reloadGrid("#left_table","./route/selectBusOperList.do", {routeid:rid}, "resultList");
+	})
+	
+	//지도 이동
+	$(".topBtn_map").click(function () {
+		if(selected_lat == null && selected_lng == null) {
+			alert("버스를 선택하세요");
+		}
+		else 
+			opener.setCenterPosition(selected_lat, selected_lng);
+	})
+	
+}
+
+function load_route_list(cid) {
+	$("#option2").find("option").remove(); 
+	if(cid == "-1") {
+		$("#option2").append("<option value=\"-1\">전체</option>");
+		ajaxCall("./stop/selectRouteListWithComp.do",null,null,route_list,null);
+	}
+	else
+		ajaxCall("./stop/selectRouteListWithComp.do",{compid:cid},null,route_list,null);
+}

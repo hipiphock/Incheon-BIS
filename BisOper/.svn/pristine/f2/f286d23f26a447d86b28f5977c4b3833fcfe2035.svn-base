@@ -1,0 +1,4475 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BIT">
+
+    <!-- 안내기통신메시지현황/이력  - 상단과 하단 수동메시지 항목  (v0302)-->
+    <select id="selectManualMsg" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+	    <choose> 
+		 <when test="bitid != null and !bitid.equalsIgnoreCase('')">
+		    SELECT 
+			    BITID, 
+			    PAGESEQ, 
+			    MSGSEQ, 
+			    TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT, 
+			    TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT, 
+			    MSGCONTENT, 
+			    SNDRSLTCD, 
+			    FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT, 
+			    COMMERRCD, 
+			    FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR, 
+			    TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT 
+			FROM 
+				TB_ISH_BITMSG 
+			WHERE 
+				BITID = #{bitid}
+				ORDER BY ISSUEDT DESC, 
+			         BITID
+			</when>
+	    <otherwise>
+	        SELECT 
+			    (
+			        C.PROJECTTPCD||TRIM(TO_CHAR(C.VIEWBITID, '09999'))
+			    ) AS BITMID, 
+			    C.BITID, 
+			    PAGESEQ, 
+			    MSGSEQ, 
+			    TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT, 
+			    TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT, 
+			    SNDRSLTCD, 
+			    FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT, 
+			    COMMERRCD, 
+			    FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR, 
+			    TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT, 
+			    MSGCONTENT, 
+			    INSTALLLOC, 
+			    FC_CODE_CDNM('BITTPCD', C.BITTPCD) BITTYPE, 
+			    D.SHORT_BSTOPID SHORT_BSTOPID 
+			FROM TB_ISC_BITMSG A, 
+			    TB_OMM_FACIL B, 
+			    TB_OMM_BIT C, 
+			    TB_ADM_BUSSTOP D  
+			WHERE A.BITID = B.FACILID 
+				AND B.FACILID = C.BITID 
+				AND C.BSTOPID = D.BSTOPID 
+			 	AND B.USEYN = '1' 
+				ORDER BY ISSUEDT DESC, 
+			         A.BITID
+		</otherwise>
+		</choose>
+    </select>
+    
+   
+    
+     <!-- 안내기통신메시지현황/이력  - 상단과 하단 파라미터,안내기 제어기 항목 (v0302) -->
+    <select id="selectParamControl" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO"> 	
+	 <choose> 
+		 <when test="bitid != null and !bitid.equalsIgnoreCase('')">
+		     SELECT 
+		     	   BITID,
+			       MSGSEQ,
+			       TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS')       ISSUEDT,
+			       TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS')         SNDDT,
+			       ' '                                             MSGCONTENT,
+			       SNDRSLTCD,
+			       FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD)            SNDRSLT,
+			       COMMERRCD,
+			       FC_CODE_CDNM('COMMERRCD', COMMERRCD)            COMMERR,
+			       TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT
+			FROM   
+					TB_OMH_BITCTRL
+			WHERE  
+					BITID = #{bitid}
+			       AND CTRLTPCD = #{ctrltpcd}
+					ORDER  BY ISSUEDT DESC,
+			          BITID 
+		</when>
+	   	 <otherwise>	
+        	SELECT 
+			    ( 
+			       C.projecttpcd||Trim(To_char(C.viewbitid, '09999')) )  AS BITMID,
+			       A.bitid BITID,
+			       msgseq,
+			       To_char(issuedt, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT,
+			       To_char(snddt, 'YYYY/MM/DD HH24:MI:SS') SNDDT,
+			       sndrsltcd,
+			       Fc_code_cdnm('SNDRSLTCD', sndrsltcd) SNDRSLT,
+			       commerrcd,
+			       Fc_code_cdnm('COMMERRCD', commerrcd)  COMMERR,
+			       To_char(reply_colldt, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT,
+			       ' ' MSGCONTENT,
+			       installloc,
+			       Fc_code_cdnm('BITTPCD', C.bittpcd)  BITTYPE,
+			       D.short_bstopid  SHORT_BSTOPID
+			FROM   
+				   tb_omc_bitctrl A,
+			       tb_omm_facil B,
+			       tb_omm_bit C,
+			       tb_adm_busstop D
+			WHERE  
+				   A.bitid = B.facilid
+			       AND B.facilid = C.bitid
+			       AND C.bstopid = D.bstopid
+			       AND B.useyn = '1'
+			       AND ctrltpcd = #{ctrltpcd}
+				   ORDER  BY issuedt DESC,
+			          A.bitid 
+			</otherwise>
+		</choose>
+    </select>
+    
+     <!-- 안내기통신메시지현황/이력  - 상단과 하단 파일다운로드 항목 (v0302) -->
+    <select id="selectFileDownload" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+	    <choose> 
+		 <when test="bitid != null and !bitid.equalsIgnoreCase('')">
+		 Select 
+		 			Bitid,
+			       Msgseq,
+			       To_Char(Issuedt, 'YYYY/MM/DD HH24:MI:SS')      Issuedt,
+			       To_Char(Snddt, 'YYYY/MM/DD HH24:MI:SS')        Snddt,
+			       Fc_Code_Cdnm('FILETPCD', Filetpcd)             Msgcontent,
+			       Sndrsltcd,
+			       Fc_Code_Cdnm('SNDRSLTCD', Sndrsltcd)           Sndrslt,
+			       Commerrcd,
+			       Fc_Code_Cdnm('COMMER.RCD', Commerrcd)          Commerr,
+			       To_Char(Reply_Colldt, 'YYYY/MM/DD HH24:MI:SS') Reply_Colldt
+			From  
+					 Tb_Omh_Bitupd
+			Where  
+					Bitid = #{bitid}
+					Order  By Issuedt Desc,
+			          Bitid
+		 </when>
+	    <otherwise>
+	       SELECT 
+	       			( C.PROJECTTPCD
+			         ||TRIM(TO_CHAR(C.VIEWBITID, '09999')) )      AS BITMID,
+			       A.BITID                                        BITID,
+			       MSGSEQ,
+			       TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS')      ISSUEDT,
+			       TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS')        SNDDT,
+			       SNDRSLTCD,
+			       FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD)           SNDRSLT,
+			       COMMERRCD,
+			       FC_CODE_CDNM('COMMERRCD', COMMERRCD)           COMMERR,
+			       TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT,
+			       FC_CODE_CDNM('FILETPCD', FILETPCD)             MSGCONTENT,
+			       INSTALLLOC,
+			       FC_CODE_CDNM('BITTPCD', C.BITTPCD)             BITTYPE,
+			       D.SHORT_BSTOPID                                SHORT_BSTOPID
+			FROM  
+					 TB_OMC_BITUPD A,
+			       TB_OMM_FACIL B,
+			       TB_OMM_BIT C,
+			       TB_ADM_BUSSTOP D
+			WHERE  
+					A.BITID = B.FACILID
+			       AND B.FACILID = C.BITID
+			       AND C.BSTOPID = D.BSTOPID
+			       AND B.USEYN = '1'
+			       AND ISSUEDT = (SELECT MAX(ISSUEDT)
+			                      FROM   TB_OMC_BITUPD
+			                      WHERE  BITID = A.BITID)
+			ORDER  BY ISSUEDT DESC,
+			          A.BITID 
+		</otherwise>
+		</choose>
+    </select>
+    
+     <!-- 안내기통신메시지현황/이력  - 상단과 하단 광역 BIT 수동메세지 항목  (v0302)-->
+    <select id="selectWbitManual" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+	    <choose> 
+		 <when test="bitid != null and !bitid.equalsIgnoreCase('')">
+		 	SELECT
+		 			 A.SEND_DATE                    AS ISSUEDT,
+			       A.MSG_SEQ                      AS MSGSEQ,
+			       B.SEND_DATE                    AS SNDDT,
+			       DECODE(B.ERR_CODE, 
+			            '',  '........', 
+			                 '........')          AS SNDRSLT,
+			       '-'                            AS COMMERR,
+			       B.ACK_DATE                     AS REPLY_COLLDT,
+			       A.SMS_DATA                     AS MSGCONTENT
+			FROM  
+				   WBISOWNER.TB_WBIS_BIT_SMS_SEND_LOG A,
+			       WBISOWNER.TB_WBIS_BIT_ACK_LOG B
+			WHERE  
+					A.BIT_ID(+) = B.BIT_ID
+			       AND A.MSG_SEQ = B.MSG_SEQ
+			       AND A.SEND_DATE = B.SEND_DATE
+			       AND A.BIT_ID = #{bitid}
+			ORDER  BY A.SEND_DATE DESC,
+			          A.BIT_ID
+		 </when>
+	    <otherwise>
+	       SELECT  
+					  (E.PROJECTTPCD
+			                  ||TRIM(TO_CHAR(E.VIEWBITID, '09999'))) AS BITMID,
+			         A.BIT_ID                                        AS BITID,
+			         B.MSG_SEQ                                       AS MSGSEQ,
+			         TO_CHAR(B.SEND_DATE, 'YYYY/MM/DD HH24:MI:SS')   AS ISSUEDT,
+			         TO_CHAR(B.SEND_DATE, 'YYYY/MM/DD HH24:MI:SS')   AS SNDDT,
+			         B.START_TIME                                    AS START_TIME,
+			         B.VIEW_TIME
+			                  ||'..' AS VIEW_TIME,
+			         DECODE(B.IS_TTS ,  
+			                '0', '....',     
+			                '',  '....',    
+			                     '....')                             AS IS_TTS,
+			         B.FILE_NAME                                     AS FILE_NAMES,
+			         B.SMS_DATA                                      AS MSGCONTENT,
+			         D.BSTOPNM                                       AS BSTOPNM,
+			         WBISOWNER.WFC_CODE_CDNM('BITTPCD', A.BIT_TYPE)  AS BITTYPE,
+			         D.SHORT_BSTOPID                                 AS SHORT_BSTOPID
+			FROM     
+			  	  WBISOWNER.TB_WBIS_BIT A,
+				    (
+			        SELECT *
+			        FROM   WBISOWNER.TB_WBIS_BIT_SMS_SEND_LOG A
+			        WHERE  SEND_DATE =
+			               (
+			                  SELECT MAX(SEND_DATE)
+			                  FROM   WBISOWNER.TB_WBIS_BIT_SMS_SEND_LOG
+			                  WHERE  BIT_ID = A.BIT_ID
+			                )
+				    ) B,
+				    (
+				    SELECT *
+			        FROM   WBISOWNER.TB_WBIS_STATION_BIT A
+			        WHERE  STATION_ID =
+			           (
+			                  SELECT MIN(STATION_ID)
+			                  FROM   WBISOWNER.TB_WBIS_STATION_BIT 
+			                  WHERE  BIT_ID = A.BIT_ID
+			            )
+			  	  ) C,
+			         TB_ADM_BUSSTOP D,
+			         TB_OMM_BIT E
+			WHERE    
+					A.BIT_ID = B.BIT_ID
+					AND      A.BIT_ID = C.BIT_ID
+					AND      C.STATION_ID = D.BSTOPID
+					AND      D.BSTOPID = E.BSTOPID
+					AND      A.USE_YN = '1'
+					ORDER BY ISSUEDT DESC,
+        			 A.BIT_ID
+		</otherwise>
+		</choose>
+    </select>
+    
+    <!-- 제공시나리오 관리  - 인천안내기 파라미터ID 카테고리 정보 (v0304)  -->
+    <select id="selectParamCateList" resultType="TbOmmBitparamVO">
+        	SELECT 
+        		TITLE, 
+        		PARAMID 
+        	From 
+        		TB_OMM_BITPARAM 
+        		ORDER BY PARAMID ASC
+    </select>
+  	
+    <!-- 제공시나리오 관리  - 인천안내기 제공시나리오 검색 (v0304)  -->
+    <select id="selectBitScenario" parameterType="TbOmmBitparamVO" resultType="TbOmmBitparamVO">
+        	SELECT 
+			    PARAMID, 
+			    SUBSTR(TITLE,1,20) TITLE, 
+			    BITTPCD, 
+			    NVL(COMM_RETRYCNT,0) COMM_RETRYCNT, 
+			    NVL(COMM_TMOUT,0) COMM_TMOUT, 
+			    DISP_ONHMS, 
+			    DISP_OFFHMS, 
+			    NVL(FAN_TEMPER, 0) FAN_TEMPER, 
+			    FC_CODE_CDNM('BITTPCD', BITTPCD) BITTYPE, 
+			    NVL(DISPCYCL,0) DISPCYCL, 
+			    NVL(MSGCYCL,0) MSGCYCL,
+			    DECODE(BITTPCD, NULL, '3', '69', '1', '72', '1', '79', '1', '0') BITKIND, 
+			    NVL(HEAT_TEMPER, 0) HEAT_TEMPER, 
+			    FONTTPCD, 
+			    FONT_COLORCD, 
+			    NVL(LCD_FAN_TEMPER, 0) LCD_FAN_TEMPER, 
+			    NVL(LCD_FAN_TEMPER_1, 0) LCD_FAN_TEMPER_1, 
+			    NVL(LCD_HEAT_TEMPER, 0) LCD_HEAT_TEMPER, 
+			    NVL(LCD_HEAT_TEMPER_1, 0) LCD_HEAT_TEMPER_1,										
+			    DECODE(SUBSTR(FONTTPCD,1,1), '0', '굴림체', '1', '돋움체', '2', '바탕체') ROUTE_FONT, -- 폰트유형 매칭 필요
+			    DECODE(SUBSTR(FONT_COLORCD,1,1), '1', 'Red', '2', 'Green', '3', 'Yellow') ROUTE_FONTCOLOR, 	
+			    DECODE(SUBSTR(FONTTPCD,2,1), '0', '굴림체', '1', '돋움체', '2', '바탕체') ARRIVE_FONT, 
+			    DECODE(SUBSTR(FONT_COLORCD,2,1), '1', 'Red', '2', 'Green', '3', 'Yellow') ARRIVE_FONTCOLOR, 
+			    DECODE(SUBSTR(FONTTPCD,3,1), '0', '굴림체', '1', '돋움체', '2', '바탕체') BSTOP_FONT, 
+			    DECODE(SUBSTR(FONT_COLORCD,3,1), '1', 'Red', '2', 'Green', '3', 'Yellow') BSTOP_FONTCOLOR, 
+			    SUBSTR(DISP_ONHMS,1,2)||':'||SUBSTR(DISP_ONHMS, 3,2)||':00' DISPONHMS, 
+			    SUBSTR(DISP_OFFHMS,1,2)||':'||SUBSTR(DISP_OFFHMS, 3,2)||':00' DISPOFFHMS, 
+			    (
+			        CASE WHEN VOLUME_DAY_HMS IS NULL 
+			             THEN '00:00:00' 
+			             ELSE SUBSTR(VOLUME_DAY_HMS, 1, 2)||':'||SUBSTR(VOLUME_DAY_HMS, 3, 2)||':00' 
+			        END
+			    ) VOLUME_DAY_HMS, 
+			    (
+			        CASE WHEN VOLUME_NIGHT_HMS IS NULL
+			             THEN '00:00:00' 
+			             ELSE SUBSTR(VOLUME_NIGHT_HMS, 1, 2)||':'||SUBSTR(VOLUME_NIGHT_HMS, 3, 2)||':00' 
+			        END
+			    ) VOLUME_NIGHT_HMS, 
+			    NVL(DAY_VOLUME,0) DAY_VOLUME, 
+			    NVL(NIGHT_VOLUME,0) NIGHT_VOLUME, 
+			    (
+			        CASE WHEN BRIGHT_DAY_HMS IS NULL 
+			             THEN '00:00:00' 
+			             ELSE SUBSTR(BRIGHT_DAY_HMS, 1, 2)||':'||SUBSTR(BRIGHT_DAY_HMS, 3, 2)||':00' 
+			        END
+			    ) BRIGHT_DAY_HMS, 
+			    (
+			        CASE WHEN BRIGHT_NIGHT_HMS IS NULL 
+			             THEN '00:00:00' 
+			             ELSE SUBSTR(BRIGHT_NIGHT_HMS, 1, 2)||':'||SUBSTR(BRIGHT_NIGHT_HMS, 3, 2)||':00' 
+			        END
+			    ) BRIGHT_NIGHT_HMS, 
+			    NVL(DAY_BRIGHT,0) DAY_BRIGHT, 
+			    NVL(NIGHT_BRIGHT,0) NIGHT_BRIGHT 
+			FROM
+				 TB_OMM_BITPARAM 
+			WHERE 
+				1=1
+				<if test="paramid != null and !paramid.equalsIgnoreCase('')">
+				AND PARAMID = #{paramid}
+				</if>
+				<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+				AND BITTPCD = #{bittpcd}
+				</if>
+				ORDER BY PARAMID
+    </select>
+    
+    <!-- 제공시나리오 관리  - 광역안내기 제공시나리오 검색 (v0304)  -->
+    <select id="selectWBitScenario" parameterType="TbOmmWbitparamVO" resultType="TbOmmWbitparamVO">
+           SELECT 
+			    PARAMID,        
+			    TITLE,        
+			    TEMP_MAX,        
+			    TEMP_MIN,        
+			    VOLUME,        
+			    SUBSTR(LCD_ON_TIME,1,2)||'시'||SUBSTR(LCD_ON_TIME,3,2)||'분' AS LCD_ON_TIME,    -- '....' 한글깨짐 확인필요    
+			    SUBSTR(LCD_OFF_TIME,1,2)||'시'||SUBSTR(LCD_OFF_TIME,3,2)||'분' AS LCD_OFF_TIME,        
+			    WBISOWNER.WFC_CODE_CDNM('BITBRIGCD',LCD_BRIGHT) LCDBRIGHT,        
+			    WBISOWNER.WFC_CODE_CDNM('BITLANGCD',LANGUAGE) LANGUAGE,        
+			    LCD_BRIGHT AS LCD_BRIGHTCD,        
+			    LANGUAGE AS LANGUAGECD,        
+			    FAN_ONOFF,        
+			    HEATER_ONOFF,        
+			    IMPACT_AMOUNT,     
+			    REGDATE 
+			FROM 
+				TB_OMM_WBITPARAM
+			WHERE 
+				1=1
+				<if test="paramid != null and !paramid.equalsIgnoreCase('')">
+				PARAMID = #{paramid} 
+				</if>
+				ORDER BY PARAMID
+    </select>
+    
+    <!-- 제공정보표출현황조회 - 상단 설치장소, 안내기 ID 카테고리 정보(v0305)  -->
+    <select id="selectBitInstallLocList" resultType="TbOmmBitVO">
+           SELECT 
+           		A.BITID BITID,	 
+           		B.INSTALLLOC INSTALLLOC 
+           	From 
+           		TB_OMM_BIT A, 
+           		TB_OMM_FACIL B  
+           	Where 
+           		A.FACILID = B.FACILID 
+           		AND B.USEYN = '1' 
+           		ORDER BY INSTALLLOC ASC
+    </select>
+    
+    <!-- 제공정보표출현황조회 - 안내기검색결과 조회(v0305)  -->
+    <select id="selectBitLocation" parameterType="TbOmmBitVO" resultType="TbOmmBitVO">
+       		SELECT 
+			    (
+			        A.PROJECTTPCD||TRIM(TO_CHAR(A.VIEWBITID, '09999'))
+			    ) AS CPVIEWBITID, 
+			    LPAD(TO_CHAR(A.BITID),7,'0') BITID, 
+			    B.INSTALLLOC BSTOPNM,        
+			    SUBSTR(FC_CODE_CDNM('BITTPCD', A.BITTPCD), 1, 16) BITTP,         
+			    C.POSX POSX, 
+			    C.POSY POSY                                    
+			    FROM TB_OMM_BIT A, 
+			     TB_OMM_FACIL B, 
+			     TB_ADM_BUSSTOP C             
+			WHERE
+				 A.FACILID = B.FACILID                                        
+			 	 AND A.BSTOPID = C.BSTOPID                                        
+				  AND A.BITTPCD NOT IN (71,72,73)                                  
+				  AND B.USEYN = '1'  
+				  <if test="bitid != null and !bitid.equalsIgnoreCase('')">
+				  AND A.BITID LIKE '%${bitid}%'
+				  </if>
+				  <if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+				  AND A.BITTPCD = #{bittpcd}  
+				  </if>
+				ORDER BY A.BITID
+    </select>
+    
+     <!-- 안내기부가정보조회 - 좌측 인천 안내기 검색 리스트 (v0307)  -->
+    <select id="selectIncheonBitStat" resultType="TbIscBitstatVO">
+        	 SELECT 
+			    (
+			        A.PROJECTTPCD||TRIM(TO_CHAR(A.VIEWBITID, '09999'))
+			    ) AS CPVIEWBITID, 
+			    TO_CHAR(A.BITID) BITID, 
+			    B.INSTALLLOC INSTALLLOC,                       
+			    TRUNC((SYSDATE - C.COLLDT) * (24 * 60)) COMM_DELAY,                     
+			    C.OPER_PGM_FILEVER, 
+			    C.ROUTEVER, 
+			    C.SCHEDULEVER,                          
+			    TO_CHAR(D.SHORT_BSTOPID) SBSTOPID, 
+			    D.ADMINNM                      
+			 FROM 
+			 	TB_OMM_BIT A, 
+			    TB_OMM_FACIL B, 
+			    TB_ISC_BITSTAT C, 
+			    TB_ADM_BUSSTOP D  
+			WHERE 
+				A.FACILID = B.FACILID                                               
+				AND B.USEYN = '1'                                                       
+				AND A.PROJECTTPCD in ( '10', '40', '41', '11', '12', '13', '14' )                            
+				AND A.BITID = C.BITID                                                   
+				AND A.BSTOPID = D.BSTOPID 
+				ORDER BY A.BITID           
+    </select>
+    
+    <!-- 안내기부가정보조회 - 좌측 광역, 부천, 김포 안내기(v0307)  -->
+    <select id="selectOtherBitStat" resultType="TbIscBitstatVO">
+        	SELECT 
+			    (
+			        D.PROJECTTPCD||TRIM(TO_CHAR(D.VIEWBITID, '09999'))
+			    ) AS CPVIEWBITID,
+			    A.BIT_ID AS BITID,       
+			    C.BSTOPID AS BSTOPID,       
+			    TO_CHAR(C.SHORT_BSTOPID) AS SBSTOPID,      
+			    C.ADMINNM AS ADMINNM,       
+			    C.BSTOPNM AS INSTALLLOC,       
+			    WBISOWNER.WFC_CODE_CDNM('BITTPCD', A.BIT_TYPE ) AS BITTYPE,      
+			    C.POSX AS POSX,        C.POSY AS POSY,      
+			    '....' AS WIDEAREA -- '....' 한글깨짐 확인필요
+			FROM 
+				WBISOWNER.TB_WBIS_BIT A,     
+			    (
+			        SELECT *    
+			        FROM WBISOWNER.TB_WBIS_STATION_BIT A      
+			        WHERE STATION_ID = (
+			                             SELECT MIN(STATION_ID)                          
+			                             FROM WBISOWNER.TB_WBIS_STATION_BIT                        
+			                             WHERE BIT_ID = A.BIT_ID
+			                            )
+			    ) B,      
+			    TB_ADM_BUSSTOP C,
+			    TB_OMM_BIT D
+			WHERE 
+				A.BIT_ID = B.BIT_ID 
+			 	AND A.BIT_ID = D.BITID  
+			 	AND B.STATION_ID = C.BSTOPID  
+				AND A .USE_YN = '1' 
+				ORDER BY A.BIT_ID        
+    </select>
+	
+     <!-- 차량단말기 기초정보관리 - 차량단말기검색 (v0601)  -->
+    <select id="selectBusTerminal" parameterType="TbOmmFacilVO" resultType="TbOmmFacilVO">
+           SELECT 
+			    A.MDTID MDTID, 
+			    D.FACILID FACILID, 
+			    A.MACADDR MACADDR, 
+			    A.MODEM_SERIALNO MODEM_SERIALNO, 
+			    C.COMPNM COMPNM, 
+			    B.CARREGNO CARREGNO, 
+			    A.BUSID BUSID,
+			    D.COMMLINKTPCD COMMLINKTPCD, 
+			    FC_CODE_CDNM('COMMLINKTPCD', D.COMMLINKTPCD) COMMLINKTP,
+			    FC_EXORG_ORGNM(MAINTN_RELATORGID) ORGNM,
+			    D.MODELNM MODELNM,
+			    D.IPADDR_1 IPADDR_1,
+			    D.PORTNO PORTNO,
+			    D.INSTALLLOC INSTALLLOC,
+			    TO_CHAR(D.PURCHDT, 'YYYY-MM-DD') PURCHDT,
+			    TO_CHAR(D.INSTALLDT, 'YYYY-MM-DD') INSTALLDT, 
+			    TO_CHAR(D.MANUFYMD, 'YYYY-MM-DD') MANUFYMD, 
+			    D.USE_STARTDT USE_STARTDT,
+			    TO_CHAR(D.USE_ENDDT, 'YYYY/MM/DD HH24:MI:SS') USE_ENDDT,
+			    D.DESCR DESCR,
+			    LPAD(TO_CHAR(A.MDTID),5,'0') MDTID1,
+			    DECODE(D.USEYN, '0', '미사용', '사용') USEYN,
+			    D.UPDDT UPDDT,
+			    D.UPD_USERID UPD_USERID 
+			FROM 
+				 TB_OMM_MDT A,
+			     TB_ADM_BUS B,
+			     TB_ADM_BUSCOMP C,
+			     TB_OMM_FACIL D
+			WHERE 
+				  A.BUSID = B.BUSID(+) 
+				  AND B.COMPID = C.COMPID(+) 
+				  AND A.FACILID = D.FACILID
+				  <if test="mdtid != null and !mdtid.equalsIgnoreCase('')">
+				  AND A.MDTID LIKE '%${mdtid}%'  
+				  </if>
+				  <if test="modem_serialno != null and !modem_serialno.equalsIgnoreCase('')">
+				  AND A.MODEM_SERIALNO LIKE '%${modem_serialno}%'  
+				  </if>
+				  <if test="carregno != null and !carregno.equalsIgnoreCase('')">
+				  AND B.CARREGNO LIKE '%${carregno}%' 
+				  </if>
+				  <if test="compid != null and !compid.equalsIgnoreCase('')">
+				  AND C.COMPID = #{compid} 
+				  </if>
+				   <if test="useyn!= null and !useyn.equalsIgnoreCase('')">
+				  AND D.USEYN = #{useyn}
+				  </if>
+				  ORDER BY COMPNM, MDTID
+    </select>
+    
+    <!-- 전산장비 기초정보관리 - 전산장비 검색(v0603)  -->
+    <select id="selectEquip" parameterType="TbOmmFacilVO" resultType="TbOmmFacilVO">
+           SELECT 
+			   	 A.GARAGEAPID GARAGEAPID,
+			    A.GARAGEID GARAGEID,
+			    A.APTPCD APTPCD,
+			    FC_CODE_CDNM('APTPCD', A.APTPCD) TP, D.GARAGENM GARAGENM, B.FACILID FACILID, 
+			    B.MODEM_SERIALNO MODEM_SERIALNO,
+			    B.COMMLINKTPCD COMMLINKTPCD, 
+			    B.MODELNM MODELNM, 
+			    FC_CODE_CDNM('COMMLINKTPCD',B.COMMLINKTPCD) COMMLINKTYPE,
+			    FC_EXORG_ORGNM(MAINTN_RELATORGID) ORGNM,
+			    B.DESCR DESCR,
+			    TO_CHAR(B.MANUFYMD, 'YYYY-MM-DD') MANUFYMD,
+			    TO_CHAR(B.INSTALLDT, 'YYYY-MM-DD') INSTALLDT, 
+			    B.IPADDR_1 IPADDR_1,
+			    B.PORTNO PORTNO, 
+			    B.INSTALLLOC INSTALLLOC, 
+			    TO_CHAR(B.PURCHDT, 'YYYY-MM-DD') PURCHDT,
+			    TO_CHAR(B.INSTALLDT, 'YYYY-MM-DD') INSTALLDT, 
+			    B.USE_STARTDT USE_STARTDT,
+			    TO_CHAR(B.USE_ENDDT,'YYYY/MM/DD HH24:MI:SS') USE_ENDDT, 
+			    DECODE(B.USEYN, '0', '미사용', '사용') USEYN, 
+			    B.UPDDT UPDDT,
+			    B.UPD_USERID UPD_USERID 
+			FROM 
+				TB_OMM_GARAGEAP A,
+			     TB_OMM_FACIL B, 
+			     TB_ADM_GARAGE D
+			WHERE 
+				A.FACILID = B.FACILID
+			    AND A.GARAGEID = D.GARAGEID(+)
+			     <if test="garageapid!= null and !garageapid.equalsIgnoreCase('')"> 
+			    AND A.GARAGEAPID like '%${garageapid}%' 
+			    </if>
+			     <if test="aptpcd!= null and !aptpcd.equalsIgnoreCase('')">
+			    AND A.APTPCD = #{aptpcd}
+			    </if>
+			ORDER BY FACILID
+    </select>
+    
+    <!-- 전산장비 기초정보관리 - 전산장비 정보 수정, 차고지명과  AP유형(v0603) -->
+	<update id="updateGarageIdType" parameterType="TbOmmFacilVO">
+		UPDATE 
+			TB_OMM_GARAGEAP 
+		SET 
+			APTPCD = #{aptpcd}
+			,GARAGEID = #{garageid}       
+		WHERE 
+			GARAGEAPID = #{garageapid}
+	</update>
+	
+	<!-- 전산장비 기초정보관리 - 전산장비 정보 수정(v0603) -->
+	<update id="updateEquipInfo" parameterType="TbOmmFacilVO">
+			UPDATE 
+			    TB_OMM_FACIL 
+			SET
+				MODELNM = #{modelnm},
+				INSTALLLOC = #{installloc},
+				COMMLINKTPCD = #{commlinktpcd},
+				IPADDR_1 = #{ipaddr_1},
+			    PORTNO = #{portno},
+			    MODEM_SERIALNO = #{modem_serialno},
+			    MANUFYMD = TO_DATE(#{manufymd},'YYYYMMDD'),
+			    PURCHDT = TO_DATE(#{purchdt},'YYYYMMDD'),
+			    INSTALLDT = TO_DATE(#{installdt},'YYYYMMDD'),
+			    MAINTN_RELATORGID = #{orgnm},
+			    USEYN = #{useyn},
+			    USE_ENDDT = #{use_enddt}, 
+			    UPD_USERID = #{reg_userid}, 
+			    DESCR = #{descr} 
+			 WHERE 
+				 FACILID = #{facilid}
+	</update>
+	
+	<!--  전산장비 기초정보관리 - 전산장비 신규등록, 시설물id AP유형 차고지명 (v0603) -->
+	<insert id="insertGarageap" parameterType="TbOmmFacilVO">
+			INSERT INTO 
+				TB_OMM_GARAGEAP (FACILID, GARAGEAPID, GARAGEID, APTPCD)
+			Values 
+				(#{facilid},#{garageapid},#{garageid},#{aptpcd})
+	</insert>
+    
+	<!--  전산장비 기초정보관리 - 전산장비 신규등록 (v0603) -->
+	<insert id="insertFacil" parameterType="TbOmmFacilVO">
+			INSERT INTO 
+				TB_OMM_FACIL (FACILID, FACILTPCD, MODELNM, INSTALLLOC, 
+				COMMLINKTPCD, IPADDR_1, PORTNO, MODEM_SERIALNO, MANUFYMD, 
+				PURCHDT, INSTALLDT, MAINTN_RELATORGID, USE_STARTDT, 
+				USEYN, UPD_USERID, DESCR) 
+			Values 
+				(#{facilid},#{aptpcd},#{modelnm},#{installloc},#{commlinktpcd},
+				#{ipaddr_1},#{portno},#{modem_serialno},TO_DATE(#{manufymd},'YYYYMMDD')
+				,TO_DATE(#{purchdt},'YYYYMMDD'),TO_DATE(#{installdt},'YYYYMMDD'),
+				#{orgnm},SYSDATE,#{useyn},#{reg_userid},#{descr})
+	</insert>
+	
+	<!-- 전산장비 기초정보관리 - 운영단말기 전산장비 검색(v0603)  -->
+    <select id="selectOptermEquip" parameterType="TbOmmFacilVO" resultType="TbOmmFacilVO">
+           SELECT 
+			    A.OPTERMID OPTERMID, 
+			    A.MATRIX_PORTNO MATRIX_PORTNO,
+			    A.OPTERMUSECD OPTERMUSECD,
+			    FC_CODE_CDNM('OPTERMUSECD', A.OPTERMUSECD) TP, 
+			    DECODE(B.USEYN, '0', '미사용', '사용') USEYN, 
+			    B.FACILID FACILID,
+			    B.MODEM_SERIALNO MODEM_SERIALNO, 
+			    B.COMMLINKTPCD COMMLINKTPCD, 
+			    B.MODELNM MODELNM, 
+			    FC_CODE_CDNM('COMMLINKTPCD',B.COMMLINKTPCD) COMMLINKTYPE,
+			    FC_EXORG_ORGNM(MAINTN_RELATORGID) ORGNM,
+			    B.DESCR DESCR, 
+			    B.MANUFYMD MANUFYMD, 
+			    TO_CHAR(B.INSTALLDT, 'YYYY-MM-DD') INSTALLDT,
+			    B.IPADDR_1 IPADDR_1, 
+			    B.PORTNO PORTNO, 
+			    B.INSTALLLOC INSTALLLOC, 
+			    TO_CHAR(B.PURCHDT, 'YYYY-MM-DD') PURCHDT, 
+			    TO_CHAR(B.INSTALLDT, 'YYYY-MM-DD') INSTALLDT,
+			    B.USE_STARTDT USE_STARTDT,
+			    TO_CHAR(B.USE_ENDDT,'YYYY/MM/DD HH24:MI:SS') USE_ENDDT,
+			    DECODE(B.USEYN, '0', '미사용', '사용') USEYN,
+			    B.UPDDT UPDDT,
+			    B.UPD_USERID UPD_USERID 
+			FROM 
+				TB_OMM_OPTERM A,
+			    TB_OMM_FACIL B 
+			WHERE
+				A.FACILID = B.FACILID    
+				<if test="optermid!= null and !optermid.equalsIgnoreCase('')">  
+			 	AND A.OPTERMID LIKE '%${optermid}%'
+			 	</if>
+			 	<if test="optermusecd!= null and !optermusecd.equalsIgnoreCase('')"> 
+			  	AND A.OPTERMUSECD = #{optermusecd} 
+			  	</if>
+				ORDER BY FACILID
+    </select>
+    
+    <!-- 차량단말기 상태정보조회/제어 - 제어정보입력/전송 (v0604) -->
+	<update id="updateMdtCtrl" parameterType="TbOmcMdtctrlVO">
+			UPDATE 
+				   tb_omc_mdtctrl
+			SET  
+				   busid = #{busid},
+			       routeid = #{routeid}
+			       <if test="searchword!= null and !searchword.equalsIgnoreCase('')">
+			        ,mdt_valid = #{mdt_valid}, --원격제어그룹 체크 항목
+		     	   lcd_onoff = #{lcd_onoff},
+			       sound_onoff = #{sound_onoff},
+			       detail_sound_onoff = #{detail_sound_onoff},
+			       ap_power_onoff = #{ap_power_onoff},
+			       ap_auto_onoff = #{ap_auto_onoff},
+			       log_upload_onoff = #{log_upload_onoff},
+		           log_valid = #{log_valid}, 
+			       main_logyn = #{main_logyn},
+			       rmc_logyn = #{rmc_logyn},
+			       ll_logyn = #{ll_logyn},
+			       rev_ll_logyn = #{rev_ll_logyn},
+ 				   route_logyn = #{route_logyn},
+				   door_logyn = #{door_logyn},
+  				   ap_logyn = #{ap_logyn},
+ 				   remctrltpcd = #{remctrltpcd},
+			       remctrlstatcd = '00000000',
+			       remctrllogcd = '00000000',
+			       snddt_1 = SYSDATE, 
+			       sndrsltcd_1 = '0' --원격제어그룹 체크 항목 끝  
+			       </if>
+			       <if test="searchword2!= null and !searchword2.equalsIgnoreCase('')">
+			       ,fixint_cycl = #{fixint_cycl}, --정주기제어 체크 항목
+			       snddt_2 = SYSDATE,
+			       sndrsltcd_2 = '0' --정주기제어 체크 항목 끝
+			       </if>
+			       <if test="searchword3!= null and !searchword3.equalsIgnoreCase('')">
+			       ,STATREQYN = #{statreqyn},  -- 상세상태요청 체크 항목
+			       SNDDT_4 = SYSDATE, 
+			       SNDRSLTCD_4 = '0' -- 상세상태요청 체크 항목 끝
+			       </if>
+			WHERE  mdtid = #{mdtid}
+	</update>
+	
+	<!-- 시설물유지보수관리(BIT) - BIT A/S 이력검색 (v0606) -->
+	<select id="selectBitAsList" parameterType="TbOmhFacilfailasVO" resultType="TbOmmBitVO">	
+			SELECT 
+			    ROWNUM AS ROW_NUM,
+			    TO_CHAR(A.FACILID) AS FACILID,    
+			    TO_CHAR(C.BSTOPID) AS BSTOPID,  
+			    D.BSTOPNM BSTOPNM, 
+			    D.SHORT_BSTOPID SHORT_BSTOPID,  
+			    DETAIL,     
+			    TO_CHAR(REGDT, 'YYYY-MM-DD HH24:MI:SS') REGDT,     
+			    FC_CODE_CDNM('FACILT.PCD', A.FACILTPCD) FACCD,    
+			    A.FACILTPCD FACILTPCD,   
+			    FC_BUSSTOP_SHORT_BSTOPID(C.BSTOPID) SHORTID, 
+			    FC_CODE_CDNM('USEYN', B.USEYN) USECODE,      
+			    B.USEYN USEYN, 
+			    TO_CHAR(FAIL_OCCURDT, 'YYYY-MM-DD HH24:MI:SS') FAIL_OCCURDT,    
+			    FC_CODE_CDNM('FAILTPCD', FAILTPCD) FAILCD,    
+			    FC_CODE_CDNM('BITTPCD',BITTPCD) BITTYPE,   
+			    FAIL_DETAIL,  
+			    REG_USERID,       
+			    MOBILENO,      
+			    TO_CHAR(FAIL_TREATDT, 'YYYY-MM-DD HH24:MI:SS') FAIL_TREATDT,   
+			    FC_CODE_CDNM('FAILTREATCD', FAILTREATCD) ASCD,     
+			    FAILTREATCD,   
+			    TREAT_DETAIL,     
+			    IPADDR_1,    
+			    B.DESCR,      
+			    TREAT_USERID,       
+			    ADMIN||' '||ADDRESS AS ADDRESS,   
+			    FC_CODE_CDNM( 'PROJECTTPCD', C.PROJECTTPCD ) AS WIDEAREA 
+			FROM 
+				 TB_OMH_FACILFAILAS A, 
+			     TB_OMM_FACIL B, 
+			     TB_OMM_BIT C,
+			     TB_ADM_BUSSTOP D
+			WHERE 
+				A.FACILID = B.FACILID 
+			    AND B.FACILID = C.FACILID
+			    AND C.BSTOPID = D.BSTOPID   
+			    AND A.FACILTPCD = '12'
+		
+			    AND A.FACILID NOT IN ( SELECT FACILID FROM TB_OMH_BITNOVIEW )
+			    <if test="projecttpcd!= null and !projecttpcd.equalsIgnoreCase('')">
+			    AND C.PROJECTTPCD = #{projecttpcd}
+			    </if>
+			    <if test="startdt!= null and !startdt.equalsIgnoreCase('')
+			        and enddt!= null and !enddt.equalsIgnoreCase('')">
+			    AND TO_CHAR(FAIL_OCCURDT, 'YYMMDD') BETWEEN #{startdt}              
+			                                          AND #{enddt}
+			    </if>
+				<choose>
+			    	<when test="fail_treatdt!= null and fail_treatdt.equalsIgnoreCase('1')">
+			    	AND FAIL_TREATDT IS NOT NULL
+					</when>
+					<when test="fail_treatdt!= null and fail_treatdt.equalsIgnoreCase('2')">
+			    	AND FAIL_TREATDT IS NULL
+					</when>
+				</choose> 
+	    		<if test="failtreatcd!= null and !failtreatcd.equalsIgnoreCase('')">
+			    And FAILTREATCD = #{failtreatcd}
+			    </if>
+			    Order By FAIL_OCCURDT
+	</select>
+	
+	<!-- 시설물유지보수관리(BIT)- BIT A/S 내역 수정  (v0606, v0607, v0608)-->
+	<update id="updateBitAs" parameterType="TbOmhFacilfailasVO">
+		UPDATE TB_OMH_FACILFAILAS
+		SET  
+			  fail_occurdt = To_date(#{fail_occurdt}, 'YYMMDDHH24MISS'),
+      		  failtpcd = #{failtpcd},
+       		  fail_detail = #{fail_detail},
+       		  reg_userid = #{reg_userid},
+              fail_treatdt = To_date(Decode(#{fail_treatdt}, NULL, NULL,
+                                                       #{fail_treatdt}),
+                      'YYYYMMDDHH24MISS')
+              <if test="failtreatcd!= null and !failtreatcd.equalsIgnoreCase('')">
+     		  ,failtreatcd = #{failtreatcd}
+     		  </if>
+       		  ,treat_detail = #{treat_detail},
+       		  treat_userid = #{treat_userid},
+       		  mobileno = #{mobileno}
+       		  <if test="treat_gubun!= null and !treat_gubun.equalsIgnoreCase('')">
+       		  ,treat_gubun = #{treat_gubun}
+			  </if>
+		WHERE  
+			  facilid = #{facilid}
+       		  AND To_char(regdt, 'YYYY-MM-DD HH24:MI:SS') = #{regdt} 
+	</update>
+	
+	<!-- 시설물유지보수관리(BIT)- BIT A/S 내역 삭제 (v0606, v0607, v0608)-->
+	<delete id="deleteBitAs" parameterType="TbOmhFacilfailasVO">
+		DELETE TB_OMH_FACILFAILAS 
+		WHERE FACILID = #{facilid}
+  			  AND TO_CHAR( FAIL_OCCURDT, 'YYYY-MM-DD HH24:MI:SS' ) = #{fail_occurdt}
+	</delete>
+	
+	<!-- 시설물유지보수관리(BMT) - BIT A/S 이력검색 (v0607) -->
+	<select id="selectBitAsBMTList" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">	
+			SELECT 
+			    'ARS' as ARS, 
+			    TO_CHAR(REGDT, 'YYYY-MM-DD HH24:MI:SS') REGDT,  
+			    DECODE(FC_BUS_COMPNM(C.BUSID), NULL, '-',FC_BUS_COMPNM(C.BUSID)) AS COMPNM,       
+			    FC_BUS_CARREGNO(C.BUSID) FACNM,  
+			    TO_CHAR(FAIL_OCCURDT, 'YYYY-MM-DD HH24:MI:SS') OCDT, 
+			    FC_CODE_CDNM( 'MDTERRORCD', FAILTPCD ) FAILCD,    
+			    FAIL_DETAIL,     
+			    FC_BUSID_ROUTENM(C.BUSID) ROUTENO,    
+			    REG_USERID,   
+			    MOBILENO,       
+			    TO_CHAR(FAIL_TREATDT, 'YYYY-MM-DD') AS DT,  
+			    FC_CODE_CDNM('FAILTREATCD', FAILTREATCD) ASCD, 
+			    FAILTREATCD,   
+			    TREAT_USERID,     
+			    TREAT_DETAIL,      
+			    A.FACILID FACILID,      
+			    FC_CODE_CDNM('FACILTPCD', A.FACILTPCD) FACCD, 
+			    A.FACILTPCD FACILTPCD,    
+			    FC_CODE_CDNM('USEYN.', B.USEYN) USECODE,
+			    B.USEYN USEYN ,
+			    FC_CODE_CDNM( 'PROCESSSTATE', A.TREAT_GUBUN ) TREAT_GUBUN 
+			FROM TB_OMH_FACILFAILAS A,
+			     TB_OMM_FACIL B, 
+			     TB_OMM_MDT C 
+			WHERE A.FACILID = B.FACILID 
+			  AND B.FACILID = C.FACILID  
+			  <if test="startdt!= null and !startdt.equalsIgnoreCase('')
+			        and enddt!= null and !enddt.equalsIgnoreCase('')">
+			  AND TO_CHAR(FAIL_OCCURDT, 'YYMMDD') BETWEEN #{startdt}
+			                                           AND #{enddt}
+			  </if>
+			  AND A.FACILTPCD = '10' 
+			  AND B.USEYN = 1  
+			  <if test="treat_gubun!= null and !treat_gubun.equalsIgnoreCase('')">
+			  AND TREAT_GUBUN = #{treat_gubun}
+			  </if>
+			  <if test="failtreatcd!= null and !failtreatcd.equalsIgnoreCase('')">
+			  And FAILTREATCD = #{failtreatcd}
+			  </if>
+			Order By FAIL_OCCURDT
+	</select>
+	
+	<!-- 시설물유지보수관리(BMT) - 차량번호 카테고리 정보 (v0607) -->	
+	<select id="selectCarInstallLoc" resultType="TbOmmBitVO">
+		SELECT FACILID, INSTALLLOC FROM TB_OMM_FACIL WHERE FACILTPCD = '10' AND USEYN = '1' ORDER BY INSTALLLOC ASC
+	</select>
+	
+	<!-- 시설물유지보수관리(AP무선) - 시설물명 카테고리 정보 (v0608) -->	
+	<select id="selectFacilnmCate" resultType="TbOmmBitVO">
+		SELECT FACILID, INSTALLLOC From TB_OMM_FACIL Where FACILTPCD NOT IN ('12', '11', '10') AND USEYN = '1' ORDER BY INSTALLLOC ASC
+	</select>
+	
+	<!-- 시설물유지보수관리(AP무선) - 무선AP A/S 이력검색 (v0608) -->
+	<select id="selectWAPAsList" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">	
+		SELECT 
+		    A.FACILID FACILID,      
+		    COMPNM,      
+		    DECODE(INSTALLLOC,NULL,'-',INSTALLLOC) FACNM,    
+		    TO_CHAR(REGDT, 'YYYY-MM-DD HH24:MI:SS') REGDT,     
+		    FC_CODE_CDNM('FACILTPCD', A.FACILTPCD) FACCD,   
+		    A.FACILTPCD FACILTPCD,  
+		    FC_CODE_CDNM('USE.YN', B.USEYN) USECODE,    
+		    B.USEYN USEYN,   
+		    TO_CHAR(FAIL_OCCURDT, 'YYYY-MM-DD HH24:MI:SS') OCDT,        
+		    FC_CODE_CDNM('FAILTPCD', FAILTPCD) FAILCD,  
+		    FAIL_DETAIL,     
+		    REG_USERID,     
+		    A.MOBILENO MOBILENO,       
+		    TO_CHAR(FAIL_TREATDT, 'YYYY-MM-DD HH24:MI:SS') ASDT,  
+		    FC_CODE_CDNM('FAILTREATCD', FAILTREATCD) ASCD, 
+		    FAILTREATCD,   
+		    TREAT_DETAIL,     
+		    TREAT_USERID,       
+		    B.DESCR DESCR,     
+		    C.ADDR ADDR 
+		FROM TB_OMH_FACILFAILAS A,
+		     TB_OMM_FACIL B,
+		     TB_ADM_GARAGE C, 
+		     TB_ADM_BUSCOMP D 
+		WHERE A.FACILID = B.FACILID  
+		  AND B.INSTALLLOC = C.GARAGENM(+)  
+		  AND C.COMPID = D.COMPID  
+		  <if test="startdt!= null and !startdt.equalsIgnoreCase('')
+			        and enddt!= null and !enddt.equalsIgnoreCase('')">
+		  AND TO_CHAR(FAIL_OCCURDT, 'YYMMDD') BETWEEN #{startdt} 
+		                                          AND #{enddt}
+		  </if>  
+		  AND A.FACILTPCD = '13' 
+		  <choose>
+			   	<when test="fail_treatdt!= null and fail_treatdt.equalsIgnoreCase('1')">
+			   	AND FAIL_TREATDT IS NOT NULL
+				</when>
+				<when test="fail_treatdt!= null and fail_treatdt.equalsIgnoreCase('2')">
+			   	AND FAIL_TREATDT IS NULL
+				</when>
+		  </choose> 
+		  <if test="failtpcd!= null and !failtpcd.equalsIgnoreCase('')">
+		  And A.FAILTPCD = #{failtpcd}
+		  </if>
+		Order By FAIL_OCCURDT	
+	</select>
+	
+	<!-- 장애통계조회  (v0610) -->
+	<select id="selectFailStatList" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">	
+		SELECT 
+		    FACILTPCD,
+		    DECODE(FACILTPCD, '10', '차량단말기', '12', '정류소안내기', '13', '무선AP') FACILNM,   
+		    SUM(C00) VAL1,
+		    SUM(C01) VAL2, 
+		    SUM(C02) VAL3,
+		    SUM(C03) VAL4,       
+		    SUM(C04) VAL5, 
+		    SUM(C05) VAL6, 
+		    SUM(C06) VAL7,
+		    SUM(C07) VAL8, 
+		    SUM(C08) VAL9, 
+		    SUM(C09) VAL10   
+		FROM 
+		    ( 
+		      SELECT 
+		          FACILTPCD,                       
+		          DECODE(FAILTPCD, 210, 1, 0) C00,              
+		          DECODE(FAILTPCD, 220, 1, 0) C01,        
+		          DECODE(FAILTPCD, 230, 1, 0) C02,         
+		          DECODE(FAILTPCD, 240, 1, 0) C03,          
+		          DECODE(FAILTPCD, 250, 1, 0) C04,                                    
+		          DECODE(FAILTPCD, 260, 1, 0) C05,                        
+		          DECODE(FAILTPCD, 270, 1, 0) C06,                     
+		          DECODE(FAILTPCD, 280, 1, 0) C07,                     
+		          DECODE(FAILTPCD, 300, 1, 0) C08,         
+		          DECODE(FAILTPCD, 290, 1, NULL, 1,0) C09      
+		      FROM TB_OMH_FACILFAILAS         
+		      WHERE FAIL_OCCURDT BETWEEN TO_DATE(#{startdt}, 'YYYYMMDDHH24MISS')      
+		                             AND TO_DATE(#{enddt}, 'YYYYMMDDHH24MISS')           
+		      AND FACILTPCD IN ('10', '12', '13')                                          
+		    )                           
+		GROUP BY FACILTPCD 
+	</select>
+	
+	<!-- BIT외부충격이력 - (인천)정류소안내기검색 (v0611)-->
+	<select id="selectStopTerminal" parameterType="TbOmmBitVO" resultType="TbOmmBitVO">	
+		SELECT
+			    B.BITID AS BITID, 
+			    B.DETAIL AS BSTOPNM, 
+			    F.INSTALLLOC AS INSTALLLOC,   
+			    B.ADMIN AS ADMIN, 
+			    F.MODELNM AS MODELNM,
+			    (
+			        SELECT ORGNM 
+			        FROM TB_ECM_EXORG 
+			        WHERE RELATORGID=F.MAINTN_RELATORGID
+			    ) AS ASCOMP,  
+			    F.MAINTN_RELATORGID AS ASCOMPID,
+			    B.ADDRESS AS ADDRESS,  
+			    (
+			        SELECT CDNM 
+			        FROM TB_OMM_CODE 
+			        WHERE CDCATEGID='BITTPCD'
+			          AND CD=B.BITTPCD
+			    ) AS BITTYPE, 
+			    F.USEYN AS USEYN, 
+			    0 AS POSX,
+			    0 AS POSY 
+			FROM TB_OMM_BIT B, 
+			     TB_OMM_FACIL F 
+			WHERE B.FACILID=F.FACILID   
+				  AND B.SHOCK_CNTL_IND='1'
+				  <if test="bitid != null and !bitid.equalsIgnoreCase('')">
+				  AND B.BITID LIKE '%${bitid}%' 
+				  </if>
+				  <if test="detail != null and !detail.equalsIgnoreCase('')">
+				  AND B.DETAIL LIKE '%${detail}%' 
+				  </if>
+				  <if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+				  AND B.BITTPCD= #{bittpcd} 
+				  </if>
+			ORDER BY B.BITID, B.DETAIL
+	</select>
+	
+	<!-- BIT외부충격이력 - (인천)충격 이력 (v0611)-->
+	<select id="selectColHistory" parameterType="TbIshBitshockVO" resultType="TbIshBitshockVO">	
+			SELECT   
+			    BITID AS BITID,  
+			    TO_CHAR(COLLDT, 'YYYY-MM-DD HH24:MI:SS') AS ISSUEDT,  
+			    DESCRIPTION
+			FROM TB_ISH_BITSHOCK 
+			WHERE BITID=#{bitid} 
+			  AND COLLDT BETWEEN TO_DATE(#{startdt},'YYYYMMDDHH24MISS') 
+			                 AND TO_DATE(#{enddt},'YYYYMMDDHH24MISS') 
+			ORDER BY COLLDT
+	</select>
+	
+	<!-- BIT외부충격이력 - (광역) 정류소안내기 검색(v0611)-->
+	<select id="selectWStopTerminal" parameterType="TbOmmBitVO" resultType="TbOmmBitVO">	
+			SELECT A.BIT_ID AS BITID, 
+					C.BSTOPNM AS BSTOPNM,
+					C.BSTOPNM AS INSTALLLOC,
+					C.ADMINNM AS ADMIN,
+					A.MODELNM AS MODELNM,
+					FC_EXORG_ORGNM(A.ASCOMP) AS ASCOMP,
+					A.ASCOMP AS ASCOMPID,
+					A.INSADDR AS ADDRESS,
+					WBISOWNER.WFC_CODE_CDNM('BITTPCD', A.BIT_TYPE ) AS BITTYPE,
+					A.USE_YN AS USEYN, 
+					C.POSX AS POSX, 
+					C.POSY AS POSY 
+			FROM WBISOWNER.TB_WBIS_BIT A, 
+			    (SELECT * FROM WBISOWNER.TB_WBIS_STATION_BIT A WHERE STATION_ID = (SELECT MIN(STATION_ID) 
+			    FROM WBISOWNER.TB_WBIS_STATION_BIT WHERE BIT_ID = A.BIT_ID)) B, 
+			    TB_ADM_BUSSTOP C 
+			WHERE A.BIT_ID = B.BIT_ID(+) AND B.STATION_ID = C.BSTOPID
+				<if test="bitid != null and !bitid.equalsIgnoreCase('')"> 
+				AND A.BIT_ID LIKE '%${bitid}%' 
+				</if>
+				<if test="detail != null and !detail.equalsIgnoreCase('')">
+				AND C.BSTOPNM LIKE '%${detail}%'
+				</if>
+				 <if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+				AND A.BIT_TYPE = #{bittpcd}
+				</if>
+				ORDER BY A.BIT_ID, C.BSTOPNM
+	</select>
+	
+	<!-- BIT 목록 조회 -->
+	<select id="selectBitList" parameterType="TbOmmBitVO" resultType="TbOmmBitVO">	
+	
+		 WITH STAT_DATA AS
+  		(
+   			SELECT 
+          		TO_CHAR(A.BITID) AS BITID,
+          		A.COLLDT AS COLLDT
+       		FROM 
+       			TB_ISC_BITSTAT A, TB_BIT_PROTOCOL_MAPPING B
+       		WHERE 
+       			A.BITID = B.BITID
+       			AND B.SERVER_ID NOT IN ('123')
+    		UNION 
+      		SELECT
+        		A.BIT_ID AS BITID,
+       	 		A.REG_DATE AS COLLDT
+      		FROM  
+        		WBISOWNER.TB_WBIS_BIT_STAT A, TB_BIT_PROTOCOL_MAPPING B
+     		WHERE 
+     			A.BIT_ID = B.BITID
+    			AND B.SERVER_ID IN('123')
+    	) 
+		
+		SELECT 
+			FC_CODE_CDNM('BITTPCD', B.BITTPCD) AS CDNM
+			,D.BSTOPNM
+			,D.SHORT_BSTOPID
+			,N.LAT
+			,N.LNG
+			,DECODE(E.COLLDT, NULL, '정보없음', TO_CHAR(E.COLLDT, 'YYYY-MM-DD HH24:MI:SS')) COLLDT
+			,B.*
+			,G.SERVER_NAME
+			,CASE 
+				WHEN E.COLLDT <![CDATA[>=]]> (SYSDATE - 5/1440)
+				THEN 1
+				ELSE 0
+			END STATYN
+			,CASE 
+				WHEN E.COLLDT <![CDATA[>=]]> (SYSDATE - 5/1440)
+				THEN 1
+				ELSE 0
+			END COMM_STATYN
+		FROM 
+			TB_OMM_BIT B, 
+			TB_ADM_BUSSTOP D,
+			STAT_DATA E,
+			TRANS_POSITION_NODE N,
+			TB_BIT_PROTOCOL_MAPPING F,
+      		SERVER G
+		WHERE 
+			0 = 0
+		  	AND B.BITID = E.BITID(+)
+		  	AND B.BSTOPID = D.BSTOPID
+		  	AND D.BSTOPID = N.NODE_ID(+)
+		  	AND F.BITID = B.BITID
+        	AND F.SERVER_ID = G.SERVER_ID
+		  	<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			AND (
+				D.BSTOPNM LIKE '%'||#{searchWord}||'%' 
+				OR B.BITID LIKE '%'||#{searchWord}||'%'
+				)
+			</if>
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+			AND B.BITTPCD = #{bittpcd}
+			</if>
+			<if test="projecttpcd != null and !projecttpcd.equalsIgnoreCase('')">
+			AND B.PROJECTTPCD = #{projecttpcd}
+			</if>
+			<if test="server_id != null and !server_id.equalsIgnoreCase('')">
+			AND F.SERVER_ID = #{server_id}
+			</if>
+		ORDER BY B.BITID
+	</select>
+	
+	
+
+	<!-- BIT 목록 조회 -->
+	<select id="selectMapBitList" parameterType="TbOmmBitVO" resultType="TbOmmBitVO">		
+		SELECT 
+			FC_CODE_CDNM('BITTPCD', B.BITTPCD) AS CDNM
+			,D.BSTOPNM
+			,D.BSTOPID
+			,DECODE(D.SHORT_BSTOPID, NULL, '알수없음', D.SHORT_BSTOPID) SHORT_BSTOPID
+			,A.FACILID
+			,A.USEYN
+			,A.IPADDR_1
+			,E.LAT
+			,E.LNG
+			,F.COMM_STATYN
+			,DECODE(F.TEMPER, NULL, '알수없음', F.TEMPER) TEMPER
+			,F.DOOR_ONOFF
+			,B.*
+		FROM 
+			TB_OMM_FACIL A, 
+			TB_OMM_BIT B, 
+			TB_ADM_BUSSTOP D,
+			TRANS_POSITION_NODE E,
+			TB_ISC_BITSTAT F
+		WHERE 
+		  	A.FACILTPCD = 12
+		 	AND E.LAT <![CDATA[>=]]>  #{minLat}
+	     	AND E.LAT <![CDATA[<=]]>  #{maxLat}	
+		 	AND E.LNG <![CDATA[>=]]>  #{minLng}
+	     	AND E.LNG <![CDATA[<=]]>  #{maxLng}
+		  	AND A.FACILID = B.FACILID
+		  	AND B.BSTOPID = D.BSTOPID
+		  	AND A.USEYN = 1
+		  	AND B.BITID = F.BITID(+)
+		  	AND D.BSTOPID = E.NODE_ID(+)
+	</select>
+		
+	<!-- 김주암 / 이력/통계 - BIT 충격감지 이력 -->
+	<select id="selectShockHisList" parameterType="TbIshBitshockVO" resultType="TbIshBitshockVO">
+		SELECT
+			BH.BITID,
+		    BS.BSTOPNM,
+		    BS.SHORT_BSTOPID,
+		    TO_CHAR(BH.COLLDT, 'YYYY-MM-DD HH24:MI:SS') AS COLLDT,
+		    NVL(BH.DESCRIPTION, '-') DESCRIPTION
+		FROM
+		    TB_OMM_BIT BT,
+		    TB_ADM_BUSSTOP BS,
+		    TB_ISH_BITSHOCK BH		    
+		WHERE
+		    BT.BSTOPID = BS.BSTOPID(+) 
+		    AND BH.BITID = BT.BITID(+)		    
+		    AND BH.COLLDT <![CDATA[>=]]> TO_DATE(#{start_date_time}, 'YYYYMMDDHH24MISS')
+	    	AND BH.COLLDT <![CDATA[<=]]> TO_DATE(#{end_date_time}, 'YYYYMMDDHH24MISS')	    	
+	    	<if test="check_all == 'false' and !searchWord.equalsIgnoreCase('')">
+	    	AND BT.BITID = #{searchWord}
+	    	</if>
+			ORDER BY COLLDT
+	</select>
+		
+	<!-- 김주암 / 이력/통계 - BIT 상태 이력 -->
+	<select id="selectBitStateHisList" parameterType="TbIscBitstatVO" resultType="TbIscBitstatVO">
+		SELECT 
+		    * 
+		FROM
+		    (SELECT 
+		        DISTINCT A.BITID AS BITID, (B.PROJECTTPCD||TRIM(TO_CHAR(B.VIEWBITID, '09999'))) AS BITMID,
+		        FC_CODE_CDNM( 'PROJECTTPCD', B.PROJECTTPCD ) AS WIDEAREA,
+		        F.BSTOPID AS BSTOPID,
+		        F.SHORT_BSTOPID AS SBSTOPID,
+		        E.INSTALLLOC AS BSTOPNM,
+		        FC_CODE_CDNM('BITTPCD', B.BITTPCD) AS BITTYPE,
+		        B.BITTPCD AS BITTPCD,
+		        E.IPADDR_1 AS IP_ADDR,
+		        TO_CHAR(A.COLLDT, 'YYYY-MM-DD HH24:MI:SS') AS COLLDT,
+		        DECODE(A.PWR_ONOFF,    '0', 'Off', '1', 'On', 'N/A') AS LEDPWR_ONOFF,
+		        DECODE(B.BITTPCD,'69', 'N/A','79', DECODE(A.DISP_ONOFF_1, '0', 'Off', '1', 'On', 'N/A' ),'70',DECODE(A.DISP_ONOFF_1, '0', 'Off', '1', 'On', 'N/A' ),'N/A') AS LCDPWR_ONOFF1,
+		        DECODE(B.BITTPCD,'69', DECODE(A.DISP_ONOFF_2, '0', 'Off', '1', 'On', 'N/A'),'79', DECODE(A.DISP_ONOFF_2, '0', 'Off', '1', 'On', 'N/A')  ,'70',DECODE(A.DISP_ONOFF_2, '0', 'Off', '1', 'On', 'N/A') , 'N/A'  ) AS LCDPWR_ONOFF2,
+		        DECODE(A.DOOR_ONOFF, '0', '열림',   '1', '닫힘', 'N/A') AS DOOR_ONOFF,
+		        DECODE(A.FAN_ONOFF,    '0', 'Off', '1', 'On', 'N/A') AS FAN_ONOFF,
+		        DECODE(A.HEAT_ONOFF,   '0', 'Off', '1', 'On', 'N/A') AS HEAT_ONOFF,
+		        DECODE(A.HEAT_AUTOYN, '0', '수동', '1', '자동', 'N/A') AS HEAT_AUTOYN,
+		        DECODE(A.FAN_AUTOYN,  '0', '수동', '1', '자동', 'N/A') AS FAN_AUTOYN,
+		        DECODE(A.PWR_AUTOYN,  '0', '수동', '1', '자동', 'N/A') AS  PWR_AUTOYN,
+		        DECODE(B.BITTPCD,'69',DECODE(A.BRIGHT,0,'0','-'),'79',DECODE(A.BRIGHT,0,'0','-'),'70',DECODE(A.BRIGHT,0,'0','-'), 'N/A' ) AS LCD_BRIGHT,
+		        DECODE(B.BITTPCD,'69','N/A','79','N/A','70','N/A',  A.LUMINO ) AS LED_LUMINO,
+		        DECODE(B.BITTPCD, '30','N/A','31','N/A','89','N/A','50','N/A' ,DECODE(A.LCD_LUMINO,NULL,'N/A',A.LCD_LUMINO) ) AS LCD_LUMINO,
+		        DECODE(B.BITTPCD,'30','N/A','31','N/A','89','N/A','50','N/A' ,A.VOLUME) AS VOLUME,
+		        A.TEMPER AS TEMPERATURE,
+		        'N/A' AS HUMIDITY,
+		        TRUNC((SYSDATE - COLLDT) * (24 * 60)) AS DELAY,
+		        DECODE(A.COMM_STATYN, '0', '비정상', '1', '정상', 'N/A') AS NETSTATUS,
+		        'N/A' AS LANGSTAT,
+		        'N/A' AS CAMSTAT, 
+		        'N/A' AS CAMSTAT1,
+		        'N/A' AS CBUSTAT, 
+		        'N/A' AS ALARM,
+		        0 AS SHOCK,
+		        'N/A' AS MEMSTAT,
+		        E.USEYN AS USEYN,  
+		        B.ETC AS ETC,     
+		        E.COM_LINENUM AS COM_LINENUM,   
+		        E.POWER_NUM AS POWER_NUM,       
+		        FC_CODE_CDNM('COMLINE', E.COM_ASSO) AS COM_ASSO      
+		    FROM 
+		        TB_ISH_BITSTAT A,         
+		        TB_OMM_BIT B,          
+		        TB_ADM_ROUTEPNODE C,      
+		        TB_ADM_BUSROUTE D,       
+		        TB_OMM_FACIL E,        
+		        TB_ADM_BUSSTOP F		       	
+		    WHERE
+		        A.COLLDT <![CDATA[>=]]> TO_DATE(#{start_date_time}, 'YYYYMMDDHH24MISS')
+				AND A.COLLDT  <![CDATA[<=]]> TO_DATE(#{end_date_time}, 'YYYYMMDDHH24MISS')
+		        AND A.BITID = B.BITID		        
+		        AND B.FACILID = E.FACILID(+)   
+		        AND B.BSTOPID = C.NODEID(+)      
+		        AND C.ROUTEID = D.ROUTEID(+)    
+		        AND B.BSTOPID = F.BSTOPID(+)   
+		        <!-- AND E.USEYN = '1'      
+		        AND B.PROJECTTPCD NOT IN ('50', '56', '91', '92', '94', '96', '98', '99')    
+		        AND E.FACILTPCD = '12' -->
+	        )
+		 
+		WHERE 
+		    USEYN = '1'
+   		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		    AND BITID =  #{searchWord}
+		    </if>
+		    ORDER BY COLLDT, BITID		
+	</select>	
+	
+	<!-- 이력/통계  - BIT 제공정보 이력 조회  -->
+	<select id="selectBitOfferInfoHisList" parameterType="TbIshBitbusarrivVO" resultType="TbIshBitbusarrivVO">
+		SELECT 
+			TO_CHAR(BH.PROCDT, 'YYYY-MM-DD HH24:MI:SS') PROCDT,
+			BH.BITID,
+			BH.BUSID,
+   			BUS.CARREGNO,
+   			DECODE(BH.DIRCD, 0, '상행', 1, '하행', 2, '순환', '-') DIRNM,           
+            ROUND(BH.ARRPLANTM/60) || '분' AS INCOMING_TIME,
+			BH.REST_BSTOPCNT,
+			BH.ROUTEID,
+   			BR.ROUTENO,
+			BS.BSTOPID,			
+            BS.BSTOPNM,
+            BS.SHORT_BSTOPID
+		FROM
+			(SELECT A.*, B.BSTOPID 
+            FROM TB_ISH_BITBUSARRIV A, TB_OMM_BIT B
+            WHERE A.BITID = B.BITID(+))BH,
+            TB_ADM_BUSSTOP BS,
+            TB_ADM_BUSROUTE BR,
+            TB_ADM_BUS BUS            
+		WHERE  
+			BH.PROCDT <![CDATA[>=]]> TO_DATE(#{start_date_time}, 'YYYYMMDDHH24MISS')
+			AND BH.PROCDT  <![CDATA[<=]]> TO_DATE(#{end_date_time}, 'YYYYMMDDHH24MISS')
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			AND BH.BITID = #{searchWord}
+	       	</if>
+            AND BH.BSTOPID = BS.BSTOPID(+)
+			AND BH.ROUTEID = BR.ROUTEID(+)
+			AND BH.BUSID = BUS.BUSID(+)			    
+		ORDER BY BH.ROUTEID ASC, BH.PROCDT DESC		
+	</select>
+	
+	<!-- BIT 제공정보 현황 -->	
+	<select id="selectBitArrivalList" parameterType="TbIshBitbusarrivVO" resultType="TbIshBitbusarrivVO">
+		SELECT 
+			TO_CHAR(A.PROCDT, 'YYYY-MM-DD HH24:MI:SS') PROCDT,
+			A.BITID,
+			A.BUSID,
+			E.SHORT_BSTOPID,
+            E.CARREGNO,
+            DECODE(A.DIRCD, 0, '상행', 1, '하행', 2, '순환', '-') DIRNM,
+			ROUND(A.ARRPLANTM/60) || '분' AS INCOMING_TIME,
+			A.REST_BSTOPCNT,
+			A.ROUTEID,			
+			B.ROUTENO,			 
+            C.BSTOPID,
+			C.BSTOPNM
+		FROM 
+			TB_ISC_BITBUSARRIV A, 
+			TB_ADM_BUSROUTE B, 
+			TB_ADM_BUSSTOP C, 
+			TB_OMM_BIT D,
+            TB_ADM_BUS E,
+            TB_BIT_PROTOCOL_MAPPING F
+    	WHERE 
+    		A.BITID = D.BITID
+    		AND D.BSTOPID = C.BSTOPID
+    		AND A.ROUTEID = B.ROUTEID
+            AND A.BUSID = E.BUSID(+)
+    		<if test="bitid != null and !bitid.equalsIgnoreCase('')">
+			AND A.BITID = #{bitid}
+			</if>
+			AND F.BITID = A.BITID
+			AND A.PROCDT <![CDATA[>=]]> (SYSDATE - 5/1440)
+   		ORDER BY A.BITID ASC, SNDDT DESC
+	</select>
+	
+	<!-- BIT 상태 조회 리스트 -->
+	<select id="selectBitStateList" parameterType="TbIscBitstatVO" resultType="TbIscBitstatVO">
+		
+  		WITH STAT_DATA AS
+  		(
+   			SELECT 
+          		TO_CHAR(A.BITID) AS BITID,
+          		A.COLLDT AS COLLDT,
+          		A.PWR_ONOFF AS LEDPWR_ONOFF,
+		      	A.DISP_ONOFF_1 AS LCDPWR_ONOFF1,
+		      	A.DISP_ONOFF_2 AS LCDPWR_ONOFF2,
+		      	A.DOOR_ONOFF,
+		      	A.FAN_ONOFF,
+		      	A.HEAT_ONOFF,
+		      	A.HEAT_AUTOYN,
+		      	A.FAN_AUTOYN,
+		      	A.PWR_AUTOYN,
+		      	A.TEMPER AS TEMPERATURE,
+		      	'N/A' AS HUMIDITY,
+		      	TRUNC((SYSDATE - A.COLLDT) * (24 * 60)) AS DELAY,
+		      	A.COMM_STATYN AS NETSTATUS,
+		        'N/A' AS LANGSTAT,
+		        'N/A' AS CAMSTAT, 
+		        'N/A' AS CAMSTAT1,
+		        'N/A' AS CBUSTAT, 
+		        'N/A' AS ALARM,
+		        0 AS SHOCK,
+		        'N/A' AS MEMSTAT,	        
+		        CASE WHEN A.COLLDT <![CDATA[>=]]> (SYSDATE - (5/1440))
+              		THEN 'Y'
+              		ELSE 'N'
+           		END COLL_YN,
+            	A.VOLUME,
+            	TO_CHAR(A.BRIGHT) AS BRIGHT
+       		FROM 
+       			TB_ISC_BITSTAT A, TB_BIT_PROTOCOL_MAPPING B
+       		WHERE 
+       			A.BITID = B.BITID
+       			AND B.SERVER_ID NOT IN ('123')
+    		UNION 
+      		SELECT
+        		A.BIT_ID AS BITID,
+       	 		A.REG_DATE AS COLLDT,
+        		A.LED_POWER_STAT AS LEDPWR_ONOFF, 
+        		A.LCD_POWER_STAT AS LCDPWR_ONOFF1,
+        		'' AS LCDPWR_ONOFF2,
+        		A.DOOR_STAT AS DOOR_ONOFF,
+        		A.FAN_STAT ASFAN_ONOFF,
+		      	A.HEATER_STAT AS HEAT_ONOFF,
+	    		'' AS HEAT_AUTOYN,
+		     	'' AS FAN_AUTOYN,
+		     	'' AS PWR_AUTOYN,
+          		A.TEMPERATURE AS TEMPERATURE,
+		      	'N/A' AS HUMIDITY,
+		      	TRUNC((SYSDATE - A.REG_DATE) * (24 * 60)) AS DELAY,
+		      	A.COM_STAT AS NETSTATUS,
+		        'N/A' AS LANGSTAT,
+		        'N/A' AS CAMSTAT, 
+		        'N/A' AS CAMSTAT1,
+		        'N/A' AS CBUSTAT, 
+		        'N/A' AS ALARM,
+		        0 AS SHOCK,
+		        'N/A' AS MEMSTAT,
+            	CASE WHEN A.REG_DATE <![CDATA[>=]]> (SYSDATE - (5/1440))
+              		THEN 'Y'
+              		ELSE 'N'
+           		END COLL_YN,
+            	A.VOLUME_STAT AS  VOLUME,
+            	'N/A' AS BRIGHT
+      		FROM  
+        		WBISOWNER.TB_WBIS_BIT_STAT A, TB_BIT_PROTOCOL_MAPPING B
+     		WHERE 
+     			A.BIT_ID = B.BITID
+    			AND B.SERVER_ID IN('123')
+    	) /* end with */ 
+    
+    	SELECT 
+    		B.BITID, 
+   			(B.PROJECTTPCD||TRIM(TO_CHAR(B.VIEWBITID, '09999'))) AS BITMID,
+		    FC_CODE_CDNM( 'PROJECTTPCD', B.PROJECTTPCD ) AS WIDEAREA,
+	        F.BSTOPID AS BSTOPID,
+	        F.SHORT_BSTOPID AS SBSTOPID,
+	        F.BSTOPNM,
+	        FC_CODE_CDNM('BITTPCD', B.BITTPCD) AS BITTYPE,
+	        B.BITTPCD AS BITTPCD,
+	        G.COLLDT AS COLLDT,
+	        DECODE(G.LEDPWR_ONOFF,    '0', 'OFF', '1', 'ON', 'N/A') AS LEDPWR_ONOFF,
+	        DECODE(B.BITTPCD,'69', 'N/A','79', DECODE(G.LCDPWR_ONOFF1, '0', 'OFF', '1', 'ON', 'N/A' ),'70',DECODE(G.LCDPWR_ONOFF1, '0', 'OFF', '1', 'ON', 'N/A' ),'N/A') AS LCDPWR_ONOFF1,
+	        DECODE(B.BITTPCD,'69', DECODE(G.LCDPWR_ONOFF2, '0', 'OFF', '1', 'ON', 'N/A'),'79', DECODE(G.LCDPWR_ONOFF2, '0', 'OFF', '1', 'ON', 'N/A')  ,'70',DECODE(G.LCDPWR_ONOFF2, '0', 'OFF', '1', 'ON', 'N/A') , 'N/A'  ) AS LCDPWR_ONOFF2,
+	        DECODE(G.DOOR_ONOFF, '0', '열림',   '1', '닫힘', 'N/A') AS DOOR_ONOFF,
+	        DECODE(G.FAN_ONOFF,    '0', 'OFF', '1', 'ON', 'N/A') AS FAN_ONOFF,
+	        DECODE(G.HEAT_ONOFF,   '0', 'OFF', '1', 'ON', 'N/A') AS HEAT_ONOFF,
+	        DECODE(G.HEAT_AUTOYN, '0', '수동', '1', '자동', 'N/A') AS HEAT_AUTOYN,
+	        DECODE(G.FAN_AUTOYN,  '0', '수동', '1', '자동', 'N/A') AS FAN_AUTOYN,
+	        DECODE(G.PWR_AUTOYN,  '0', '수동', '1', '자동', 'N/A') AS  PWR_AUTOYN,
+	        DECODE(B.BITTPCD,'69',DECODE(G.BRIGHT,0,'0','-'),'79',DECODE(G.BRIGHT,0,'0','-'),'70',DECODE(G.BRIGHT,0,'0','-'), 'N/A' ) AS LCD_BRIGHT,
+	        'N/A' AS LED_LUMINO,
+	        'N/A' AS LCD_LUMINO,
+	        DECODE(B.BITTPCD,'30','N/A','31','N/A','89','N/A','50','N/A' ,G.VOLUME) AS VOLUME,
+	        G.TEMPERATURE ,
+	        'N/A' AS HUMIDITY,
+	        TRUNC((SYSDATE - COLLDT) * (24 * 60)) AS DELAY,
+	        DECODE(G.NETSTATUS, '0', '비정상', '1', '정상', 'N/A') AS NETSTATUS,
+	        'N/A' AS LANGSTAT,
+	        'N/A' AS CAMSTAT, 
+	        'N/A' AS CAMSTAT1,
+	        'N/A' AS CBUSTAT, 
+	        'N/A' AS ALARM,
+	        0 AS SHOCK,
+	        'N/A' AS MEMSTAT,
+	        B.ETC AS ETC,
+	        G.COLL_YN,
+	        DECODE(G.COLL_YN, 'Y', '정상', 'N/A') NETSTATUS_TEXT
+    	FROM
+      		TB_BIT_PROTOCOL_MAPPING A, TB_OMM_BIT B, TB_ADM_BUSSTOP F, STAT_DATA G
+    	WHERE
+    		A.BITID = B.BITID
+       		AND B.BITID = G.BITID(+)		    
+		    AND B.BSTOPID = F.BSTOPID(+)
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		    AND (
+		    	F.SHORT_BSTOPID LIKE #{searchWord}|| '%'
+		    	OR A.BITID LIKE #{searchWord}|| '%'
+		    	OR F.BSTOPNM LIKE #{searchWord}|| '%'
+		    )
+		    </if>
+	    ORDER BY DECODE(COLLDT, NULL, ADD_MONTHS(SYSDATE,-120), COLLDT), COLL_YN
+	
+	
+	
+	
+		<!-- SELECT 
+		   AA.*,
+		    CASE 
+		    	WHEN AA.COLL_YN = 'Y' AND AA.NETSTATUS = '정상'
+           			THEN '정상'
+           		WHEN AA.COLL_YN = 'Y' AND AA.NETSTATUS = '비정상'
+           			THEN '비정상'
+       			ELSE 'N/A'
+       		END NETSTATUS_TEXT 
+		FROM
+	    (
+	    	SELECT DISTINCT 
+            	A.BITID AS BITID, 
+            	(B.PROJECTTPCD||TRIM(TO_CHAR(B.VIEWBITID, '09999'))) AS BITMID,
+		        FC_CODE_CDNM( 'PROJECTTPCD', B.PROJECTTPCD ) AS WIDEAREA,
+		        F.BSTOPID AS BSTOPID,
+		        F.SHORT_BSTOPID AS SBSTOPID,
+		        F.BSTOPNM,
+		        FC_CODE_CDNM('BITTPCD', B.BITTPCD) AS BITTYPE,
+		        B.BITTPCD AS BITTPCD,
+		        A.COLLDT AS COLLDT,
+		        DECODE(A.PWR_ONOFF,    '0', 'Off', '1', 'On', 'N/A') AS LEDPWR_ONOFF,
+		        DECODE(B.BITTPCD,'69', 'N/A','79', DECODE(A.DISP_ONOFF_1, '0', 'Off', '1', 'On', 'N/A' ),'70',DECODE(A.DISP_ONOFF_1, '0', 'Off', '1', 'On', 'N/A' ),'N/A') AS LCDPWR_ONOFF1,
+		        DECODE(B.BITTPCD,'69', DECODE(A.DISP_ONOFF_2, '0', 'Off', '1', 'On', 'N/A'),'79', DECODE(A.DISP_ONOFF_2, '0', 'Off', '1', 'On', 'N/A')  ,'70',DECODE(A.DISP_ONOFF_2, '0', 'Off', '1', 'On', 'N/A') , 'N/A'  ) AS LCDPWR_ONOFF2,
+		        DECODE(A.DOOR_ONOFF, '0', '열림',   '1', '닫힘', 'N/A') AS DOOR_ONOFF,
+		        DECODE(A.FAN_ONOFF,    '0', 'Off', '1', 'On', 'N/A') AS FAN_ONOFF,
+		        DECODE(A.HEAT_ONOFF,   '0', 'Off', '1', 'On', 'N/A') AS HEAT_ONOFF,
+		        DECODE(A.HEAT_AUTOYN, '0', '수동', '1', '자동', 'N/A') AS HEAT_AUTOYN,
+		        DECODE(A.FAN_AUTOYN,  '0', '수동', '1', '자동', 'N/A') AS FAN_AUTOYN,
+		        DECODE(A.PWR_AUTOYN,  '0', '수동', '1', '자동', 'N/A') AS  PWR_AUTOYN,
+		        DECODE(B.BITTPCD,'69',DECODE(A.BRIGHT,0,'0','-'),'79',DECODE(A.BRIGHT,0,'0','-'),'70',DECODE(A.BRIGHT,0,'0','-'), 'N/A' ) AS LCD_BRIGHT,
+		        DECODE(B.BITTPCD,'69','N/A','79','N/A','70','N/A',  A.LUMINO ) AS LED_LUMINO,
+		        DECODE(B.BITTPCD, '30','N/A','31','N/A','89','N/A','50','N/A' ,DECODE(A.LCD_LUMINO,NULL,'N/A',A.LCD_LUMINO) ) AS LCD_LUMINO,
+		        DECODE(B.BITTPCD,'30','N/A','31','N/A','89','N/A','50','N/A' ,A.VOLUME) AS VOLUME,
+		        A.TEMPER AS TEMPERATURE,
+		        'N/A' AS HUMIDITY,
+		        TRUNC((SYSDATE - COLLDT) * (24 * 60)) AS DELAY,
+		        DECODE(A.COMM_STATYN, '0', '비정상', '1', '정상', 'N/A') AS NETSTATUS,
+		        'N/A' AS LANGSTAT,
+		        'N/A' AS CAMSTAT, 
+		        'N/A' AS CAMSTAT1,
+		        'N/A' AS CBUSTAT, 
+		        'N/A' AS ALARM,
+		        0 AS SHOCK,
+		        'N/A' AS MEMSTAT,
+		        B.ETC AS ETC,
+		        CASE WHEN A.COLLDT <![CDATA[>=]]> (SYSDATE - (5/1440))
+              		THEN 'Y'
+              		ELSE 'N'
+           		END COLL_YN
+			FROM 
+		        TB_ISC_BITSTAT A,         
+		        TB_OMM_BIT B,          
+		        TB_ADM_ROUTEPNODE C,      
+		        TB_ADM_BUSROUTE D,       
+		        TB_BIT_PROTOCOL_MAPPING E,         
+		        TB_ADM_BUSSTOP F		        
+		    WHERE
+		        A.BITID = B.BITID		        
+		        AND A.BITID = E.BITID
+            	/**AND E.SERVER_ID = 120 */
+		        AND B.BSTOPID = C.NODEID(+)      
+		        AND C.ROUTEID = D.ROUTEID(+)    
+		        AND B.BSTOPID = F.BSTOPID(+)
+		) AA
+		WHERE 
+		    0 = 0 
+		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		    AND AA.BSTOPID =  #{searchWord}
+		    </if>
+    	ORDER BY COLLDT, BITID -->
+	    
+	</select>
+	
+	<!-- BIT 장애 이력 조회 -->
+	<select id="selectBitFailList" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">
+		SELECT 
+			F.FACILID,
+			TO_CHAR(F.REGDT, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
+			F.FACILTPCD,
+			TO_CHAR(F.FAIL_OCCURDT, 'YYYY-MM-DD HH24:MI:SS') AS FAIL_OCCURDT,
+			F.FAILTPCD,
+    		C.BSTOPNM,
+    		C.SHORT_BSTOPID,
+			F.FAIL_DETAIL,
+			F.REG_USERID,
+			F.MOBILENO,
+			TO_CHAR(F.FAIL_TREATDT, 'YYYY-MM-DD HH24:MI:SS') AS FAIL_TREATDT,
+			F.FAILTREATCD,
+			F.TREAT_DETAIL,
+			F.TREAT_USERID,
+			F.TREAT_GUBUN,
+			FC_CODE_CDNM('FACILTPCD', F.FACILTPCD) AS FACILTPNM,
+			FC_CODE_CDNM('FAILTPCD', F.FAILTPCD) AS FAILTPNM,
+			FC_CODE_CDNM('FAILTREATCD', F.FAILTREATCD) AS FAILTREATTPNM,
+			CASE 
+   				WHEN F.TREAT_GUBUN = '1'
+       			THEN '처리' ELSE '미처리' 
+       		END AS TREAT_GUBUNNM
+		FROM 
+			TB_OMH_FACILFAILAS F, 
+			TB_OMM_BIT B, TB_ADM_BUSSTOP C
+		WHERE
+			REGDT <![CDATA[>=]]> TO_DATE(#{startdt}||'000000', 'YYYYMMDDHH24MISS')
+        	AND REGDT <![CDATA[<=]]> TO_DATE(#{enddt}||'235959', 'YYYYMMDDHH24MISS')
+	        AND F.FACILID = B.FACILID
+        	AND B.BSTOPID = C.BSTOPID
+        	AND F.FACILTPCD = 12
+		    AND F.FAILTPCD IS NOT NULL
+		    <if test="treat_gubun != null and !treat_gubun.equalsIgnoreCase('')">
+  				AND F.TREAT_GUBUN = #{treat_gubun}
+  			</if>
+ 		ORDER BY NVL(F.TREAT_GUBUN, 0) ASC, REGDT DESC
+	</select>
+	
+	<!-- BIT 장애 이미지 조회 -->
+	<select id="selectFaultImg" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">
+		SELECT 
+			FACILID
+			,FILE_DATA
+			,FILE_NAME 
+		FROM
+			TB_FACIL_FAILIMG
+		WHERE
+			FACILID = #{facilid}
+			AND REGDT = TO_DATE(#{regdt}, 'YYYY-MM-DD HH24:MI:SS')
+	</select>
+	
+	<!-- BIT 장애 이미지 등록 -->
+	<insert id="insertFaultImg" parameterType="TbOmhFacilfailasVO">
+		INSERT INTO  TB_FACIL_FAILIMG
+		(
+			FACILID
+			,REGDT
+			,FILE_NAME
+			,FILE_DATA
+		)
+		VALUES
+		(
+			#{facilid}
+			,TO_DATE(#{regdt}, 'YYYY-MM-DD HH24:MI:SS')
+			,#{file_name}
+			,#{file_data, jdbcType=BLOB}
+		)
+	</insert>
+	
+	<!-- BIT 장애 이미지 삭제 -->
+	<delete id="deleteFaultImg" parameterType="TbOmhFacilfailasVO">
+		DELETE 
+			FROM TB_FACIL_FAILIMG
+		WHERE		
+			FACILID = #{facilid}
+			AND TO_CHAR(REGDT, 'YYYY-MM-DD HH24:MI:SS') = #{regdt}
+	</delete>
+	
+	
+	<!-- BIT장애 이력 - BIT 지점 선택을 위한 목록조회 -->
+	<select id="selectBitLocationList" parameterType="TbOmmBitVO" resultType="TbOmmBitVO">
+	SELECT
+		FACILID,
+		BITID,
+		FC_BUSSTOP_SHORT_BSTOPID(BSTOPID) AS SHORT_BSTOPID,
+		DETAIL
+	FROM TB_OMM_BIT
+	WHERE
+		DETAIL IS NOT NULL
+	<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+  		AND (BITID LIKE '%'||#{searchWord}||'%' OR DETAIL like '%'||#{searchWord}||'%')
+  	</if>
+	</select>
+	
+	<!-- 장애처리유형 -->
+	<select id="selectFailTreatTypeList" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">
+	SELECT
+		CD AS FAILTREATCD,
+		CDNM AS FAILTREATTPNM
+	FROM TB_OMM_CODE
+	WHERE CDCATEGID = 'FAILTREATCD'
+	AND USEYN = '1'
+	</select>
+
+	<!-- 장애유형 -->
+	<select id="selectFailTypeList" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">
+	SELECT
+		CD AS FAILTPCD,
+		CDNM AS FAILTPNM
+	FROM TB_OMM_CODE
+	WHERE CDCATEGID = 'FAILTPCD'
+	AND USEYN = '1'
+	</select>
+	
+	<!-- BIT 장애 업데이트 -->
+	<update id="updateBitFail" parameterType="TbOmhFacilfailasVO">
+		UPDATE TB_OMH_FACILFAILAS
+		SET
+			FAIL_TREATDT = TO_DATE(#{fail_treatdt}, 'YYYY-MM-DD HH24:MI:SS'),
+			FAILTREATCD = #{failtreatcd},
+			TREAT_DETAIL = #{treat_detail, jdbcType=VARCHAR},
+			TREAT_GUBUN = #{treat_gubun},
+			TREAT_USERID = #{treat_userid, jdbcType=VARCHAR}
+		WHERE
+			FACILID = #{facilid}
+			AND REGDT = TO_DATE (#{regdt}, 'YYYY-MM-DD HH24:MI:SS')
+	</update>
+	
+	<!-- BIT 장애 등록 -->
+	<insert id="insertBitFail" parameterType="TbOmhFacilfailasVO">
+	INSERT INTO TB_OMH_FACILFAILAS
+	(
+	 	FACILID
+  		,REGDT
+  		,FACILTPCD
+  		,FAIL_OCCURDT
+  		,FAILTPCD
+  		,FAIL_DETAIL
+  		,REG_USERID
+  		<if test="fail_treatdt != null and !fail_treatdt.equalsIgnoreCase('')">
+  		,FAIL_TREATDT
+  		</if>
+  		<if test="fail_treatdt2 != null and !fail_treatdt2.equalsIgnoreCase('')">
+  		,FAIL_TREATDT
+  		</if>
+  		<if test="failtreatcd != null and !failtreatcd.equalsIgnoreCase('')">
+  		,FAILTREATCD
+  		</if>
+  		<if test="treat_detail != null and !treat_detail.equalsIgnoreCase('')">
+  		,TREAT_DETAIL
+  		</if>
+  		<if test="treat_userid != null and !treat_userid.equalsIgnoreCase('')">
+  		,TREAT_USERID
+  		</if>
+  		<if test="treat_gubun != null and !treat_gubun.equalsIgnoreCase('')">
+  		,TREAT_GUBUN
+  		</if>
+  		<if test="mobileno != null and !mobileno.equalsIgnoreCase('')">
+  		,MOBILENO
+  		</if>
+	) VALUES (
+  		#{facilid}
+  		,SYSDATE
+  		,#{faciltpcd}
+  		,TO_DATE(#{fail_occurdt}, 'YYYY-MM-DD HH24:MI:SS')
+  		,#{failtpcd}
+  		,#{fail_detail, jdbcType=VARCHAR}
+  		,#{reg_userid, jdbcType=VARCHAR}
+  		<if test="fail_treatdt != null and !fail_treatdt.equalsIgnoreCase('')">
+  		,#{fail_treatdt}
+  		</if>
+  	    <if test="fail_treatdt2 != null and !fail_treatdt2.equalsIgnoreCase('')">
+  		,TO_DATE(#{fail_treatdt2}, 'YYYY-MM-DD HH24:MI:SS')   --날짜 형식에 맞추기 위해 추가함
+  		</if>
+  		<if test="failtreatcd != null and !failtreatcd.equalsIgnoreCase('')">
+  		,#{failtreatcd}
+  		</if>
+  		<if test="treat_detail != null and !treat_detail.equalsIgnoreCase('')">
+  		,#{treat_detail}
+  		</if>
+  		<if test="treat_userid != null and !treat_userid.equalsIgnoreCase('')">
+  		,#{treat_userid}
+  		</if>
+  		<if test="treat_gubun != null and !treat_gubun.equalsIgnoreCase('')">
+  		,#{treat_gubun}
+  		</if>
+  		<if test="mobileno != null and !mobileno.equalsIgnoreCase('')">
+  		,#{mobileno}  -- v0607을 위해서 추가함. 
+  		</if>
+  	)
+	</insert>
+	
+	<!-- BIT 제어 목록 조회 -->
+	<select id="selectBitControlList" parameterType="TbIscBitstatVO" resultType="TbIscBitstatVO">
+		SELECT
+			F.DESCR,
+			F.FACILID,
+			FC_BUSSTOP_SHORT_BSTOPID(B.BSTOPID) AS SHORT_BSTOPID,
+			B.BITID,
+			B.DETAIL,
+			B.BITTPCD,
+			FC_CODE_CDNM('BITTPCD', B.BITTPCD) AS BITTPCD_NM,
+			TO_CHAR(S.COLLDT, 'YYYY-MM-DD HH24:MI:SS') AS COLLDT,
+			F.IPADDR_1,
+			F.COM_LINENUM,
+			S.VOLUME,
+			S.BRIGHT_AUTOYN,
+			S.DISP_ONOFF_1,
+			S.DISP_ONOFF_2,
+			S.FAN_ONOFF,
+			S.HEAT_ONOFF,
+			S.TTS_RATIO_KOREA,
+			S.TTS_RATIO_ENGLISH,
+			S.TTS_RATIO_CHINA,
+			S.CAPTURE_BASE
+		FROM 
+			TB_OMM_FACIL F, 
+			TB_OMM_BIT B, 
+			TB_ISC_BITSTAT S, 
+			TB_BIT_PROTOCOL_MAPPING C
+		WHERE
+			0 = 0
+			AND B.BITID = C.BITID
+			AND B.BITID = S.BITID(+)
+			AND B.BITID = F.FACILID(+)
+			<if test="server_id != null and !server_id.equalsIgnoreCase('')">
+				AND C.SERVER_ID = #{server_id}
+			</if>
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+				AND B.BITTPCD = #{bittpcd}
+			</if>
+			<if test="bitid != null and !bitid.equalsIgnoreCase('')">
+				AND B.BITID LIKE '%'||#{bitid}||'%'
+			</if>
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+				AND (
+					B.BITID LIKE '%'||#{searchWord}||'%'
+					OR FC_BUSSTOP_SHORT_BSTOPID(B.BSTOPID) LIKE '%'||#{searchWord}||'%'
+					OR B.DETAIL LIKE '%'||#{searchWord}||'%'
+					)
+			</if>
+			 
+		ORDER BY S.BITID 
+	</select>
+	
+	<!-- BIT 관리 - 노선별 문자메세지 전송 -->
+	<select id="selectBitSmsListByRoute" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT DISTINCT 
+			(A.PROJECTTPCD||TRIM(TO_CHAR(A.VIEWBITID, '09999'))) AS BITMID, 
+			A.BITID BITID, 
+			A.BSTOPID BSTOPID, 
+			C.SHORT_BSTOPID,
+			B.INSTALLLOC INSTALLLOC, 
+			C.ADMINNM, 
+			FC_CODE_CDNM('BITTPCD', A.BITTPCD) BITTP, 
+			BITTPCD, 
+			TRUNC(((SYSDATE - E.COLLDT)*24*60*60) + 0.5) GAP, 
+			TRUNC((SYSDATE - E.COLLDT) * (24 * 60)) COMM_DELAY, 
+			<!-- C.POSX POSX, 
+			C.POSY POSY, --> 
+			G.SERVER_ID,
+			F.ISSUEDT ISSUEDT, 
+			F.FORMID FORMID, 
+			F.SNDDT SNDDT,  
+			F.MSGSEQ MSGSEQ, 
+			FC_CODE_CDNM('SNDRSLTCD', F.SNDRSLTCD) SNDRSLT, 
+			F.REPLY_COLLDT REPLY_COLLDT 
+		FROM 
+			TB_OMM_BIT A, TB_OMM_FACIL B, TB_ADM_BUSSTOP C, TB_ADM_ROUTEPNODE D, TB_ISC_BITSTAT E,
+			TB_BIT_PROTOCOL_MAPPING G, 
+			(SELECT 
+				ISSUEDT, BITID, FORMID, REPLY_COLLDT, SNDRSLTCD, MSGSEQ, SNDDT    
+			FROM TB_ISC_BITMSG A   
+			WHERE ISSUEDT = (SELECT MAX(ISSUEDT) FROM TB_ISC_BITMSG WHERE BITID = A.BITID)) F  
+		WHERE 
+			A.FACILID = B.FACILID 
+			AND A.BSTOPID = C.BSTOPID 
+			AND A.BITID = E.BITID 
+			AND A.BITID = F.BITID(+) 
+			AND C.BSTOPID = D.NODEID(+) 
+			AND B.USEYN = '1'
+			AND A.BITID = G.BITID
+      		AND G.SERVER_ID =#{server_id}
+			<if test="routeid != null and !routeid.equalsIgnoreCase('')">
+			AND D.ROUTEID = #{routeid}
+			</if>
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+			AND A.BITTPCD = #{bittpcd}
+			</if>
+			<if test="bitid != null and !bitid.equalsIgnoreCase('')">
+			AND A.BITID = #{bitid}
+			</if>
+			<!-- TODO 확인 필요 -->  
+			AND A.PROJECTTPCD IN ( '10', '11', '12', '13', '14', '40', '41', '91', '94', '99' )  
+		ORDER BY A.BITID
+	</select>
+	
+	<!-- BIT 관리 - 도로별 문자메세지 전송 -->
+	<select id="selectBitSmsListByRoad" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT DISTINCT 
+ 			(A.PROJECTTPCD||TRIM(TO_CHAR(A.VIEWBITID, '09999'))) AS BITMID, 
+ 			A.BITID BITID, 
+ 			A.BSTOPID BSTOPID, 
+ 			B.INSTALLLOC INSTALLLOC, 
+ 			C.ADMINNM, 
+ 			FC_CODE_CDNM('BITTPCD', A.BITTPCD) BITTP, 
+ 			BITTPCD, TRUNC(((SYSDATE - E.COLLDT)*24*60*60) + 0.5) GAP, 
+ 			TRUNC((SYSDATE - E.COLLDT) * (24 * 60)) COMM_DELAY, 
+ 			<!-- C.POSX POSX, 
+ 			C.POSY POSY,  -->
+ 			F.ISSUEDT ISSUEDT, 
+ 			F.FORMID FORMID, 
+ 			F.SNDDT SNDDT,  
+ 			F.MSGSEQ MSGSEQ, 
+ 			FC_CODE_CDNM('SNDRSLTCD', F.SNDRSLTCD) SNDRSLT, 
+ 			F.REPLY_COLLDT REPLY_COLLDT,
+ 			G.SERVER_ID 
+ 		FROM 
+ 			TB_OMM_BIT A, TB_OMM_FACIL B, TB_ADM_BUSSTOP C, TB_ADM_ROADLINK D, TB_ISC_BITSTAT E, 
+ 			TB_BIT_PROTOCOL_MAPPING G, 
+ 			(SELECT ISSUEDT, BITID, FORMID, REPLY_COLLDT, SNDRSLTCD, MSGSEQ, SNDDT    
+ 			FROM TB_ISC_BITMSG A   
+ 			WHERE ISSUEDT = (SELECT MAX(ISSUEDT) FROM TB_ISC_BITMSG WHERE BITID = A.BITID)) F 
+ 		WHERE 
+ 			A.FACILID = B.FACILID 
+ 			AND A.BITID = E.BITID 
+ 			AND A.BITID = F.BITID(+) 
+		 	AND A.BSTOPID = C.BSTOPID(+) 
+ 			AND C.LINKID = D.LINKID(+) 
+ 			AND B.USEYN = '1' 
+ 			AND A.BITID = G.BITID
+ 			AND G.SERVER_ID = #{server_id} 
+ 			<if test="roadnm != null and !roadnm.equalsIgnoreCase('')">
+			AND D.ROADNM = #{roadnm}
+			</if>
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+			AND A.BITTPCD = #{bittpcd}
+			</if>
+			<if test="bitid != null and !bitid.equalsIgnoreCase('')">
+			AND A.BITID = #{bitid}
+			</if>
+ 			AND B.FACILTPCD = '12'
+ 			<!-- TODO 확인 필요 -->  
+ 			AND A.PROJECTTPCD IN ( '10', '11', '12', '13', '14', '40', '41', '91', '94', '99' )  
+ 		ORDER BY A.BITID
+	</select>
+	
+	<!-- BIT관리 메세지 폼 리스트 -->
+	<select id="selectMsgFormList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+			FORMID, 
+			FORMNM, 
+			DISPCONFIGCD, 
+			DISPMTHDCD, 
+			NVL(DISPEFFECTCD,'0') DISPEFFECTCD,        
+			SUBSTR(FC_CODE_CDNM('DISPCONFIGCD', DISPCONFIGCD),1,18) DISPCONFIG,                  
+			SUBSTR(FC_CODE_CDNM('DISPMTHDCD', DISPMTHDCD), 1, 16) DISPMTHD,                      
+			DISPCYCL, DECODE(NVL(DISPEFFECTCD,'0'), '1', 'Centering', 'None') DISPEFFECT,        
+			DISP_MSGCONTENT, 
+			TO_NUMBER(NVL(FONTTPCD, '1')) PAGECNT                          
+		FROM TB_ISM_BITMSGFORM U
+		WHERE
+			0 = 0
+			<if test="formid != null and !formid.equalsIgnoreCase('')">
+			AND FORMID = #{formid}
+			</if> 
+		ORDER BY FORMID DESC          
+	</select>
+	
+	<!-- 메세지폼 추가-->
+	<insert id="insertMsgForm" parameterType="TbIscBitmsgVO">
+		INSERT INTO TB_ISM_BITMSGFORM 
+		(
+			FORMID, 
+			FORMNM, 
+			DISPCONFIGCD, 
+			DISPMTHDCD, 
+			DISPCYCL, 
+			DISP_MSGCONTENT, 
+			FONTTPCD, 
+			DISPEFFECTCD
+		) VALUES (
+			(SELECT LPAD(TO_CHAR(NVL(MAX(TO_NUMBER(FORMID)),0)+1),10,'0') MAXSEQ FROM TB_ISM_BITMSGFORM),
+			#{formnm},
+			#{dispconfigcd},
+			#{dispmthdcd},
+			0, 
+			#{disp_msgcontent},
+			'1',
+			#{dispeffectcd}
+		)
+	</insert>
+	
+	<!-- 메세지폼 수정 -->
+	<update id="updateMsgForm" parameterType="TbIscBitmsgVO">
+		UPDATE TB_ISM_BITMSGFORM 
+		SET  
+			FORMNM = #{formnm}, 
+			DISPCONFIGCD = #{dispconfigcd}, 
+			DISPMTHDCD = #{dispmthdcd}, 
+			DISPCYCL = 0,  
+			DISP_MSGCONTENT = #{disp_msgcontent}, 
+			DISPEFFECTCD = #{dispeffectcd}, 
+			FONTTPCD = '1' 
+		WHERE FORMID = #{formid}
+	</update>
+	
+	<!-- 메세지폼삭제 -->
+	<delete id="deleteMsgForm" parameterType="TbIscBitmsgVO">
+		DELETE FROM TB_ISM_BITMSGFORM WHERE FORMID = #{formid}
+	</delete>
+	
+	<!-- BIT 제공정보 현황조회 - 수동메세지 -->
+	<select id="selectBitCurMessageList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+ 			SHORT_BSTOPID AS BITMID,
+ 			C.BITID, 
+ 			PAGESEQ, 
+ 			MSGSEQ, 
+ 			TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT, 
+ 			TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT, 
+ 			SNDRSLTCD, 
+ 			FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT, 
+ 			COMMERRCD, 
+ 			FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR, 
+ 			TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT, 
+ 			MSGCONTENT, 
+ 			INSTALLLOC, 
+ 			FC_CODE_CDNM('BITTPCD', C.BITTPCD) BITTP, 
+ 			D.SHORT_BSTOPID SHORT_BSTOPID 
+		FROM TB_ISC_BITMSG A, TB_OMM_FACIL B, TB_OMM_BIT C, TB_ADM_BUSSTOP D 
+		WHERE 
+ 			A.BITID = B.FACILID 
+ 			AND B.FACILID = C.BITID
+ 			AND C.BSTOPID = D.BSTOPID 
+ 			-- AND B.USEYN = '1' 
+ 			ORDER BY ISSUEDT DESC, A.BITID
+	</select>
+	
+	<!-- 문자전송 현황 등록 -->
+	<delete id="deleteBitMsg" parameterType="TbIscBitmsgVO">
+		DELETE FROM TB_ISC_BITMSG
+		WHERE
+			BITID = #{bitid}
+	</delete>
+	<!-- 문자전송 현황 등록 -->
+	<insert id="insertBitMsg" parameterType="TbIscBitmsgVO">
+		INSERT INTO TB_ISC_BITMSG
+		(
+			BITID,
+			PAGESEQ,
+			ISSUEDT,
+			FORMID,
+			MSGCONTENT,
+			DISP_STARTDT,
+			DISP_ENDDT,
+			MSGSEQ,
+			SNDDT,
+			SNDRSLTCD,
+			REPLY_COLLDT
+		)
+		VALUES
+		(   
+			#{bitid},
+			#{pageseq},
+			SYSDATE,
+			#{formid},
+			#{msgcontent},
+			SYSDATE,
+			SYSDATE,
+			#{pageseq},
+			SYSDATE,
+			#{sndrsltcd},
+			SYSDATE
+		)	
+	
+	</insert>
+	
+	<!-- BIT 제공정보 이력조회 - 수동메세지 -->
+	<select id="selectBitHisMessageList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+			BITID,
+			PAGESEQ,
+			MSGSEQ,
+			TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT,
+			TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT,
+			MSGCONTENT,
+			SNDRSLTCD,
+			FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT,
+			COMMERRCD,
+			FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR,
+			TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT
+		FROM TB_ISH_BITMSG 
+		WHERE 
+			0 = 0
+			<if test="bitid != null and !bitid.equalsIgnoreCase('')">
+			AND BITID = #{bitid}
+			</if> 
+		ORDER BY ISSUEDT DESC, BITID
+	</select>
+	
+	<!-- BIT 제공정보 현황조회 - 파라미터 -->
+	<select id="selectBitCurParameterList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+			SHORT_BSTOPID AS BITMID,
+			A.BITID BITID, MSGSEQ, TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT,
+			TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT,
+			SNDRSLTCD,
+			FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT,
+			COMMERRCD, FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR,
+			TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT,
+			PARAMID MSGCONTENT,
+			INSTALLLOC,
+			FC_CODE_CDNM('BITTPCD', C.BITTPCD) BITTP,
+			D.SHORT_BSTOPID SHORT_BSTOPID  
+		FROM TB_OMC_BITCTRL A, TB_OMM_FACIL B, TB_OMM_BIT C, TB_ADM_BUSSTOP D 
+		WHERE 
+			A.BITID = B.FACILID 
+			AND B.FACILID = C.BITID 
+			AND C.BSTOPID = D.BSTOPID 
+			AND CTRLTPCD = '2' 
+		ORDER BY ISSUEDT DESC, A.BITID
+	</select>
+	
+	<!-- BIT 제공정보 이력조회 - 파라미터 -->
+	<select id="selectBitHisParameterList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+			BITID,
+			MSGSEQ,
+			TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT,
+			TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT,
+			' ' MSGCONTENT,
+			SNDRSLTCD,
+			FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT,
+			COMMERRCD,
+			FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR,
+			TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT 
+		FROM TB_OMH_BITCTRL 
+		WHERE 
+			0 = 0
+			<if test="bitid != null and !bitid.equalsIgnoreCase('')">
+			AND BITID = #{bitid}
+			</if> 
+			AND CTRLTPCD = '2' 
+		ORDER BY ISSUEDT DESC, BITID
+	</select>
+	
+	<!-- BIT 제공정보 현황조회 - 안내기제어 -->
+	<select id="selectBitCurControlList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+			SHORT_BSTOPID AS BITMID,
+			A.BITID BITID,
+			MSGSEQ,
+			TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT,
+			TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT,
+			SNDRSLTCD,
+			FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT,
+			COMMERRCD,
+			FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR,
+			TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT,
+			' ' MSGCONTENT,
+			INSTALLLOC,
+			FC_CODE_CDNM('BITTPCD', C.BITTPCD) BITTP,
+			D.SHORT_BSTOPID SHORT_BSTOPID 
+		FROM TB_OMC_BITCTRL A, TB_OMM_FACIL B, TB_OMM_BIT C, TB_ADM_BUSSTOP D 
+		WHERE 
+			A.BITID = B.FACILID 
+			AND B.FACILID = C.BITID 
+			AND C.BSTOPID = D.BSTOPID 
+			AND CTRLTPCD = '1' 
+		ORDER BY ISSUEDT DESC, A.BITID
+	</select>
+	
+	<!-- BIT 제공정보 이력조회 - 안내기제어 -->
+	<select id="selectBitHisControlList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+			BITID, 
+			MSGSEQ, 
+			TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT, 
+			TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT, 
+			' ' MSGCONTENT, 
+			SNDRSLTCD, 
+			FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT, 
+			COMMERRCD, 
+			FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR, 
+			TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT 
+		FROM TB_OMH_BITCTRL 
+		WHERE 
+			0 = 0
+			<if test="bitid != null and !bitid.equalsIgnoreCase('')">
+			AND BITID = #{bitid}
+			</if> 
+			AND CTRLTPCD = '1' 
+		ORDER BY ISSUEDT DESC, BITID
+	</select>
+	
+		<!-- BIT 제공정보 현황조회 - 파일 다운로드 -->
+	<select id="selectBitCurDownloadList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+			SHORT_BSTOPID AS BITMID,
+			A.BITID BITID,
+			MSGSEQ, 
+			TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT, 
+			TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT, 
+			SNDRSLTCD, FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT, 
+			COMMERRCD, FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR, 
+			TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT,
+			FC_CODE_CDNM('FILETPCD', FILETPCD) MSGCONTENT, 
+			INSTALLLOC,
+			FC_CODE_CDNM('BITTPCD', C.BITTPCD) BITTP, 
+			D.SHORT_BSTOPID SHORT_BSTOPID 
+		FROM TB_OMC_BITUPD A, TB_OMM_FACIL B, TB_OMM_BIT C, TB_ADM_BUSSTOP D 
+		WHERE 
+			A.BITID = B.FACILID
+			AND B.FACILID = C.BITID 
+			AND C.BSTOPID = D.BSTOPID 
+			AND B.USEYN = '1' 
+			AND ISSUEDT = (SELECT MAX(ISSUEDT) FROM TB_OMC_BITUPD WHERE BITID = A.BITID) 
+		ORDER BY ISSUEDT DESC, A.BITID
+	</select>
+	
+	<!-- BIT 제공정보 이력조회 - 파일 다운로드 -->
+	<select id="selectBitHisDownloadList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+		SELECT 
+			BITID, 
+			MSGSEQ, 
+			TO_CHAR(ISSUEDT, 'YYYY/MM/DD HH24:MI:SS') ISSUEDT, 
+			TO_CHAR(SNDDT, 'YYYY/MM/DD HH24:MI:SS') SNDDT, 
+			FC_CODE_CDNM('FILETPCD', FILETPCD) MSGCONTENT, 
+			SNDRSLTCD, 
+			FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLT, 
+			COMMERRCD, 
+			FC_CODE_CDNM('COMMERRCD', COMMERRCD) COMMERR, 
+			TO_CHAR(REPLY_COLLDT, 'YYYY/MM/DD HH24:MI:SS') REPLY_COLLDT 
+		FROM TB_OMH_BITUPD 
+		WHERE 
+			0 = 0
+			<if test="bitid != null and !bitid.equalsIgnoreCase('')">
+			AND BITID = #{bitid}
+			</if> 
+		ORDER BY ISSUEDT DESC, BITID
+	</select>
+	
+	<!-- BIT 제공정보 현황조회 - 광역 수동메세지 -->
+	<select id="selectBitCurWMessageList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+	</select>
+	
+	<!-- BIT 제공정보 이력조회 - 광역 수동메세지 -->
+	<select id="selectBitHisWMessageList" parameterType="TbIscBitmsgVO" resultType="TbIscBitmsgVO">
+	</select>
+	
+	<!-- BIT파라미터 조회 -->
+	<select id="selectBitParamList" parameterType="TbNewBitparamVO" resultType="TbNewBitparamVO">
+		SELECT 
+		    PARAMID 
+		    ,SUBSTR(TITLE,1,20) TITLE 
+		    ,BITTPCD 
+		    ,NVL(COMM_RETRYCNT,0) COMM_RETRYCNT 
+		    ,NVL(COMM_TMOUT,0) COMM_TMOUT
+		    ,DISP_ONHMS 
+		    ,DISP_OFFHMS
+		    ,NVL(FAN_TEMPER, 0) FAN_TEMPER
+		    ,FC_CODE_CDNM('BITTPCD', BITTPCD) BITTPNM
+		    ,NVL(DISPCYCL,0) DISPCYCL
+		    ,NVL(MSGCYCL,0) MSGCYCL
+		    ,BITTPCD
+		    ,NVL(HEAT_TEMPER, 0) HEAT_TEMPER
+		    ,FONTTPCD
+		    ,FONT_COLORCD
+		    ,NVL(LCD_FAN_TEMPER, 0) LCD_FAN_TEMPER
+		    ,NVL(LCD_FAN_TEMPER_1, 0) LCD_FAN_TEMPER_1 
+		    ,NVL(LCD_HEAT_TEMPER, 0) LCD_HEAT_TEMPER
+		    ,NVL(LCD_HEAT_TEMPER_1, 0) LCD_HEAT_TEMPER_1
+		    ,DECODE(SUBSTR(FONTTPCD,1,1), NULL, '', SUBSTR(FONTTPCD,1,1)) ROUTE_FONT
+		    ,DECODE(SUBSTR(FONT_COLORCD,1,1), NULL, '', SUBSTR(FONT_COLORCD,1,1)) ROUTE_FONTCOLOR
+		    ,DECODE(SUBSTR(FONTTPCD,2,1), NULL, '', SUBSTR(FONTTPCD,2,1)) ARRIVE_FONT
+		    ,DECODE(SUBSTR(FONT_COLORCD,2,1), NULL, '', SUBSTR(FONT_COLORCD,2,1))  ARRIVE_FONTCOLOR
+		    ,DECODE(SUBSTR(FONTTPCD,3,1), NULL, '', SUBSTR(FONTTPCD,3,1)) BSTOP_FONT
+		    ,DECODE(SUBSTR(FONT_COLORCD,3,1), NULL, '', SUBSTR(FONT_COLORCD,3,1)) BSTOP_FONTCOLOR
+		    ,(CASE WHEN VOLUME_DAY_HMS IS NULL THEN '000000' ELSE VOLUME_DAY_HMS END) VOLUME_DAY_HMS 
+			,(CASE WHEN VOLUME_NIGHT_HMS IS NULL THEN '000000' ELSE VOLUME_NIGHT_HMS END) VOLUME_NIGHT_HMS
+		    ,NVL(DAY_VOLUME,0) DAY_VOLUME
+		    ,NVL(NIGHT_VOLUME,0) NIGHT_VOLUME
+		    ,(CASE WHEN BRIGHT_DAY_HMS IS NULL THEN '000000' ELSE BRIGHT_DAY_HMS END) BRIGHT_DAY_HMS
+			,(CASE WHEN BRIGHT_NIGHT_HMS IS NULL THEN '000000' ELSE BRIGHT_NIGHT_HMS END) BRIGHT_NIGHT_HMS
+		    ,NVL(DAY_BRIGHT,0) DAY_BRIGHT 
+		    ,NVL(NIGHT_BRIGHT,0) NIGHT_BRIGHT
+		    <if test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+				,E_VOLUME
+				,E_INCOMING_TYPE
+				,E_INCOMING_STOP
+				,E_INCOMING_TIME
+				,E_MONITOR_ON
+				,E_MONITOR_OFF
+				,E_SEND_STATUS_CYCLE
+				,E_SEND_CAPTURE_CYCLE
+				,E_BIT_SORT_TYPE
+				,E_VOLUME_YN
+				,E_SCENARIO_TIME
+				,E_ARRV_INFO_TIME
+				,E_FAN_MAX_TEMPER
+				,E_FAN_MIN_TEMPER
+				,E_HEATER_MAX_TEMPER
+				,E_HEATER_MIN_TEMPER
+			</if>
+		FROM 
+			<choose>
+				<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+				    TB_NEW_BITPARAM 
+				</when>
+				<otherwise>
+					TB_OMM_BITPARAM
+				</otherwise>
+			</choose>
+		WHERE
+			1 = 1
+			<if test="paramid != null and !paramid.equalsIgnoreCase('')">
+			AND PARAMID = #{paramid}
+			</if>
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+			AND BITTPCD = #{bittpcd}
+			</if>
+	    	ORDER BY PARAMID
+	</select>
+
+	<!-- BIT파라미터(시나리오) 등록 -->
+	<insert id="insertBitParam" parameterType="TbNewBitparamVO">
+		<choose>
+			<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+				INSERT INTO TB_NEW_BITPARAM
+			    (
+			    	PARAMID,
+				    TITLE,
+				    BITTPCD,
+				    UPDDT,
+				    E_VOLUME,
+					E_INCOMING_TYPE,
+					E_INCOMING_STOP,
+					E_INCOMING_TIME,
+					E_MONITOR_ON,
+					E_MONITOR_OFF,
+					E_SEND_STATUS_CYCLE,
+					E_SEND_CAPTURE_CYCLE,
+					E_BIT_SORT_TYPE,
+					E_VOLUME_YN,
+					E_SCENARIO_TIME,
+					E_ARRV_INFO_TIME,
+					E_FAN_MAX_TEMPER,
+					E_FAN_MIN_TEMPER,
+					E_HEATER_MAX_TEMPER,
+					E_HEATER_MIN_TEMPER
+			    )
+				VALUES
+			    (
+			    	#{paramid},
+				    #{title},
+				    #{bittpcd},
+				    SYSDATE,
+				    #{e_volume},
+					#{e_incoming_type},
+					#{e_incoming_stop},
+					#{e_incoming_time},
+					#{e_monitor_on},
+					#{e_monitor_off},
+					#{e_send_status_cycle},
+					#{e_send_capture_cycle},
+					#{e_bit_sort_type},
+					#{e_volume_yn},
+					#{e_scenario_time},
+					#{e_arrv_info_time},
+					#{e_fan_max_temper},
+					#{e_fan_min_temper},
+					#{e_heater_max_temper},
+					#{e_heater_min_temper}
+				)
+			</when>
+			<otherwise>
+				INSERT INTO TB_OMM_BITPARAM
+				(  
+					PARAMID
+					,TITLE
+					,BITTPCD
+					,UPDDT
+					,COMM_RETRYCNT
+					,COMM_TMOUT
+					,DISP_ONHMS
+					,DISP_OFFHMS
+				    ,DISPCYCL
+				    ,MSGCYCL
+				    ,FAN_TEMPER
+				    ,HEAT_TEMPER
+				    ,FONTTPCD
+				    ,FONT_COLORCD
+				    ,LCD_FAN_TEMPER
+				    ,LCD_FAN_TEMPER_1
+				    ,LCD_HEAT_TEMPER
+				    ,LCD_HEAT_TEMPER_1
+				    ,VOLUME_DAY_HMS
+				    ,VOLUME_NIGHT_HMS
+				    ,DAY_VOLUME
+				    ,NIGHT_VOLUME
+				    ,BRIGHT_DAY_HMS
+				    ,BRIGHT_NIGHT_HMS
+				    ,DAY_BRIGHT
+				    ,NIGHT_BRIGHT
+			    )
+			    VALUES
+			    (
+			    	#{paramid}
+					,#{title, jdbcType=VARCHAR}
+					,#{bittpcd}
+					,SYSDATE
+					,#{comm_retrycnt, jdbcType=INTEGER}
+					,#{comm_tmout, jdbcType=INTEGER}
+					,#{disp_onhms, jdbcType=VARCHAR}
+					,#{disp_offhms, jdbcType=VARCHAR}
+				    ,#{dispcycl, jdbcType=INTEGER}
+				    ,#{msgcycl, jdbcType=INTEGER}
+				    ,#{fan_temper, jdbcType=FLOAT}
+				    ,#{heat_temper, jdbcType=FLOAT}
+				    ,#{fonttpcd, jdbcType=VARCHAR}
+				    ,#{font_colorcd, jdbcType=VARCHAR}
+				    ,#{lcd_fan_temper, jdbcType=FLOAT}
+				    ,#{lcd_fan_temper_1, jdbcType=FLOAT}
+				    ,#{lcd_heat_temper, jdbcType=FLOAT}
+				    ,#{lcd_heat_temper_1, jdbcType=FLOAT}
+				    ,#{volume_day_hms, jdbcType=VARCHAR}
+				    ,#{volume_night_hms, jdbcType=VARCHAR}
+				    ,#{day_volume, jdbcType=INTEGER}
+				    ,#{night_volume, jdbcType=INTEGER}
+				    ,#{bright_day_hms, jdbcType=VARCHAR}
+				    ,#{bright_night_hms, jdbcType=VARCHAR}
+				    ,#{day_bright, jdbcType=INTEGER}
+				    ,#{night_bright, jdbcType=INTEGER}
+			    )
+			</otherwise>
+		</choose>
+		
+	</insert>
+	
+	<!-- BIT파라미터 수정 -->
+	<update id="updateBitParam" parameterType="TbNewBitparamVO">
+		<choose>
+			<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+				UPDATE
+				    TB_NEW_BITPARAM
+				SET
+					TITLE = #{title},
+					BITTPCD = #{bittpcd},
+					COMM_RETRYCNT = #{comm_retrycnt},
+					COMM_TMOUT = #{comm_tmout},
+					UPDDT = SYSDATE,
+				    E_VOLUME = #{e_volume},
+					E_INCOMING_TYPE = #{e_incoming_type},
+					E_INCOMING_STOP = #{e_incoming_stop},
+					E_INCOMING_TIME = #{e_incoming_time},
+					E_MONITOR_ON = #{e_monitor_on},
+					E_MONITOR_OFF = #{e_monitor_off},
+					E_SEND_STATUS_CYCLE = #{e_send_status_cycle},
+					E_SEND_CAPTURE_CYCLE = #{e_send_capture_cycle},
+					E_BIT_SORT_TYPE = #{e_bit_sort_type},
+					E_VOLUME_YN = #{e_volume_yn},
+					E_SCENARIO_TIME = #{e_scenario_time},
+					E_ARRV_INFO_TIME = #{e_arrv_info_time},
+					E_FAN_MAX_TEMPER = #{e_fan_max_temper},
+					E_FAN_MIN_TEMPER = #{e_fan_min_temper},
+					E_HEATER_MAX_TEMPER = #{e_heater_max_temper},
+					E_HEATER_MIN_TEMPER = #{e_heater_min_temper}
+				WHERE  
+				    PARAMID = #{paramid}
+			</when>
+			<otherwise>
+				UPDATE
+				    TB_OMM_BITPARAM
+				SET
+					TITLE = #{title, jdbcType=VARCHAR},
+					BITTPCD = #{bittpcd},
+					UPDDT = SYSDATE,
+					COMM_RETRYCNT = #{comm_retrycnt},
+					COMM_TMOUT = #{comm_tmout},
+					DISP_ONHMS = #{disp_onhms},
+					DISP_OFFHMS = #{disp_offhms},
+				    DISPCYCL = #{dispcycl},
+				    MSGCYCL = #{msgcycl},
+				    
+				    FAN_TEMPER = #{fan_temper, jdbcType=FLOAT},
+				    HEAT_TEMPER = #{heat_temper, jdbcType=FLOAT},
+				    FONTTPCD = #{fonttpcd, jdbcType=VARCHAR},
+				    FONT_COLORCD = #{font_colorcd, jdbcType=VARCHAR},
+				    LCD_FAN_TEMPER = #{lcd_fan_temper, jdbcType=FLOAT},
+				    LCD_FAN_TEMPER_1 = #{lcd_fan_temper_1, jdbcType=FLOAT},
+				    LCD_HEAT_TEMPER = #{lcd_heat_temper, jdbcType=FLOAT},
+				    LCD_HEAT_TEMPER_1 = #{lcd_heat_temper_1, jdbcType=FLOAT},
+				    VOLUME_DAY_HMS = #{volume_day_hms, jdbcType=VARCHAR},
+				    VOLUME_NIGHT_HMS = #{volume_night_hms, jdbcType=VARCHAR},
+				    DAY_VOLUME = #{day_volume, jdbcType=INTEGER},
+				    NIGHT_VOLUME = #{night_volume, jdbcType=INTEGER},
+				    BRIGHT_DAY_HMS = #{bright_day_hms, jdbcType=VARCHAR},
+				    BRIGHT_NIGHT_HMS = #{bright_night_hms, jdbcType=VARCHAR},
+				    DAY_BRIGHT = #{day_bright, jdbcType=INTEGER},
+				    NIGHT_BRIGHT = #{night_bright, jdbcType=INTEGER}
+				WHERE  
+				    PARAMID = #{paramid}
+			</otherwise>
+		</choose>
+	</update>
+	
+	<!-- BIT파라미터(시나리오) 삭제 -->
+	<delete id="deleteBitParam" parameterType="TbNewBitparamVO">
+		<choose>
+			<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+			DELETE FROM 
+			    TB_NEW_BITPARAM
+			WHERE
+			    PARAMID = #{searchWord}
+			</when>
+			<otherwise>
+			DELETE FROM
+				TB_OMM_BITPARAM
+			WHERE
+			    PARAMID = #{searchWord}
+			</otherwise>
+		</choose>
+		
+	</delete>
+	
+	<!-- BIT 상태 이상 조회 -->
+	<select id="selectBitFaultList" parameterType="TbOmmBitVO" resultType="TbOmmBitVO">
+		WITH STAT_DATA AS
+  		(
+   			SELECT 
+          		B.BITID AS BITID,
+          		A.COLLDT AS COLLDT,
+          		A.PWR_ONOFF AS PWR_ONOFF,
+		      	A.DISP_ONOFF_1 AS DISP_ONOFF_1,
+		      	A.DISP_ONOFF_2 AS DISP_ONOFF_2,
+		      	A.DOOR_ONOFF
+		      
+       		FROM 
+       			TB_ISC_BITSTAT A, TB_BIT_PROTOCOL_MAPPING B
+       		WHERE 
+       			B.BITID = A.BITID(+)
+       			AND B.SERVER_ID NOT IN ('123')
+    		UNION 
+      		SELECT
+        		B.BITID AS BITID,
+       	 		A.REG_DATE AS COLLDT,
+        		A.LED_POWER_STAT AS PWR_ONOFF, 
+        		A.LCD_POWER_STAT AS DISP_ONOFF_1,
+        		'' AS DISP_ONOFF_2,
+        		A.DOOR_STAT AS DOOR_ONOFF
+      		FROM  
+        		WBISOWNER.TB_WBIS_BIT_STAT A, TB_BIT_PROTOCOL_MAPPING B
+     		WHERE 
+     			B.BITID = A.BIT_ID(+)
+    			AND B.SERVER_ID IN('123')
+    	) /* end with */ 
+	
+	
+		SELECT 
+    		A.BITID
+    		,D.BSTOPNM
+    		,D.SHORT_BSTOPID
+    		,FC_CODE_CDNM('BITTPCD', B.BITTPCD) AS CDNM
+    		,DECODE(C.COLLDT, NULL, '정보없음', TO_CHAR(C.COLLDT, 'YYYY-MM-DD HH24:MI:SS')) COLLDT
+    		,CASE 
+      			WHEN (C.COLLDT IS NULL OR C.COLLDT <![CDATA[<]]> (SYSDATE - 5/1440))
+      				THEN '통신이상'
+      			WHEN C.DOOR_ONOFF = 0 
+      				THEN '도어열림'
+      			WHEN C.PWR_ONOFF = 0 
+      				THEN '전원이상'
+      			WHEN C.DISP_ONOFF_1 = 0 
+      				THEN '화면1꺼짐'
+      			WHEN C.DISP_ONOFF_2 = 0 
+      				THEN '화면2꺼짐'
+   			END FAULT 
+    	FROM 
+    		TB_BIT_PROTOCOL_MAPPING A, 
+    		TB_OMM_BIT B, STAT_DATA C, TB_ADM_BUSSTOP D
+    	WHERE 
+    		0 = 0
+    		AND A.BITID = B.BITID
+        	AND B.BSTOPID = D.BSTOPID
+       	    AND B.BITID = C.BITID(+)
+       	    <choose>
+       	    	<when test="fault != null and fault.equalsIgnoreCase('0')">
+	        	AND (
+	            	C.COLLDT IS NULL 
+	                OR (C.COLLDT <![CDATA[<]]> (SYSDATE - 5/1440))
+	            	OR C.DOOR_ONOFF = 0
+	            	OR C.PWR_ONOFF = 0
+	            	OR C.DISP_ONOFF_1 = 0
+	            	OR C.DISP_ONOFF_2 = 0
+	          	)
+       	    	</when>
+       	    	<when test="fault != null and fault.equalsIgnoreCase('1')">
+       	    	AND (
+	            	C.COLLDT IS NULL 
+	                OR (C.COLLDT <![CDATA[<]]> (SYSDATE - 5/1440))
+	          	)
+       	    	</when>
+       	    	<when test="fault != null and fault.equalsIgnoreCase('2')">
+       	    	AND C.COLLDT IS NOT NULL 
+       	    	AND C.COLLDT <![CDATA[>=]]> (SYSDATE - 5/1440)
+                AND C.DOOR_ONOFF = 0
+       	    	</when>
+       	    	<when test="fault != null and fault.equalsIgnoreCase('3')">
+       	    	AND C.COLLDT IS NOT NULL 
+       	    	AND C.COLLDT <![CDATA[>=]]> (SYSDATE - 5/1440)
+       	    	AND C.DOOR_ONOFF <![CDATA[<>]]> 0
+                AND C.PWR_ONOFF = 0
+       	    	</when>
+       	    	<when test="fault != null and fault.equalsIgnoreCase('4')">
+       	    	AND C.COLLDT IS NOT NULL 
+       	    	AND C.COLLDT <![CDATA[>=]]> (SYSDATE - 5/1440)
+       	    	AND C.DOOR_ONOFF <![CDATA[<>]]> 0
+                AND C.PWR_ONOFF <![CDATA[<>]]> 0
+                AND C.DISP_ONOFF_1 = 0
+                AND C.DISP_ONOFF_2 = 0
+       	    	</when>
+       	    </choose>
+    	ORDER BY B.BITID
+	</select>
+	
+	<!-- BIT 설치위치 조회 -->	
+	<select id="selectBitInstallLoc" resultType="TbOmmBitVO">
+		SELECT FACILID, INSTALLLOC FROM TB_OMM_FACIL WHERE FACILTPCD = '12' AND USEYN = '1' ORDER BY INSTALLLOC ASC
+	</select>
+	
+	<!-- BIT 정보관리 조회 -->
+	<select id="selectBitManageList" parameterType="TbOmmBitVO" resultType="TbOmmBitVO">
+		SELECT
+		    A.*,
+		    B.BSTOPNM,
+		   	B.SHORT_BSTOPID,
+		    NVL(FC_CODE_CDNM('BITTPCD', BITTPCD),'미지정') BITTYPE,
+		    FC_CODE_CDNM('PROJECTTPCD', PROJECTTPCD) PROJECTTYPE,
+               C.FACILID,				
+			C.FACILTPCD,				
+			C.MODELNM,			
+			C.INSTALLLOC,				
+			C.IPADDR_1,				
+			C.IPADDR_2,				
+			C.COMMLINKTPCD,		
+			C.PORTNO,				
+			C.MACADDR,				
+			C.MODEM_SERIALNO AS FACIL_MODEM_SERIALNO,	
+			TO_CHAR(C.MANUFYMD, 'YYYY-MM-DD') MANUFYMD,			
+			TO_CHAR(C.STOREYMD, 'YYYY-MM-DD')	STOREYMD,		
+			TO_CHAR(C.DELIVYMD, 'YYYY-MM-DD') DELIVYMD,			
+			TO_CHAR(C.PURCHDT, 'YYYY-MM-DD')	PURCHDT,			
+			TO_CHAR(C.INSTALLDT, 'YYYY-MM-DD')	INSTALLDT,
+			C.MAINTN_RELATORGID,	
+			C.DESCR,					
+			C.HISTORY,				
+			TO_CHAR(C.USE_STARTDT, 'YYYY-MM-DD') USE_STARTDT,
+			TO_CHAR(C.USE_ENDDT, 'YYYY-MM-DD') USE_ENDDT,		
+			C.USEYN,					
+			TO_CHAR(C.UPDDT, 'YYYY-MM-DD') UPDDT, 				
+			C.UPD_USERID,			
+			C.COM_LINENUM,		
+			C.POWER_NUM,			
+			C.COM_ASSO,
+			E.SERVER_NAME
+		FROM 
+		    TB_OMM_BIT A,
+		    TB_ADM_BUSSTOP B,
+		    TB_OMM_FACIL C,
+		    TB_BIT_PROTOCOL_MAPPING D,
+		    SERVER E
+		WHERE
+		    A.FACILID = C.FACILID(+)
+		    AND A.BSTOPID = B.BSTOPID(+)
+		    AND C.USEYN = 1
+		    AND A.BITID = D.BITID
+		    AND D.SERVER_ID = E.SERVER_ID
+		    <if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+		    AND A.BITTPCD =  #{bittpcd}
+		    </if>
+		    <if test="projecttpcd != null and !projecttpcd.equalsIgnoreCase('')">
+		    AND A.PROJECTTPCD =  #{projecttpcd}
+		    </if>
+		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		    AND (A.BITID LIKE  '%' || #{searchWord} || '%' 
+		    	OR B.BSTOPNM LIKE '%' || #{searchWord} || '%')
+		    </if>
+		    <if test="server_id != null and !server_id.equalsIgnoreCase('')">
+		    AND D.SERVER_ID = #{server_id}
+		    </if>
+		    ORDER BY A.BITID
+	</select>
+
+	<!-- bit 제어이력 등록 -->
+	<insert id="insertBitCtrlResult" parameterType="TbOmcBitctrlVO">
+		INSERT INTO TB_OMC_BITCTRL
+		(
+			BITID,
+			PARAMID,
+			CTRLTPCD,
+			SNDRSLTCD,
+			ISSUEDT,
+			REPLY_COLLDT,
+			SNDDT
+		)
+		VALUES
+		(
+			#{bitid},
+			#{paramid, jdbcType=VARCHAR},
+			#{ctrltpcd},
+			#{sndrsltcd},
+			SYSDATE,
+			SYSDATE,
+			SYSDATE
+		)
+	</insert>
+	
+	<!-- bit 제어이력 등록 -->
+	<delete id="deleteBitCtrlResult" parameterType="TbOmcBitctrlVO">
+		DELETE
+			TB_OMC_BITCTRL
+		WHERE
+			BITID = #{bitid}
+			AND CTRLTPCD = #{ctrltpcd}
+	</delete>
+	
+	<!-- BIT 제어 결과 목록 조회 -->
+	<select id="selectBitCtrlResultList" parameterType="TbOmcBitctrlVO" resultType="TbOmcBitctrlVO">
+		SELECT DISTINCT 
+			A.BITID, 
+			(A.PROJECTTPCD||TRIM(TO_CHAR(A.VIEWBITID, '09999'))) AS BITMID,
+			A.BSTOPID,
+			FC_BUSSTOP_SHORT_BSTOPID(A.BSTOPID) AS SHORT_BSTOPID, 
+			SUBSTR(FC_BUSSTOP_BSTOPNM(A.BSTOPID),1,20) BSTOPNM,
+			A.DETAIL, 
+			SUBSTR(FC_CODE_CDNM('BITTPCD', A.BITTPCD),1,20) BITTPCD, 
+			TO_CHAR(B.ISSUEDT,'YYYY/MM/DD HH24:MI:SS') ISSUEDT, 
+			C.DISPCYCL, 
+			MSGCYCL, 
+			SUBSTR(FC_CODE_CDNM('SNDRSLTCD', B.SNDRSLTCD),1,6) SNDRSLTCD, 
+			SUBSTR(FC_CODE_CDNM('COMMERRCD', B.COMMERRCD),1,10) COMMERRCD, 
+			C.PARAMID, 
+			TO_CHAR(C.COMM_RETRYCNT) COMM_RETRYCNT, 
+			TO_CHAR(C.COMM_TMOUT) COMM_TMOUT,
+			TO_CHAR(NVL(C.FAN_TEMPER,0)) FAN_TEMPER, 
+			TO_CHAR(NVL(C.HEAT_TEMPER,0)) HEAT_TEMPER, C.FONTTPCD FONTTPCD,
+			DECODE(SUBSTR(FONTTPCD,1,1), '1', '', '2', '', '3', '') ROUTE_FONTTYPE, 
+			DECODE(SUBSTR(FONTTPCD,2,1), '1', '', '2', '', '3', '') ARRIV_FONTTYPE, 
+			DECODE(SUBSTR(FONTTPCD,3,1), '1', '', '2', '', '3', '') BSTOP_FONTTYPE, 
+			DECODE(SUBSTR(FONT_COLORCD,1,1), '1', 'Red', '2', 'Green', '3', 'Yellow') ROUTE_FONT_COLOR, 
+			DECODE(SUBSTR(FONT_COLORCD,2,1), '1', 'Red', '2', 'Green', '3', 'Yellow') ARRIV_FONT_COLOR, 
+			DECODE(SUBSTR(FONT_COLORCD,3,1), '1', 'Red', '2', 'Green', '3', 'Yellow') BSTOP_FONT_COLOR, 
+			SUBSTR(DISP_ONHMS,1,2)||':'||SUBSTR(DISP_ONHMS,3,2)||':'||SUBSTR(DISP_ONHMS,5,2) DISP_ONHMS, 
+			SUBSTR(DISP_OFFHMS,1,2)||':'||SUBSTR(DISP_OFFHMS,3,2)||':'||SUBSTR(DISP_OFFHMS,5,2) DISP_OFFHMS,
+			TO_CHAR(NVL(C.LCD_FAN_TEMPER,0)) LCD_FAN_TEMPER,
+			TO_CHAR(NVL(C.LCD_HEAT_TEMPER,0)) LCD_HEAT_TEMPER, 
+			TO_CHAR(NVL(C.LCD_FAN_TEMPER_1,0)) LCD_FAN_TEMPER_1, 
+			TO_CHAR(NVL(C.LCD_HEAT_TEMPER_1,0)) LCD_HEAT_TEMPER_1,
+			G.SERVER_ID, 
+			G.PROTOCOL_TYPE,  
+			H.COMM_STATYN
+		FROM 
+			TB_OMM_BIT A, 
+			TB_OMC_BITCTRL B,
+			<choose>
+				<when test="server_id != null and (server_id.equalsIgnoreCase('120') or server_id.equalsIgnoreCase('126'))">
+					TB_NEW_BITPARAM C, 
+				</when>
+				<otherwise>
+					TB_OMM_BITPARAM C,
+				</otherwise>
+			</choose>
+			TB_ADM_ROUTEPNODE D, 
+			TB_BIT_PROTOCOL_MAPPING G,
+			TB_ISC_BITSTAT H  
+		WHERE 
+			A.BSTOPID = D.NODEID(+)
+			AND A.BITID = B.BITID(+)
+			AND B.PARAMID = C.PARAMID(+) 
+			AND A.BITID = H.BITID(+)
+			AND B.CTRLTPCD(+) = '2' 
+			AND G.BITID = A.BITID 
+			<if test="projecttpcd != null and !projecttpcd.equalsIgnoreCase('')">
+			AND A.PROJECTTPCD = #{projecttpcd}
+			</if>
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+			AND A.BITTPCD = #{bittpcd}
+			</if>
+			<if test="server_id != null and !server_id.equalsIgnoreCase('')">
+			AND G.SERVER_ID = #{server_id}
+			</if> 
+		ORDER BY A.BITID
+	</select>
+	
+	<!-- BIT 파라미터 조회 -->
+	<select id="selectBitParam" parameterType="TbNewBitparamVO" resultType="TbNewBitparamVO">
+		<choose>
+			<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+		 		SELECT 
+					PARAMID 
+		    		,SUBSTR(TITLE,1,20) TITLE 
+		    		,BITTPCD 
+					,E_VOLUME
+					,E_INCOMING_TYPE
+					,E_INCOMING_STOP
+					,E_INCOMING_TIME
+					,E_MONITOR_ON
+					,E_MONITOR_OFF
+					,E_SEND_STATUS_CYCLE
+					,E_SEND_CAPTURE_CYCLE
+					,E_BIT_SORT_TYPE
+					,E_VOLUME_YN
+					,E_SCENARIO_TIME
+					,E_ARRV_INFO_TIME
+					,E_FAN_MAX_TEMPER
+					,E_FAN_MIN_TEMPER
+					,E_HEATER_MAX_TEMPER
+					,E_HEATER_MIN_TEMPER
+				FROM 
+					TB_NEW_BITPARAM 
+				WHERE 
+					PARAMID = #{paramid}
+			</when>
+			<otherwise>
+				SELECT 
+					PARAMID 
+		    		,SUBSTR(TITLE,1,20) TITLE 
+		    		,BITTPCD 
+				    ,NVL(COMM_RETRYCNT,0) COMM_RETRYCNT 
+				    ,NVL(COMM_TMOUT,0) COMM_TMOUT
+				    ,DISP_ONHMS 
+				    ,DISP_OFFHMS
+				    ,NVL(FAN_TEMPER, 0) FAN_TEMPER
+				    ,FC_CODE_CDNM('BITTPCD', BITTPCD) BITTPNM
+				    ,NVL(DISPCYCL,0) DISPCYCL
+				    ,NVL(MSGCYCL,0) MSGCYCL
+				    ,BITTPCD
+				    ,NVL(HEAT_TEMPER, 0) HEAT_TEMPER
+				    ,FONTTPCD
+				    ,FONT_COLORCD
+				    ,NVL(LCD_FAN_TEMPER, 0) LCD_FAN_TEMPER
+				    ,NVL(LCD_FAN_TEMPER_1, 0) LCD_FAN_TEMPER_1 
+				    ,NVL(LCD_HEAT_TEMPER, 0) LCD_HEAT_TEMPER
+				    ,NVL(LCD_HEAT_TEMPER_1, 0) LCD_HEAT_TEMPER_1
+				    ,DECODE(SUBSTR(FONTTPCD,1,1), NULL, '0', SUBSTR(FONTTPCD,1,1)) ROUTE_FONT
+				    ,DECODE(SUBSTR(FONT_COLORCD,1,1), NULL, '1', SUBSTR(FONT_COLORCD,1,1)) ROUTE_FONTCOLOR
+				    ,DECODE(SUBSTR(FONTTPCD,2,1), NULL, '0', SUBSTR(FONTTPCD,2,1)) ARRIVE_FONT
+				    ,DECODE(SUBSTR(FONT_COLORCD,2,1), NULL, '1', SUBSTR(FONT_COLORCD,2,1))  ARRIVE_FONTCOLOR
+				    ,DECODE(SUBSTR(FONTTPCD,3,1), NULL, '0', SUBSTR(FONTTPCD,3,1)) BSTOP_FONT
+				    ,DECODE(SUBSTR(FONT_COLORCD,3,1), NULL, '1', SUBSTR(FONT_COLORCD,3,1)) BSTOP_FONTCOLOR
+				    ,(CASE WHEN VOLUME_DAY_HMS IS NULL THEN '000000' ELSE VOLUME_DAY_HMS END) VOLUME_DAY_HMS 
+					,(CASE WHEN VOLUME_NIGHT_HMS IS NULL THEN '000000' ELSE VOLUME_NIGHT_HMS END) VOLUME_NIGHT_HMS
+				    ,NVL(DAY_VOLUME,0) DAY_VOLUME
+				    ,NVL(NIGHT_VOLUME,0) NIGHT_VOLUME
+				    ,(CASE WHEN BRIGHT_DAY_HMS IS NULL THEN '000000' ELSE BRIGHT_DAY_HMS END) BRIGHT_DAY_HMS
+					,(CASE WHEN BRIGHT_NIGHT_HMS IS NULL THEN '000000' ELSE BRIGHT_NIGHT_HMS END) BRIGHT_NIGHT_HMS
+				    ,NVL(DAY_BRIGHT,0) DAY_BRIGHT 
+				    ,NVL(NIGHT_BRIGHT,0) NIGHT_BRIGHT
+				FROM 
+					TB_OMM_BITPARAM 
+				WHERE 
+					PARAMID = #{paramid}
+			</otherwise>
+		</choose>	
+			
+	</select>
+
+	<!-- BIT 제어된 파라미터 조회 -->	
+	<select id="selectCtrlBitParam"  parameterType="TbNewBitparamVO" resultType="TbNewBitparamVO">
+		SELECT 
+			B.* 
+		FROM 
+			TB_OMC_BITCTRL A, TB_NEW_BITPARAM B
+    	WHERE 
+    		A.BITID = #{bitid}
+    		AND A.CTRLTPCD = #{ctrltpcd}
+   			AND A.PARAMID = B.PARAMID
+   			AND ROWNUM = 1
+	</select>
+	
+	<!-- 시나리오 목록 조회(서버구분) -->
+	<select id="selectScenarioList" parameterType="TbBitScenarioVO" resultType="TbBitScenarioVO">
+		<choose>
+			<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+		 		SELECT 
+		 			SCENARIO_ID   AS SNR_ID
+					,REGIST_DT    AS REG_DATE
+					,DATA_EXPLAIN AS FILE_NAME
+					,''           AS START_DATE
+					,''           AS FCOUNT
+		 		FROM 
+		 			BIT_DISPLAY_SCENARIO
+		 		WHERE 
+		 			USE_FLAG = 1
+		 		ORDER BY SNR_ID DESC
+			</when>
+			<otherwise>
+				SELECT 
+		 			SNR_ID
+					,REG_DATE
+					,FILE_NAME
+					,START_DATE
+					,FCOUNT
+		 		FROM 
+		 			WBISOWNER.TB_WBIS_SNR_INFO
+		 		ORDER BY TO_NUMBER(SNR_ID) DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 적용중인 시나리오 조회 -->
+	<select id="selectScenarioDetailList" parameterType="TbBitScenarioVO" resultType="TbBitScenarioVO">
+        <choose>
+			<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+		 		SELECT 
+      				SD.SCENARIO_ID AS SNR_ID
+      				,SD.SCENARIO_ORD AS SEQ
+      				,SD.DISP_ST_DT
+      				,SD.DISP_ED_DT
+		 			,DD.DISP_DATA_FILENAME AS FILE_NAME
+		 			,DD.DISP_DATA_TYPE AS DATA_TYPE
+      				,SD.DISP_TIME AS VIEW_TIME
+      				,SD.DISP_DATA_ID
+    			FROM 
+    				BIT_DISPLAY_SCENARIO_DETAIL SD, BIT_DISPLAY_DATA DD 
+        		WHERE  
+        			SD.SCENARIO_ID = #{snr_id}
+            		AND SD.DISP_DATA_ID = DD.DISP_DATA_ID 
+        		ORDER BY SEQ
+			</when>
+			<otherwise>
+				SELECT 
+					A.SNR_ID
+					,A.SEQ
+					,A.DATA_TYPE
+					,A.FILE_NAME
+					,A.VIEW_TIME
+					,TO_CHAR(B.START_DATE, 'YYYYMMDDHH24MISS') AS DISP_ST_DT
+					,'' AS DISP_ED_DT
+				FROM 
+					WBISOWNER.TB_WBIS_SNR_DATA A, WBISOWNER.TB_WBIS_SNR_INFO B
+				WHERE 
+					A.SNR_ID = #{snr_id}
+					AND A.SNR_ID = B.SNR_ID
+				ORDER BY A.SEQ 
+			</otherwise>
+		</choose>
+        
+        
+	</select>
+	
+	<!-- BIT 등록 - 신규 아이디 조회 -->
+	<select id="selectAddBitFacilid" resultType="TbOmmBitVO">
+		SELECT 
+		    MAX(FACILID)+1 FACILID
+		FROM 
+		    TB_OMM_FACIL
+		WHERE
+		    FACILTPCD = 12
+	</select>
+	
+	<!-- BIT 등록 facil -->
+	<insert id="insertBitInfoFacil" parameterType="TbOmmBitVO">
+		INSERT INTO 
+			TB_OMM_FACIL
+				(FACILID,
+				FACILTPCD,
+				MODELNM,					
+				INSTALLLOC, 					
+				IPADDR_1, 					
+				IPADDR_2, 					
+				COMMLINKTPCD, 			
+				PORTNO, 					
+				MACADDR, 					
+				MODEM_SERIALNO,
+				<if test="manufymd != null and !manufymd.equalsIgnoreCase('')">	
+				MANUFYMD,
+				</if>
+				<if test="storeymd != null and !storeymd.equalsIgnoreCase('')">
+				STOREYMD,
+				</if>
+				<if test="delivymd != null and !delivymd.equalsIgnoreCase('')">
+				DELIVYMD,
+				</if>
+				<if test="purchdt != null and !purchdt.equalsIgnoreCase('')">
+				PURCHDT,
+				</if>
+				<if test="installdt != null and !installdt.equalsIgnoreCase('')">
+				INSTALLDT,
+				</if>
+				<if test="maintn_relatorgid != null and !maintn_relatorgid.equalsIgnoreCase('')">
+				MAINTN_RELATORGID,
+				</if> 		
+				DESCR, 						
+				HISTORY,
+				<if test="use_startdt != null and !use_startdt.equalsIgnoreCase('')">
+				USE_STARTDT,
+				</if>
+				<if test="use_enddt != null and !use_enddt.equalsIgnoreCase('')">
+				USE_ENDDT, 				
+				</if>
+				USEYN,
+				<if test="upddt != null and !upddt.equalsIgnoreCase('')">
+				UPDDT, 					
+				</if>
+				UPD_USERID,
+				COM_LINENUM, 			
+				POWER_NUM, 				
+				COM_ASSO)
+			VALUES
+				(#{facilid},
+				12,
+				#{modelnm},					
+				#{installloc},
+				#{ipaddr_1},
+				#{ipaddr_2}, 					
+				#{commlinktpcd, jdbcType=VARCHAR}, 			
+				#{portno}, 					
+				#{macaddr}, 					
+				#{modem_serialno},
+				<if test="manufymd != null and !manufymd.equalsIgnoreCase('')">	
+					TO_DATE(#{manufymd}, 'YYYY-MM-DD'),
+				</if>				
+				<if test="storeymd != null and !storeymd.equalsIgnoreCase('')">
+					TO_DATE(#{storeymd}, 'YYYY-MM-DD'),
+				</if>
+				<if test="delivymd != null and !delivymd.equalsIgnoreCase('')">
+					TO_DATE(#{delivymd}, 'YYYY-MM-DD'),
+				</if>
+				<if test="purchdt != null and !purchdt.equalsIgnoreCase('')">
+					TO_DATE(#{purchdt}, 'YYYY-MM-DD'),
+				</if>
+				<if test="installdt != null and !installdt.equalsIgnoreCase('')">
+					TO_DATE(#{installdt}, 'YYYY-MM-DD'),
+				</if>
+				<if test="maintn_relatorgid != null and !maintn_relatorgid.equalsIgnoreCase('')">
+					#{maintn_relatorgid},
+				</if>
+				#{descr}, 						
+				#{history}, 		
+				<if test="use_startdt != null and !use_startdt.equalsIgnoreCase('')">
+					TO_DATE(#{use_startdt}, 'YYYY-MM-DD'),
+				</if>
+				<if test="use_enddt != null and !use_enddt.equalsIgnoreCase('')">
+					TO_DATE(#{use_enddt}, 'YYYY-MM-DD'),
+				</if>
+				#{useyn},
+				<if test="upddt != null and !upddt.equalsIgnoreCase('')">	
+					TO_DATE(#{upddt}, 'YYYY-MM-DD'),
+				</if>
+				#{upd_userid},
+				#{com_linenum}, 			
+				#{power_num}, 				
+				#{com_asso})
+	</insert>
+	
+	<!-- BIT 등록 bit -->
+	<insert id="insertBitInfo" parameterType="TbOmmBitVO">
+		INSERT INTO 
+			TB_OMM_BIT
+				(BITID,
+				FACILID, 						
+				BSTOPID, 					
+				PROJECTTPCD, 				
+				BITTPCD, 					
+				NEWS_SEND_IND,			
+				TTS_CNTL_IND, 				
+				WEATHER_SEND_IND, 		
+				DMB_CNTL_IND, 			
+				SUBWAY_SEND_IND, 		
+				SHOCK_CNTL_IND, 			
+				ADDRESS, 					
+				MODEM_SERIALNO, 	
+				ADMIN,						
+				BITSERVER_ID, 				
+				COMNUM, 					
+				DETAIL, 						
+				ETC)
+			VALUES
+				(#{bitid},
+				#{facilid},
+				#{bstopid},
+				#{projecttpcd, jdbcType=VARCHAR},
+				#{bittpcd, jdbcType=VARCHAR}, 					
+				#{news_send_ind},			
+				#{tts_cntl_ind},
+				#{weather_send_ind}, 		
+				#{dmb_cntl_ind}, 			
+				#{subway_send_ind}, 		
+				#{shock_cntl_ind}, 			
+				#{address}, 					
+				#{modem_serialno}, 	
+				#{admin},						
+				#{bitserver_id}, 				
+				#{comnum}, 					
+				#{detail}, 						
+				#{etc})
+	</insert>
+
+	<!-- BIT 정보관리 bit 업데이트 -->
+	<update id="updateBitInfo" parameterType="TbOmmBitVO">
+		UPDATE TB_OMM_BIT
+		SET
+			PROJECTTPCD = #{projecttpcd, jdbcType=VARCHAR},
+			BITTPCD = #{bittpcd, jdbcType=VARCHAR},
+			NEWS_SEND_IND = #{news_send_ind},
+			TTS_CNTL_IND = #{tts_cntl_ind},
+			WEATHER_SEND_IND = #{weather_send_ind},
+			DMB_CNTL_IND = #{dmb_cntl_ind},
+			SUBWAY_SEND_IND = #{subway_send_ind},
+			SHOCK_CNTL_IND = #{shock_cntl_ind},		
+			ADDRESS = #{address},			
+			MODEM_SERIALNO = #{modem_serialno},
+			ADMIN = #{admin},
+			BITSERVER_ID = #{bitserver_id},
+			COMNUM = #{comnum},			
+			DETAIL = #{detail},
+			ETC = #{etc}
+		WHERE BITID = #{bitid}
+	</update>
+
+	<!-- BIT 정보관리 facil 업데이트 -->
+	<update id="updateBitInfoFacil" parameterType="TbOmmBitVO">
+		UPDATE TB_OMM_FACIL
+		SET
+			MODELNM = 				#{modelnm},			
+			INSTALLLOC =  			#{installloc}, 			
+			IPADDR_1 =  			    #{ipaddr_1}, 			
+			IPADDR_2 =  			    #{ipaddr_2}, 			
+			COMMLINKTPCD =  	#{commlinktpcd, jdbcType=VARCHAR}, 	
+			PORTNO =  			    #{portno},
+			MACADDR =  			#{macaddr},
+			MODEM_SERIALNO =  #{modem_serialno},
+			MAINTN_RELATORGID  = #{maintn_relatorgid, jdbcType=VARCHAR},						
+			DESCR =  				    #{descr}, 				
+			HISTORY =  			    #{history},
+			<if test="!manufymd.equalsIgnoreCase('')">
+			MANUFYMD =  		    TO_DATE(#{manufymd}, 'YYYY-MM-DD'),
+			</if>
+			<if test="!storeymd.equalsIgnoreCase('')">			
+			STOREYMD =  			TO_DATE(#{storeymd}, 'YYYY-MM-DD'),
+			</if>
+			<if test="!delivymd.equalsIgnoreCase('')">			
+			DELIVYMD =  				TO_DATE(#{delivymd}, 'YYYY-MM-DD'),
+			</if>
+			<if test="!purchdt.equalsIgnoreCase('')">			
+			PURCHDT =  			    TO_DATE(#{purchdt}, 'YYYY-MM-DD'),			
+			</if>
+			<if test="!installdt.equalsIgnoreCase('')">			
+			INSTALLDT =  			TO_DATE(#{installdt}, 'YYYY-MM-DD'),
+			</if>
+			<if test="!use_startdt.equalsIgnoreCase('')">			
+			USE_STARTDT =  		TO_DATE(#{use_startdt}, 'YYYY-MM-DD'),
+			</if>
+			<if test="!use_enddt.equalsIgnoreCase('')">			
+			USE_ENDDT =  		    TO_DATE(#{use_enddt}, 'YYYY-MM-DD'), 		
+			</if>
+			<if test="!upddt.equalsIgnoreCase('')">			
+			UPDDT =  				    TO_DATE(#{upddt}, 'YYYY-MM-DD'),
+			</if>		
+			USEYN =  				    #{useyn},
+			UPD_USERID  = #{upd_userid, jdbcType=VARCHAR},
+			COM_LINENUM =  	    #{com_linenum},
+			POWER_NUM =  		#{power_num}, 		
+			COM_ASSO =  			#{com_asso} 	
+		WHERE FACILID = 			#{facilid}
+	</update>
+
+	<!-- 시나리오 화면 자료 추가 -->
+	<insert id="insertScenarioDisplay" parameterType="BitVO">
+		INSERT INTO BIT_DISPLAY_DATA
+		(
+			DISP_DATA_ID,
+			DISP_DATA_TYPE,
+			DISP_DATA_FILENAME,
+			REGIST_DT,
+			USE_FLAG,
+			REGIST_USER_ID,
+			DATA_EXPLAIN,
+			DATA_VERSION,
+			AREA_CODE
+		) VALUES (
+			#{disp_data_id},
+			#{disp_data_type},
+			#{disp_data_filename},
+			#{regist_dt},
+			#{use_flag},
+			#{regist_user_id},
+			#{data_explain},
+			#{data_version, jdbcType=INTEGER},
+			#{area_code}
+		)
+	</insert>
+	
+	<!-- 광역 시나리오 자료 추가 -->
+	<insert id="insertWideScenarioData" parameterType="TbBitScenarioVO">
+		INSERT INTO WBISOWNER.TB_WBIS_SNR_DATA
+		( 
+			SNR_ID
+			,SEQ
+			,DATA_TYPE
+			,FILE_NAME
+			,FILE_PATH
+			,VIEW_TIME
+		) VALUES (
+			#{snr_id}
+			,#{seq}
+			,#{data_type}
+			,#{file_name}
+			,#{file_path}
+			,#{view_time, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<update id="updateWideScenarioInfo" parameterType="TbBitScenarioVO">
+		UPDATE 
+			WBISOWNER.TB_WBIS_SNR_INFO
+		SET
+			START_DATE = TO_DATE(#{disp_st_dt}, 'YYYYMMDDHH24MISS'),
+			FCOUNT = #{fcount},
+			FILE_NAME = #{bcdb}
+		WHERE
+			SNR_ID = #{snr_id}
+	</update>
+	
+	<!-- 시나리오 화면 자료 추가 -->
+	<insert id="deleteWideScenarioData" parameterType="TbBitScenarioVO">
+		DELETE 
+		FROM WBISOWNER.TB_WBIS_SNR_DATA
+		WHERE
+			SNR_ID = #{snr_id}
+	</insert>
+	
+	
+	<!-- 시나리오 화면 자료 추가(text) -->
+	<insert id="insertScenarioText" parameterType="BitVO">
+		INSERT INTO BIT_DISPLAY_DATA
+		(
+			DISP_DATA_ID,
+			DISP_DATA_TYPE,
+			DISP_DATA_FILENAME,
+			REGIST_DT,
+			USE_FLAG,
+			REGIST_USER_ID,
+			DATA_EXPLAIN,
+			DATA_VERSION
+		) 
+		VALUES (
+			(SELECT NVL(MAX(DISP_DATA_ID)+1, 1) FROM BIT_DISPLAY_DATA),
+			#{disp_data_type},
+			#{disp_data_filename},
+			TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+			'1',
+			#{regist_user_id, jdbcType=VARCHAR},
+			#{data_explain, jdbcType=VARCHAR},
+			#{data_version, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<!-- 시나리오 추가 -->
+	<insert id="insertBitScenario" parameterType="TbBitScenarioVO">
+		<choose>
+			<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+				INSERT INTO BIT_DISPLAY_SCENARIO
+				(
+					SCENARIO_ID,
+					REGIST_USER_ID,
+					REGIST_DT,
+					USE_FLAG,
+					DATA_EXPLAIN,
+					USER_ID,
+					LAST_VERSION
+				)
+				VALUES
+				(
+					#{scenario_id},
+					#{regist_user_id, jdbcType=VARCHAR},
+					TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+					1,
+					#{data_explain, jdbcType=VARCHAR},
+					#{user_id, jdbcType=VARCHAR},
+					#{last_version, jdbcType=VARCHAR}
+				)
+			</when>
+			<otherwise>
+				INSERT INTO WBISOWNER.TB_WBIS_SNR_INFO
+				(
+					SNR_ID,
+					REG_DATE,
+					FCOUNT
+				)
+				VALUES
+				(
+					(SELECT MAX(TO_NUMBER(SNR_ID))+1 FROM WBISOWNER.TB_WBIS_SNR_INFO),
+					SYSDATE,
+					0
+				)
+			</otherwise>
+		</choose>	
+	</insert>
+	
+	<!-- 시나리오 삭제 -->
+	<delete id="deleteBitScenario" parameterType="TbBitScenarioVO">
+		
+		<choose>
+			<when test="servertp != null and (servertp.equalsIgnoreCase('120') or servertp.equalsIgnoreCase('126'))">
+				DELETE
+				FROM BIT_DISPLAY_SCENARIO
+				WHERE SCENARIO_ID = #{scenario_id}
+			</when>
+			<otherwise>
+				DELETE
+				FROM WBISOWNER.TB_WBIS_SNR_INFO
+				WHERE SNR_ID = #{scenario_id}
+			</otherwise>
+		</choose>	
+		
+	</delete>
+	
+	<!-- 신규 시나리오 업데이트 -->
+	<update id="updateScenario" parameterType="BitVO">
+		UPDATE BIT_DISPLAY_SCENARIO
+		SET
+			DATA_EXPLAIN = #{data_explain},
+			LAST_VERSION = #{last_version, jdbcType=VARCHAR}
+		WHERE
+			SCENARIO_ID = #{scenario_id}
+	</update>
+	
+	<!-- 광역 시나리오 업데이트 -->
+	<update id="updateWideScenario" parameterType="BitVO">
+		UPDATE BIT_DISPLAY_SCENARIO
+		SET
+			DATA_EXPLAIN = #{data_explain},
+			LAST_VERSION = #{last_version, jdbcType=VARCHAR}
+		WHERE
+			SCENARIO_ID = #{scenario_id}
+	</update>
+	
+	
+	<!-- BIT 지점등록 - 정류장 리스트 조회 -->
+	<select id="selectBusStopList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+		SELECT 
+			*
+		FROM 
+			TB_ADM_BUSSTOP
+		WHERE
+			1 = 1
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			AND (
+				BSTOPID LIKE '%'||#{searchWord}||'%' 
+				OR BSTOPNM LIKE '%'||#{searchWord}||'%'
+				)
+			</if>
+		ORDER BY BSTOPID ASC
+	</select>
+	
+	<!-- FTP 등록 파일 목록 조회 -->
+	<select id="selectFtpFileList" parameterType="TbOmcBitfileregVO" resultType="TbOmcBitfileregVO">
+		SELECT 
+			FILETPCD
+			,FC_CODE_CDNM('FILETPCD', FILETPCD) AS CDNM
+			,PAGESEQ
+			,TO_CHAR(REGDT, 'YYYY-MM-DD HH24:MI:SS') AS REGDT
+			,FILEVER
+			,FILELOC
+			,FILENM
+			,TO_CHAR(APP_STARTDT, 'YYYY-MM-DD HH24:MI:SS') AS APP_STARTDT
+			,TO_CHAR(APP_STARTDT, 'YYYYMMDDHH24MI') AS STARTDT
+		FROM
+			TB_OMC_BITFILEREG
+		WHERE
+			0 = 0
+			<choose>
+				<when test="server_id.equalsIgnoreCase('121') or server_id.equalsIgnoreCase('122') or server_id.equalsIgnoreCase('125')">
+					AND (SERVER_ID IS NULL OR SERVER_ID = '121' OR SERVER_ID = '122')
+				</when>
+				<otherwise>
+					AND SERVER_ID = #{server_id}
+				</otherwise>
+			</choose>
+			
+		ORDER BY REGDT DESC
+	</select>
+	
+	<!-- FTP 파일 등록 -->
+	<!-- PAGESEQ, FILELOC 추가 -->
+	<insert id="insertFtpFile" parameterType="TbOmcBitfileregVO">
+		INSERT INTO TB_OMC_BITFILEREG
+		(
+			FILETPCD
+			,REGDT
+			,FILEVER
+			,FILENM
+			,APP_STARTDT
+			,FILELOC	
+			,PAGESEQ
+			,SERVER_ID	
+		)
+		VALUES
+		(
+			#{filetpcd}
+			,SYSDATE
+			,#{filever, jdbcType=VARCHAR}
+			,#{filenm}
+			,TO_DATE(#{app_startdt}, 'YYYYMMDDHH24MISS')
+			,#{fileloc, jdbcType=VARCHAR}
+			,(SELECT NVL(MAX(PAGESEQ), 0)+1 FROM TB_OMC_BITFILEREG WHERE FILETPCD = #{filetpcd})
+			,#{server_id}
+		)
+	</insert>
+	
+	<!-- 광역 시정홍보 목록 조회 -->
+	<select id="select"></select>
+	
+	<!-- 시설물상태현황 - 시설물총수 -->
+	<select id="selectFacilitiesCount" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">
+	<if test='faciltpcd == "10"'>
+		SELECT 
+			'10' FACILTPCD, 
+			COUNT(1) TOTAL 
+		FROM tb_omm_mdt a  WHERE a.busid IS NOT NULL
+	</if>
+	<if test='faciltpcd == "12"'>
+		SELECT 
+		    '12' FACILTPCD,
+		    COUNT(1) TOTAL
+		FROM TB_OMM_BIT a, 
+		     TB_OMM_FACIL b,
+		     TB_ISC_BITSTAT c 
+		WHERE a.FACILID = b.FACILID        
+		  AND a.BITID = c.BITID                  
+		  AND b.USEYN = '1'
+	</if>
+	<if test='faciltpcd == "13"'>
+		SELECT
+		    FACILTPCD,
+		    COUNT(1) TOTAL    
+		FROM TB_OMM_FACIL
+		WHERE FACILTPCD = '13' 
+		  AND USEYN = '1'
+		GROUP BY FACILTPCD
+	</if>
+	</select>
+	
+	<!-- 시설물상태현황 - 장애요약  -->
+	<select id="selectObstacleSumupList" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">
+	    SELECT
+		    DECODE(FAILTPCD,NULL,'290',FAILTPCD) FAILTPCD,    
+		    SUM(FAIL_FACIL_CNT) FAIL_FAIL_CNT,                          
+		    SUM(FAIL_CNT) FAIL_CNT,       
+		    SUM(TREAT_CNT) TREAT_CNT
+		    
+		FROM (
+		        SELECT 
+		            A.FACILTPCD  
+		            FACILTPCD,   
+		            DECODE(A.FAILTPCD,NULL,'290',A.FAILTPCD) FAILTPCD, 
+		            COUNT(DISTINCT A.FACILID) FAIL_FACIL_CNT, 
+		            0  		FAIL_CNT,
+		            0       TREAT_CNT           
+		        FROM TB_OMH_FACILFAILAS A,
+		             TB_OMM_FACIL B  
+		        WHERE A.FACILID = B.FACILID             
+		          AND A.REGDT BETWEEN TO_DATE(#{search_startdt},'YYYYMMDDHH24MISS')       
+		                          AND TO_DATE(#{search_enddt},'YYYYMMDDHH24MISS')       
+		          AND B.USEYN != '0'                                   
+		        GROUP BY A.FACILTPCD, A.FAILTPCD                    
+		        
+		        UNION                                            
+		        
+		        SELECT
+		            A.FACILTPCD FACILTPCD,             
+		            DECODE(A.FAILTPCD,NULL,'290',A.FAILTPCD) FAILTPCD,     
+		            0 FAIL_FACIL_CNT,           
+		            COUNT(A.FACILID)  FAIL_CNT, 
+		            0 TREAT_CNT    
+		        FROM TB_OMH_FACILFAILAS A, 
+		             TB_OMM_FACIL B              
+		        WHERE A.FACILID = B.FACILID    
+		        AND A.REGDT BETWEEN TO_DATE(#{search_startdt},'YYYYMMDDHH24MISS')       
+		                        AND TO_DATE(#{search_enddt},'YYYYMMDDHH24MISS')          
+		        AND B.USEYN != '0'                                             
+		        GROUP BY A.FACILTPCD, A.FAILTPCD                         
+		        
+		        UNION                                                           
+		        
+		        SELECT
+		            A.FACILTPCD FACILTPCD,                    
+		            DECODE(A.FAILTPCD,NULL,'290',A.FAILTPCD) FAILTPCD,     
+		            0 FAIL_FACIL_CNT,       
+		            0 FAIL_CNT,        
+		            COUNT(A.FACILID) TREAT_CNT    
+		        FROM TB_OMH_FACILFAILAS A,
+		             TB_OMM_FACIL B                      
+		        WHERE A.FACILID = B.FACILID            
+		          AND A.REGDT <![CDATA[<=]]> TO_DATE(#{search_enddt},'YYYYMMDDHH24MISS')      
+		          AND A.FAIL_TREATDT BETWEEN TO_DATE(#{search_startdt},'YYYYMMDDHH24MISS')       
+		                                 AND TO_DATE(#{search_enddt},'YYYYMMDDHH24MISS')          
+		          AND B.USEYN != '0'                  
+		        GROUP BY A.FACILTPCD, A.FAILTPCD                              
+		    )                             
+		WHERE FACILTPCD = #{faciltpcd}   
+		GROUP BY FAILTPCD   
+	</select>
+	
+	<!-- 시설물상태현황 - 장애현황 -->
+	<select id="selectObstacleDetailList" parameterType="TbOmhFacilfailasVO" resultType="TbOmhFacilfailasVO">
+	<if test='faciltpcd == "10"'>
+		SELECT 
+		    A.FACILID FACILID, 
+		    FC_BUS_CARREGNO(B.BUSID) CARREGNO,
+		    FC_BUS_COMPNM(B.BUSID) COMPNM,   
+		    B.MODEM_SERIALNO MODEM_SERIALNO,           
+		    TO_CHAR(REGDT,'YYYY-MM-DD HH24:MI:SS') REGDT,
+		    TO_CHAR(FAIL_OCCURDT,'YYYY-MM-DD HH24:MI:SS') FAIL_OCCURDT,
+		    FC_CODE_CDNM('FAILTPCD', FAILTPCD) FAILTPCD,
+		    FAIL_DETAIL,             
+		    TO_CHAR(FAIL_TREATDT,'YYYY-MM-DD HH24:MI:SS') FAIL_TREATDT,  
+		    FC_CODE_CDNM('FAILTREATCD', FAILTREATCD) FAILTREATCD,
+		    TREAT_DETAIL
+		FROM TB_OMH_FACILFAILAS A,
+		     TB_OMM_MDT B,
+		     TB_OMM_FACIL C       
+		WHERE A.FACILID = B.FACILID
+		  AND B.FACILID = C.FACILID  
+		  AND A.FACILTPCD = '10'      
+		  AND A.REGDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS')   
+		                  AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS') 
+		ORDER BY REGDT
+	</if>
+	<if test='faciltpcd == "12"'>
+		SELECT 
+		    A.FACILID FACILID,
+		    C.BSTOPNM BSTOPNM, 
+		    ' ' CNM,    
+		    FC_CODE_CDNM('BITTPCD', B.BITTPCD) TYPE,      
+		    TO_CHAR(REGDT,'YYYY-MM-DD HH24:MI:SS') REGDT,   
+		    TO_CHAR(FAIL_OCCURDT,'YYYY-MM-DD. HH24:MI:SS') FAIL_OCCURDT,
+		    FC_CODE_CDNM('FAILTPCD', FAILTPCD) FAILTPCD,
+		    FAIL_DETAIL,
+		    TO_CHAR(FAIL_TREATDT,'YYYY-MM-DD HH24:MI:SS') FAIL_TREATDT,      
+		    FC_CODE_CDNM('FAILTREATCD', FAILTREATCD) FAILTREATCD, 
+		    TREAT_DETAIL  
+		FROM TB_OMH_FACILFAILAS A, 
+		     TB_OMM_BIT B, 
+		     TB_ADM_BUSSTOP C   
+		WHERE A.FACILID = B.BITID(+) 
+		  AND B.BSTOPID = C.BSTOPID(+)      
+		  AND A.FACILTPCD = '12'          
+		  AND A.REGDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS')     
+		                  AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS')
+		ORDER BY REGDT
+	</if>
+	<if test='faciltpcd == "13"'>
+		SELECT
+		    A.FACILID FACILID, 
+		    FC_GARAGE_GARAGENM(C.GARAGEID) GARAGENM, 
+		    ' ' CNM,  
+		    FC_CODE_CDNM('APTPCD', B.APTPCD) TYPE, 
+		    TO_CHAR(REGDT,'YYYY-MM-DD HH24:MI:SS') REGDT,                   
+		    TO_CHAR(FAIL_OCCURDT,'YYYY-MM-DD HH24:MI:SS') FAIL_OCCURDT,         
+		    FC_CODE_CDNM('FAILTPCD', FAILTPCD) FAILTPCD,
+		    FAIL_DETAIL,     
+		    TO_CHAR(FAIL_TREATDT,'YYYY-MM-DD HH24:MI:SS') FAIL_TREATDT,           
+		    FC_CODE_CDNM('FAILTREATCD', FAILTREATCD) FAILTREATCD, 
+		    TREAT_DETAIL  
+		    FROM TB_OMH_FACILFAILAS A,
+		         TB_OMM_GARAGEAP B,
+		         TB_ADM_GARAGE C     
+		    WHERE A.FACILID = B.GARAGEID(+)
+		      AND B.GARAGEID = C.GARAGEID(+)   
+		      AND A.FACILTPCD = '13'       
+		      AND A.REGDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS')     
+		                      AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS')  
+		ORDER BY REGDT
+	</if>
+	</select>
+	
+	
+	<!-- ###### 이하 구버전 쿼리 ##########  -->
+	<!-- ###### 이하 구버전 쿼리 ##########  -->
+	<!-- ###### 이하 구버전 쿼리 ##########  -->
+	<!-- ###### 이하 구버전 쿼리 ##########  -->
+	
+
+	<!-- BIT 통신 상태 조회-->
+ 	<select id="selectBitStatusList" parameterType="BitVO" resultType="BitVO">
+		SELECT 
+    		SVCNT.SERVER_ID, 
+    		NVL(SV.SYSTEM_NAME,'연결안됨') SERVER_NAME, 
+    		(SVCNT.OK+SVCNT.ERR) TOTAL, 
+    		SVCNT.OK, 
+    		SVCNT.ERR, 
+    		CASE 
+    			WHEN ST.UPDATE_DT IS NULL OR ST.UPDATE_DT <![CDATA[<]]> SYSDATE-1/(24*60)*5
+        		THEN '0' ELSE '1' 
+       		END AS SERVER_STATE, 
+       		CS.IP
+		FROM
+    		(
+    			SELECT NVL(SERVER_ID, 0) SERVER_ID, NVL(SUM(DECODE(COM_STATUS, 1, 1)),0) OK, NVL(SUM(DECODE(COM_STATUS, 0, 1)), 0) ERR
+    			FROM
+    			(
+    				SELECT
+        				CASE WHEN NVL(BS.UPDATE_DT,'00000000000000') <![CDATA[<]]> TO_CHAR(SYSDATE-1/(24*60)*3, 'YYYYMMDDHH24MISS')
+        				THEN '0' ELSE '1' END AS COM_STATUS, BT.BIT_ID, BS.SERVER_ID
+    				FROM
+        				BIT_STATUS BS, BIT BT
+    				WHERE 
+    					BT.BIT_ID = BS.BIT_ID
+    					AND BT.USE_FLAG= '1'
+    					AND BT.AREA_CODE = #{area_code}
+    			)   
+    			GROUP BY SERVER_ID
+   			) SVCNT, SYSTEM_INFORMATION SV, SYSTEM_STATUS ST, SYSTEM_CONNECT_STATUS CS
+		WHERE 
+    		SV.SYSTEM_ID(+) = SVCNT.SERVER_ID
+		    AND SV.SYSTEM_ID = ST.SYSTEM_ID(+)  
+		    AND SV.SYSTEM_ID = CS.SYSTEM_ID(+)
+		ORDER BY SV.SYSTEM_ID
+	</select>
+ 	
+	
+	
+	
+	<!-- 선택된 BIT 정보가져오기 -->
+	<select id="selectSelBitInfo" parameterType="BitVO" resultType="BitVO">
+		SELECT 
+			BT.BIT_ID, 
+			BS.STOP_NAME, 
+			BS.SERVICE_ID, 
+			BS.STOP_ID, 
+			BS.LAT, 
+			BS.LNG
+		FROM 
+			BIT BT, BUSSTOP BS
+		WHERE 
+			BIT_ID = #{bit_id}
+    		AND BT.INSTALL_STOP_ID = BS.STOP_ID
+	</select>
+	
+	<!-- BIT정보관리(좌측 리스트) -->
+	<select id="selectBitInfoList" parameterType="BitVO" resultType="BitVO">
+		SELECT  
+			B.STOP_NAME, 
+			B.SERVICE_ID,
+			B.LAT,
+			B.LNG,
+        	BC.COMPANY_NAME,
+        	BN.BUSINESS_TITLE,
+        	C.CODE_EXPLAIN AS BIT_TYPE_NAME,
+        	D.CONNECT_IP,
+        	IT.CODE_EXPLAIN AS BIT_INSTALL_TYPE_NAME,
+        	A.* ,
+        	TO_DATE(A.DISP_ST_TIME, 'HH24MI'),
+        	TO_DATE(A.DISP_ED_TIME, 'HH24MI'),
+        	TO_CHAR(TO_DATE(A.REGIST_DT, 'YYYY-MM-DD HH24:MI:SS') ) AS REGIST_DT,
+        	TO_CHAR(TO_DATE(A.UPDATE_DT, 'YYYY-MM-DD HH24:MI:SS') ) AS UPDATE_DT
+		FROM BIT A,
+     		BUSSTOP B,
+    		(SELECT TRIM(CODE) CODE, CODE_EXPLAIN FROM COMMON_CODE WHERE TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_TYPE') C,
+    		(SELECT T1.BIT_ID, CONNECT_IP
+       		FROM BIT_CONNECT_HISTORY T1,
+    		(SELECT BIT_ID, MAX(HS_REGIST_DT) BOOT_DT FROM BIT_CONNECT_HISTORY GROUP BY BIT_ID) T2
+      		WHERE T1.BIT_ID = T2.BIT_ID
+        		AND T1.HS_REGIST_DT = T2.BOOT_DT) D
+    		,(SELECT TRIM(CODE) CODE, CODE_EXPLAIN FROM COMMON_CODE WHERE TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_INSTALL_TYPE') IT
+    		, BUSINESS BN
+    		, BIT_COMPANY BC
+		WHERE A.INSTALL_STOP_ID = B.STOP_ID(+)
+  			AND A.BIT_TYPE = C.CODE(+)
+  			AND A.BIT_ID = D.BIT_ID(+)
+  			AND A.BIT_INSTALL_TYPE = IT.CODE(+)
+  			AND A.COMPANY_ID = BC.COMPANY_ID(+)
+  			AND A.BUSINESS_ID = BN.BUSINESS_ID(+)
+  			AND A.AREA_CODE = #{area_code}
+  			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+  			AND (
+  					A.BIT_ID LIKE '%'||#{searchWord}||'%'
+  					OR B.STOP_NAME LIKE '%'||#{searchWord}||'%'
+  				)
+  			</if>
+           	<if test="bit_cate_id != '' and bit_cate_id != null">
+           	AND A.BIT_CATE_ID = #{bit_cate_id}
+           	</if>
+           	<if test="bit_type != '' and bit_type != null">
+           	AND A.BIT_TYPE = #{bit_type}
+           	</if>
+           	<if test="company_id != '' and company_id != null">
+           	AND A.COMPANY_ID = #{company_id}
+           	</if>
+           	<if test="business_id != '' and business_id != null">
+           	AND A.BUSINESS_ID = #{business_id}
+           	</if>
+           	<if test="bit_install_type != '' and bit_install_type != null">
+           	AND A.BIT_INSTALL_TYPE = #{bit_install_type}
+           	</if>
+		ORDER BY A.BIT_ID
+	</select>	
+	
+	<!-- BIT 활성/비활성 업데이트 -->
+	<update id="updateBitStatus" parameterType="BitVO">
+		UPDATE BIT
+		SET
+			USE_FLAG = #{use_flag},
+			UPDATE_DT = #{update_dt}
+		WHERE
+			BIT_ID = #{bit_id}
+	</update>
+	
+	<!-- 지도 BIT 보기 -->
+	<select id="selectBitMapList" parameterType="BitVO" resultType="BitVO">
+		SELECT 
+			CASE 
+				WHEN NVL(C.UPDATE_DT,'00000000000000') <![CDATA[<]]> TO_CHAR(SYSDATE-1/(24*60)*3, 'YYYYMMDDHH24MISS')
+            	THEN '0' ELSE '1' 
+           	END AS COM_STATUS,        
+          	A.BIT_ID, 
+          	A.LOCAL_ID, 
+          	A.BIT_TYPE, 
+          	CD.CODE_EXPLAIN || ' ' || IT.CODE_EXPLAIN CODE_EXPLAIN, 
+          	A.ICON_POSITION,
+          	C.TEMPERATURE, 
+          	C.HUMIDITY, 
+          	C.DOOR_STATE, 
+          	C.DISP_STATE, 
+          	NVL(C.MEMORY_USAGE, 0) MEMORY_USAGE,
+          	B.STOP_NAME, 
+          	B.STOP_ID,
+          	B.SERVICE_ID,
+          	B.LAT,
+          	B.LNG,
+          	NVL(D.USE_FLAG, 0) AS USE_FLAG,
+          	C.CRASH_STATE, 
+          	C.UPDATE_DT
+   		FROM 
+   			BIT A, BUSSTOP B, BIT_STATUS C, BIT_CAMERA D
+           	,(SELECT TABLE_NAME, FIELD_NAME, TRIM(CODE) CODE, CODE_EXPLAIN FROM COMMON_CODE WHERE TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_TYPE') CD
+           	,(SELECT TABLE_NAME, FIELD_NAME, TRIM(CODE) CODE, CODE_EXPLAIN FROM COMMON_CODE WHERE TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_INSTALL_TYPE') IT
+   		WHERE 
+   			A.INSTALL_STOP_ID = B.STOP_ID
+     		AND A.BIT_ID = C.BIT_ID(+)
+     		AND A.BIT_ID = D.BIT_ID(+)
+     		AND TRIM(A.BIT_TYPE) = CD.CODE(+)
+     		AND A.USE_FLAG = 1
+     		AND A.BIT_INSTALL_TYPE = IT.CODE(+)
+     		AND A.AREA_CODE = #{area_code}
+     		<choose>
+     			<when test="bit_id != null and !bit_id.equalsIgnoreCase('')">
+	  				AND BIT_ID = #{bit_id}
+     			</when>
+     			<otherwise>
+		  			AND B.LNG <![CDATA[>=]]>  #{minLng}
+			     	AND B.LNG <![CDATA[<=]]>  #{maxLng}
+			     	AND B.LAT <![CDATA[<=]]>  #{maxLat}	
+			     	AND B.LAT <![CDATA[>=]]>  #{minLat}
+     			</otherwise>
+     		</choose>
+   		ORDER BY A.BIT_ID
+		
+	</select>
+	
+	<!-- BIT 그룹 조회 -->	
+	<select id="selectBitGroupList" parameterType="BitVO" resultType="BitVO">
+		SELECT 
+			*
+		FROM 
+			BIT_CATEGORIZATION
+		WHERE AREA_CODE = #{area_code}
+		ORDER BY BIT_CATE_ID ASC
+	</select>
+	
+	<!-- BIT 그룹 상세 조회 -->
+	<select id="selectBitGroupDetailList" parameterType="BitVO" resultType="BitVO">
+		SELECT 
+			BT.BIT_ID, 
+			BS.STOP_NAME, 
+			BS.SERVICE_ID, 
+			BS.STOP_ID
+		FROM 
+			BIT_GROUP_DETAIL BD, BIT BT, BUSSTOP BS
+		WHERE 
+			BD.BIT_CATE_ID = #{bit_cate_id}
+			AND BD.BIT_ID = BT.BIT_ID(+)
+			AND BT.INSTALL_STOP_ID = BS.STOP_ID(+)
+		ORDER BY BT.BIT_ID ASC
+	</select>
+	
+	<!-- BIT 우측 리스트 -->
+	<select id="selectBitRightList" parameterType="BitVO" resultType="BitVO">
+		SELECT 
+			BT.BIT_ID, 
+			CD.CODE_EXPLAIN, 
+			BS.STOP_ID, 
+			BS.STOP_NAME, 
+			BS.SERVICE_ID, 
+			BS.LAT, 
+			BS.LNG 
+		FROM 
+			BIT BT, BUSSTOP BS, (SELECT * FROM COMMON_CODE WHERE TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_TYPE') CD
+		WHERE
+		    BT.INSTALL_STOP_ID = BS.STOP_ID(+)
+		    AND BT.BIT_TYPE = CD.CODE(+)
+		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		    AND
+		    (
+		        BS.STOP_NAME LIKE '%'|| #{searchWord} ||'%'
+		        OR BIT_ID LIKE #{searchWord}
+		        OR INSTALL_STOP_ID LIKE '%'|| #{searchWord} ||'%'
+		        OR BS.SERVICE_ID LIKE '%'|| #{searchWord} ||'%'
+		    )
+		    </if>
+		    AND BT.BIT_CATE_ID IS NULL
+		    AND BT.USE_FLAG = 1
+		    AND BT.AREA_CODE = #{area_code}
+		ORDER BY BIT_ID
+	</select>
+	
+	<!-- BIT 그릅 추가 -->
+	<insert id="insertBitCate" parameterType="BitVO">
+		INSERT 
+			INTO BIT_CATEGORIZATION 
+		(
+   			BIT_CATE_ID, 
+   			CATE_NAME, 
+   			REGIST_DT, 
+   			UPDATE_DT, 
+   			DATA_EXPLAIN, 
+   			USER_ID, 
+   			AREA_CODE
+  		)
+		VALUES 
+		( 
+			(SELECT NVL(MAX(BIT_CATE_ID), 0) + 1 AS NEXT_ID FROM BIT_CATEGORIZATION),
+          	#{cate_name}, 
+          	TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+          	TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), 
+          	#{data_explain}, 
+          	#{user_id}, 
+          	#{area_code}
+        )
+	</insert>
+	
+	<!-- BIT 그룹 삭제 -->
+	<delete	id="deleteBitCate" parameterType="BitVO">
+	DELETE
+	FROM BIT_CATEGORIZATION
+	WHERE BIT_CATE_ID = #{bit_cate_id}
+	</delete>
+	
+	<!-- BIT 그룹 업데이트 -->
+	<update id="updateBitCate" parameterType="BitVO">
+	UPDATE BIT_CATEGORIZATION
+	SET 
+		CATE_NAME = #{cate_name},
+		DATA_EXPLAIN = #{data_explain}
+	WHERE
+		BIT_CATE_ID = #{bit_cate_id}
+	</update>
+	
+	<!--  BIT 그룹 상세 삭제 -->
+	<delete id="deleteBitCateDetail" parameterType="BitVO">
+	DELETE
+	FROM BIT_GROUP_DETAIL
+	WHERE BIT_CATE_ID = #{bit_cate_id}
+	</delete>
+	
+	<!--  BIT 그룹 상세 추가 -->
+	<insert id="insertBitCateDetail" parameterType="BitVO">
+		INSERT INTO BIT_GROUP_DETAIL 
+		(
+   			BIT_CATE_ID,
+   			BIT_ID
+   			
+  		)
+		VALUES 
+		(
+		    #{bit_cate_id},
+		    #{bit_id}
+		)
+	</insert>
+	
+	<!-- BIT TABLE BIT_CATE_ID column 업데이트 -->
+	<update id="updateBitCateId" parameterType="BitVO">
+		UPDATE BIT
+		SET
+			BIT_CATE_ID = #{bit_cate_id, jdbcType=INTEGER}
+		WHERE BIT_ID = #{bit_id}
+	</update>
+	
+	<!-- BUSINESS(사업) 조회 -->	
+	<select id="selectBusinessList" parameterType="BitVO" resultType="BitVO">
+		SELECT 
+			*
+		FROM 
+			BUSINESS
+		WHERE
+			AREA_CODE = #{area_code}
+	</select>
+	
+	<!-- BUSINESS 추가 -->
+	<insert id="insertBusiness" parameterType="BitVO">
+		INSERT 
+			INTO BUSINESS 
+		(
+   			BUSINESS_ID, 
+   			BUSINESS_TITLE, 
+   			ST_DATE,
+   			ED_DATE, 
+   			CONSTRUCTOR, 
+   			DATA_EXPLAIN,
+   			BUSINESS_YEAR, 
+   			AREA_CODE
+  		)
+		VALUES 
+		(
+		    (SELECT NVL(MAX(BUSINESS_ID), 0) +1 AS NEXT_ID FROM BUSINESS),
+		    #{business_title},
+		    #{st_date},
+		    #{ed_date},
+		    #{constructor},
+		    #{data_explain},
+		    #{business_year},
+		    #{area_code}
+		)
+	</insert>
+	
+	<!-- BUSINESS 삭제 -->
+	<delete id="deleteBusiness" parameterType="BitVO">
+	DELETE
+	FROM BUSINESS
+	WHERE BUSINESS_ID = #{business_id}
+	</delete>
+	
+	<!-- BUSINESS 전체 삭제 -->
+	<delete id="deleteAllBusiness" parameterType="BitVO">
+	DELETE
+	FROM BUSINESS
+	WHERE AREA_CODE = #{area_code}
+	</delete>
+	
+	<!-- BIT 제조사 조회 -->	
+	<select id="selectBitCompanyList" parameterType="BitVO" resultType="BitVO">
+		SELECT 
+			*
+		FROM 
+			BIT_COMPANY
+	 	WHERE
+	 		AREA_CODE = #{area_code} 
+	</select>
+	
+	<!-- 제조사 추가 -->
+	<insert id="insertBitCompany" parameterType="BitVO">
+		INSERT 
+			INTO BIT_COMPANY 
+		(
+	   		COMPANY_ID, 
+	   		COMPANY_NAME, 
+	   		TEL_NUMBER, 
+	   		DATA_EXPLAIN, 
+	   		AREA_CODE
+	   	)
+		VALUES 
+		(
+		    (SELECT NVL(MAX(COMPANY_ID), 2015000) +1 AS NEXT_ID FROM BIT_COMPANY),
+		    #{company_name},
+		    #{tel_number},
+		    #{data_explain},
+		    #{area_code}
+		)
+	</insert>
+
+	<!-- 제조사 삭제 -->
+	<delete id="deleteBitCompany" parameterType="BitVO">
+		DELETE
+		FROM BIT_COMPANY
+		WHERE COMPANY_ID = #{company_id}
+	</delete>
+	
+	<!-- 제조사 전체 삭제 -->
+	<delete id="deleteAllBitCompanyList" parameterType="BitVO">
+		DELETE
+		FROM BIT_COMPANY
+		WHERE AREA_CODE = #{area_code}
+	</delete>
+	
+	<!--  BIT type 조회 -->
+	<select id="selectBitType" resultType="BitVO">
+		SELECT
+			TRIM (CODE) BIT_TYPE,
+			NVL (CODE_EXPLAIN, '없음') AS BIT_TYPE_NAME
+        FROM
+        	COMMON_CODE
+        WHERE
+        	TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_TYPE'
+	</select>
+	
+	<!--  BIT 설치유형 조회 -->
+	<select id="selectBitInstallType" resultType="BitVO">
+		SELECT
+			TRIM (CODE) BIT_INSTALL_TYPE,
+			NVL (CODE_EXPLAIN, '없음') AS BIT_INSTALL_TYPE_NAME
+        FROM
+            COMMON_CODE
+        WHERE
+           TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_INSTALL_TYPE'
+	</select>
+	
+	<!-- BIT 표출 시나리오 조회 -->	
+	<select id="selectBitScenarioList" parameterType="BitVO" resultType="BitVO">
+  		SELECT   
+  			BT.BIT_ID,
+            BT.LOCAL_ID,
+           	BS.STOP_NAME,
+           	BT.SCENARIO_ID,
+           	BT.PROVIDE_GROUP_ID,
+           	BS.ADM_DISTRICT_ID,
+           	BT.BIT_TYPE,
+           	IT.CODE_EXPLAIN AS BIT_INSTALL_TYPE_NAME,
+           	BT.BIT_INSTALL_TYPE,
+           	NVL (CD.CODE_EXPLAIN, '없음') AS BIT_TYPE_NAME,
+           	BS.SERVICE_ID,
+           	BN.BUSINESS_TITLE,
+           	ST.SERVER_ID,
+           	SV.SYSTEM_NAME,
+           	BC.COMPANY_NAME,
+           	CATE.CATE_NAMES
+    	FROM   
+    		BIT BT, BIT_DISPLAY_SCENARIO DS,
+           	BUSSTOP BS, BIT_STATUS ST,
+          	(SELECT   TRIM (CODE) CODE, CODE_EXPLAIN
+              FROM   COMMON_CODE
+             WHERE   TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_TYPE'
+     		) CD,
+          	(SELECT   TRIM (CODE) CODE, CODE_EXPLAIN
+              FROM   COMMON_CODE
+             WHERE   TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_INSTALL_TYPE'
+           	) IT,
+           	BUSINESS BN, SYSTEM_INFORMATION SV, BIT_COMPANY BC,
+         	(SELECT   A.BIT_ID, WM_CONCAT (B.CATE_NAME) CATE_NAMES
+               FROM   BIT A, BIT_CATEGORIZATION B, BIT_GROUP_DETAIL C
+              WHERE   B.BIT_CATE_ID = C.BIT_CATE_ID AND C.BIT_ID = A.BIT_ID
+            	GROUP BY   A.BIT_ID
+            	ORDER BY   A.BIT_ID ASC
+           	) CATE
+   		WHERE       
+   			BT.SCENARIO_ID = DS.SCENARIO_ID(+)
+           	AND BT.INSTALL_STOP_ID = BS.STOP_ID(+)
+           	AND TRIM (BT.BIT_TYPE) = CD.CODE(+)
+           	AND BT.BIT_INSTALL_TYPE = IT.CODE(+)
+           	AND BT.BUSINESS_ID = BN.BUSINESS_ID(+)
+           	AND BT.BIT_ID = ST.BIT_ID(+)
+           	AND ST.SERVER_ID = SV.SYSTEM_ID(+)
+           	AND BT.COMPANY_ID = BC.COMPANY_ID(+)
+           	AND BT.USE_FLAG = 1
+           	AND BT.AREA_CODE = #{area_code}
+           	AND BT.BIT_ID = CATE.BIT_ID(+)
+            <if test="stop_name != '' and stop_name != null">
+           	AND BS.STOP_NAME like '%'||#{stop_name}||'%'
+           	</if>
+           	<if test="bit_id != '' and bit_id != null">
+           	AND BT.BIT_ID = #{bit_id}
+           	</if>
+           	<if test="bit_cate_id != '' and bit_cate_id != null">
+           	AND BT.BIT_CATE_ID = #{bit_cate_id}
+           	</if>
+           	<if test="bit_type != '' and bit_type != null">
+           	AND BT.BIT_TYPE = #{bit_type}
+           	</if>
+           	<if test="company_id != '' and company_id != null">
+           	AND BT.COMPANY_ID = #{company_id}
+           	</if>
+           	<if test="business_id != '' and business_id != null">
+           	AND BT.BUSINESS_ID = #{business_id}
+           	</if>
+           	<if test="bit_install_type != '' and bit_install_type != null">
+           	AND BT.BIT_INSTALL_TYPE = #{bit_install_type}
+           	</if>
+		ORDER BY BT.BIT_ID
+	</select>
+	
+	
+	<!-- BIT 표출 시나리오 업데이트 -->
+	<update id="updateBitScenario" parameterType="BitVO">
+		UPDATE BIT 
+		SET 
+			SCENARIO_ID = #{scenario_id}
+		WHERE 
+			BIT_ID = #{bit_id}
+	</update> 
+	
+	<!-- 시나리오 이미지 조회-->
+	<select id="selectImageList" parameterType="BitVO" resultType="BitVO">
+		SELECT *
+		FROM BIT_DISPLAY_DATA
+		WHERE USE_FLAG = 1
+		AND DISP_DATA_TYPE = 1
+	</select>
+	
+	<!-- 시나리오 영상 조회-->
+	<select id="selectVideoList" parameterType="BitVO" resultType="BitVO">
+		SELECT *
+		FROM BIT_DISPLAY_DATA
+		WHERE USE_FLAG = 1
+		AND DISP_DATA_TYPE = 2
+	</select>
+	
+	<!-- 시나리오 홍보 조회-->
+	<select id="selectPromotionList" parameterType="BitVO" resultType="BitVO">
+		SELECT *
+		FROM BIT_DISPLAY_DATA
+		WHERE USE_FLAG = 1
+		AND DISP_DATA_TYPE = 3
+	</select>
+	
+	
+	
+	
+	
+	<!-- 시나리오 상세목록 삭제 -->
+	<delete id="deleteScenarioDetail" parameterType="BitVO">
+		DELETE
+		FROM BIT_DISPLAY_SCENARIO_DETAIL
+		WHERE SCENARIO_ID = #{scenario_id}
+	</delete>
+	
+	<!-- 시나리오 상세목록 추가 -->
+	<insert id="insertScenarioDetail" parameterType="BitVO">
+		INSERT INTO BIT_DISPLAY_SCENARIO_DETAIL
+		(
+			SCENARIO_ID,
+			SCENARIO_ORD,
+			DISP_ST_DT,
+			DISP_ED_DT,
+			DISP_TIME,
+			DISP_DATA_ID,
+			DATA_VERSION
+		) VALUES (
+			#{scenario_id},
+			#{scenario_ord},
+			#{disp_st_dt},
+			#{disp_ed_dt},
+			#{disp_time},
+			#{disp_data_id},
+			'0'
+		)
+	</insert>
+	
+	<!-- 시나리오 화면 자료 업데이트 -->
+	<update id="updateScenarioDisplay" parameterType="BitVO">
+		UPDATE BIT_DISPLAY_DATA
+		SET
+			DATA_EXPLAIN = #{data_explain}
+		WHERE
+			DISP_DATA_ID = #{disp_data_id}
+	</update>
+	
+	<!-- 시나리오 화면 자료 ID -->
+	<select id="selectDisplayDataId" resultType="int">
+		SELECT NVL(MAX(DISP_DATA_ID), 0) +1 FROM BIT_DISPLAY_DATA
+	</select>
+	
+	
+	
+	<!-- BIT 제어 목록 조회 -->
+	<!-- <select id="selectBitControlList" parameterType="BitVO" resultType="BitVO">
+		SELECT   CASE
+              WHEN NVL (ST.UPDATE_DT, '00000000000000') <![CDATA[<]]>
+                      TO_CHAR (SYSDATE - 1 / (24 * 60) * 3, 'YYYYMMDDHH24MISS')
+              THEN
+                 '0'
+              ELSE
+                 '1'
+           END
+              AS COM_STATUS,
+           BS.STOP_NAME,
+           CATE.CATE_NAMES,
+           BS.SERVICE_ID,
+           BS.STOP_ID,
+           D.CONNECT_IP,
+           TP.CODE_EXPLAIN AS BIT_TYPE_NAME,
+           BC.COMPANY_NAME,
+           BN.BUSINESS_TITLE,
+           SV.SYSTEM_NAME,
+           ST.*,
+           BT.BIT_TYPE,
+           BT.LOCAL_ID, 
+           BT.VOICE_USE_FLAG,
+           BT.SPEAKER_VOLUME,
+           BT.DISP_ST_TIME,
+           BT.DISP_ED_TIME,
+           BT.ACTION_DETECT_FLAG,
+           BT.ACTION_DETECT_TIME,
+           BT.FAN_MIN_TEMPERATURE,
+           BT.FAN_MAX_TEMPERATURE,
+           BT.HEATER_MIN_TEMPERATURE,
+           BT.CRASH_DETECT_FLAG,
+           BT.HEATER_MAX_TEMPERATURE,
+           BT.CRASH_DETECT_VALUE,
+           BT.INCOMING_TYPE,
+           BT.INCOMING_TIME,
+           BT.INCOMING_STOP,
+           BT.INFO_SORT_TYPE,
+           BT.STATUS_SENDCYCLE,
+           BT.IMAGE_SENDCYCLE,
+           BT.CAPTURE_SENDCYCLE,
+           BT.REGIST_DT,
+           BT.SCENARIO_ID,
+           BT.BIT_CATE_ID,
+           BT.INSTALL_STOP_ID,
+           BT.PROVIDE_GROUP_ID,
+           BT.ICON_POSITION,
+           BT.FONT_SIZE,
+           BT.SCENARIO_VOLUME,
+           BT.SCENARIO_SORT,
+           BT.COMPANY_ID,
+           BT.BUSINESS_ID,
+           IT.CODE_EXPLAIN BIT_INSTALL_TYPE_NAME,
+           TO_CHAR (TO_DATE (ST.UPDATE_DT, 'YYYY-MM-DD HH24:MI:SS'),
+                    'YYYY-MM-DD HH24:MI:SS')
+              AS LAST_UPDATE_DT
+    	FROM   
+    	   BIT_STATUS ST,
+           BIT BT,
+           BUSSTOP BS,
+           BIT_COMPANY BC,
+           BUSINESS BN,
+           (SELECT   T1.BIT_ID, CONNECT_IP
+              FROM   BIT_CONNECT_HISTORY T1,
+                     (  SELECT   BIT_ID, MAX (HS_REGIST_DT) BOOT_DT
+                          FROM   BIT_CONNECT_HISTORY
+                      GROUP BY   BIT_ID) T2
+             WHERE   T1.BIT_ID = T2.BIT_ID AND T1.HS_REGIST_DT = T2.BOOT_DT) D,
+           (SELECT   TRIM (CODE) CODE, CODE_EXPLAIN
+              FROM   COMMON_CODE
+             WHERE   TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_TYPE') TP,
+           (SELECT   TRIM (CODE) CODE, CODE_EXPLAIN
+              FROM   COMMON_CODE
+             WHERE   TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_INSTALL_TYPE') IT,
+           SYSTEM_INFORMATION SV,
+           (  SELECT   A.BIT_ID, WM_CONCAT (B.CATE_NAME) CATE_NAMES
+                FROM   BIT A, BIT_CATEGORIZATION B, BIT_GROUP_DETAIL C
+               WHERE   B.BIT_CATE_ID = C.BIT_CATE_ID AND C.BIT_ID = A.BIT_ID
+            GROUP BY   A.BIT_ID
+            ORDER BY   A.BIT_ID ASC) CATE
+  		 WHERE
+  		   BT.INSTALL_STOP_ID = BS.STOP_ID
+           AND ST.BIT_ID = BT.BIT_ID
+           AND BT.BIT_ID = D.BIT_ID(+)
+           AND BT.COMPANY_ID = BC.COMPANY_ID(+)
+           AND BT.BUSINESS_ID = BN.BUSINESS_ID(+)
+           AND TRIM (BT.BIT_TYPE) = TP.CODE(+)
+           AND ST.SERVER_ID = SV.SYSTEM_ID(+)
+           AND BT.BIT_INSTALL_TYPE = IT.CODE(+)
+           AND BT.USE_FLAG = '1'
+           AND BT.BIT_ID = CATE.BIT_ID(+)
+           AND BT.AREA_CODE = #{area_code}
+           <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			AND (BT.BIT_ID LIKE '%'||#{searchWord}||'%' OR BS.STOP_NAME LIKE '%'||#{searchWord}||'%')
+			</if>
+           	<if test="bit_cate_id != '' and bit_cate_id != null">
+           	AND BT.BIT_CATE_ID = #{bit_cate_id}
+           	</if>
+           	<if test="bit_type != '' and bit_type != null">
+           	AND BT.BIT_TYPE = #{bit_type}
+           	</if>
+           	<if test="company_id != '' and company_id != null">
+           	AND BT.COMPANY_ID = #{company_id}
+           	</if>
+           	<if test="business_id != '' and business_id != null">
+           	AND BT.BUSINESS_ID = #{business_id}
+           	</if>
+           	<if test="bit_install_type != '' and bit_install_type != null">
+           	AND BT.BIT_INSTALL_TYPE = #{bit_install_type}
+           	</if>
+		ORDER BY BT.BIT_ID
+	</select> -->
+	
+	<!-- BIT 제어 업데이트 -->
+	<update id="updateBitControl" parameterType="BitVO">
+		UPDATE
+			BIT
+		SET
+			DISP_ST_TIME = #{disp_st_time},
+			DISP_ED_TIME = #{disp_ed_time},
+			FAN_MIN_TEMPERATURE = #{fan_min_temperature},
+			FAN_MAX_TEMPERATURE = #{fan_max_temperature},
+			HEATER_MIN_TEMPERATURE = #{heater_min_temperature},
+			HEATER_MAX_TEMPERATURE = #{heater_max_temperature},
+			INFO_SORT_TYPE = #{info_sort_type},
+			INCOMING_TYPE = #{incoming_type},
+			INCOMING_TIME = #{incoming_time},
+			INCOMING_STOP = #{incoming_stop},
+			STATUS_SENDCYCLE = #{status_sendcycle},
+			IMAGE_SENDCYCLE = #{image_sendcycle},
+			CAPTURE_SENDCYCLE = #{capture_sendcycle},
+			SPEAKER_VOLUME = #{speaker_volume},
+			CRASH_DETECT_FLAG = #{crash_detect_flag},
+			CRASH_DETECT_VALUE = #{crash_detect_value}
+		WHERE
+			BIT_ID = #{bit_id}
+	</update>
+	
+	<!-- BIT 모니터링 리스트 조회 -->
+	<select id="selectBitMonitoringList" parameterType="BitVO" resultType="BitVO">
+		SELECT   CASE
+              WHEN NVL (ST.UPDATE_DT, '00000000000000') <![CDATA[<]]>
+                      TO_CHAR (SYSDATE - 1 / (24 * 60) * 3, 'YYYYMMDDHH24MISS')
+              THEN
+                 '0'
+              ELSE
+                 '1'
+           END
+              AS COM_STATUS,
+           BT.BIT_ID,
+           BT.LOCAL_ID, 
+           BS.STOP_NAME,
+           BT.SCENARIO_ID,
+           BT.PROVIDE_GROUP_ID,
+           BS.ADM_DISTRICT_ID,
+           BT.BIT_TYPE,
+           NVL (CD.CODE_EXPLAIN, '-') AS BIT_TYPE_NAME,
+           BS.SERVICE_ID,
+           BN.BUSINESS_TITLE,
+           ST.SERVER_ID,
+           SV.SYSTEM_NAME SERVER_NAME,
+           BC.COMPANY_NAME,
+           ST.TEMPERATURE,
+           ST.HUMIDITY,
+           ST.DOOR_STATE,
+           ST.DISP_STATE,
+           CATE.CATE_NAMES
+  		FROM   
+  		   BIT BT,
+           BIT_DISPLAY_SCENARIO DS,
+           BUSSTOP BS,
+           BIT_STATUS ST,
+           (SELECT   TRIM (CODE) CODE, CODE_EXPLAIN
+              FROM   COMMON_CODE
+             WHERE   TABLE_NAME = 'BIT' AND FIELD_NAME = 'BIT_TYPE') CD,
+           BUSINESS BN,
+           SYSTEM_INFORMATION SV,
+           BIT_COMPANY BC,
+           (  SELECT   A.BIT_ID, WM_CONCAT (B.CATE_NAME) CATE_NAMES
+                FROM   BIT A, BIT_CATEGORIZATION B, BIT_GROUP_DETAIL C
+               WHERE   B.BIT_CATE_ID = C.BIT_CATE_ID AND C.BIT_ID = A.BIT_ID
+            GROUP BY   A.BIT_ID
+            ORDER BY   A.BIT_ID ASC) CATE
+	   	WHERE       
+	   	   BT.SCENARIO_ID = DS.SCENARIO_ID(+)
+           AND BT.INSTALL_STOP_ID = BS.STOP_ID(+)
+           AND BT.BIT_TYPE = CD.CODE(+)
+           AND BT.BUSINESS_ID = BN.BUSINESS_ID(+)
+           AND BT.BIT_ID = ST.BIT_ID(+)
+           AND ST.SERVER_ID = SV.SYSTEM_ID(+)
+           AND BT.COMPANY_ID = BC.COMPANY_ID(+)
+           AND BT.USE_FLAG = '1'
+           AND BT.BIT_ID = CATE.BIT_ID(+)
+           AND BT.AREA_CODE = #{area_code}
+           	<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			AND (BT.BIT_ID LIKE '%'||#{searchWord}||'%' OR BS.STOP_NAME LIKE '%'||#{searchWord}||'%' OR BS.SERVICE_ID LIKE '%'||#{searchWord}||'%')
+			</if>
+           	<if test="bit_cate_id != ''">
+           	AND BT.BIT_CATE_ID = #{bit_cate_id}
+           	</if>
+           	<if test="bit_type != ''">
+           	AND BT.BIT_TYPE = #{bit_type}
+           	</if>
+           	<if test="business_id != ''">
+           	AND BT.BUSINESS_ID = #{business_id}
+           	</if>
+		ORDER BY   BT.BIT_ID
+	</select>
+	
+	
+	<!-- 김주암 / 이력/통계 - BIT 초기접속 이력 -->
+	<select id="selectBitEarlyConnList" parameterType="BitConnectHistoryVO" resultType="BitConnectHistoryVO">
+		SELECT
+			BS.STOP_NAME,
+			BH.BIT_ID,
+			TO_CHAR(TO_DATE(BH.HS_REGIST_DT,'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS') AS HS_REGIST_DT,
+			BH.CONNECT_IP,
+			TO_CHAR(TO_DATE(BH.DISCONNECT_DT,'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS') AS DISCONNECT_DT,
+			<!-- BH.DISCONNECT_DT, -->
+			BH.KEEPALIVE_TIME
+		FROM
+			BIT_CONNECT_HISTORY BH,
+			BIT BT,
+			BUSSTOP BS
+		WHERE
+			BH.BIT_ID = BT.BIT_ID(+)
+			AND BT.INSTALL_STOP_ID = BS.STOP_ID(+)
+			AND BH.HS_REGIST_DT <![CDATA[>=]]> #{start_date_time}
+			AND BH.HS_REGIST_DT <![CDATA[<=]]> #{end_date_time}
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			AND BH.BIT_ID = #{searchWord}
+			</if>
+	</select>
+	
+	<!-- 김주암 / 분석/가공 - 도착정보 신뢰도 분석 -->
+	<select id="selectArrivalTrustList" parameterType="ArrivalTrustVO" resultType="ArrivalTrustVO">
+		SELECT
+		    TO_NUMBER(BIT_ID) AS BIT_ID, 
+		    STOP_NAME,
+		    SERVICE_ID, 
+		    STOP_ID, 
+		    SUM(ERROR_1) AS ERR_01, 
+		    SUM(ERROR_2) AS ERR_12, 
+		    SUM(ERROR_3) AS ERR_23, 
+		    SUM(ERROR_FLAG) AS ERR_3, 
+		    COUNT(DECODE(ERROR_FLAG, 0, 1, NULL)) AS ERR_4, 
+		    COUNT(ERROR_FLAG) AS TOTAL_CNT, 
+		    ROUND(SUM(ERROR_FLAG) / COUNT(ERROR_FLAG) * 100, 2) AS TRUST 
+		FROM 
+		    (SELECT 
+		        BR.ROUTE_NAME, 
+		        SEL_STOP.STOP_NAME, 
+		        SEL_STOP.STOP_ID, 
+		        SEL_STOP.SERVICE_ID, 
+		        BT.BIT_ID, 
+		        EE.REST_STOP , 
+		        RST_STOP.STOP_NAME AS BUS_STOP_NAME, 
+		        EE.SEND_DT, 
+		        EE.ARRIVAL_DT, 
+		        TO_CHAR(ROUND(MOD(TO_DATE(EE.ESTIMATE_DT,'YYYYMMDDHH24MISS') - TO_DATE(EE.SEND_DT,'YYYYMMDDHH24MISS'),1)* 24 * 60)) AS PROVIDE_DT, 
+		        TO_NUMBER(MOD(TO_DATE(EE.ARRIVAL_DT,'YYYYMMDDHH24MISS') - TO_DATE(EE.SEND_DT,'YYYYMMDDHH24MISS'),1)* 24 * 60 * 60) AS REAL_DT, 
+		        EE.ERROR, 
+		        CASE WHEN ABS(EE.ERROR) <![CDATA[>]]> 180 THEN '0' ELSE '1' END AS ERROR_FLAG, 
+		        CASE WHEN ABS(EE.ERROR) BETWEEN 0 AND 60 THEN '1' ELSE '0' END AS ERROR_1, 
+		        CASE WHEN ABS(EE.ERROR) BETWEEN 61 AND 120 THEN '1' ELSE '0' END AS ERROR_2, 
+		        CASE WHEN ABS(EE.ERROR) BETWEEN 121 AND 180 THEN '1' ELSE '0' END AS ERROR_3 
+		    FROM   
+		        ESTIMATE_INFORMATION_ERROR EE, 
+		        BUSROUTE BR, M_BUSROUTE_STOP VST,    
+		        M_BUSROUTE_STOP RST_RT,   
+		        BUSSTOP  SEL_STOP,    
+		        BUSSTOP  RST_STOP,    
+		        BIT BT 
+		    WHERE 
+		        EE.ROUTE_ID = BR.ROUTE_ID 
+		        AND EE.SEND_DT BETWEEN #{start_date_time} AND #{end_date_time}
+		        AND BR.ROUTESECT_GROUP_ID = VST.ROUTESECT_GROUP_ID 
+		        AND EE.STOP_ORD = VST.STOP_ORD 
+		        AND VST.STOP_ID = SEL_STOP.STOP_ID 
+		        AND BR.ROUTESECT_GROUP_ID = RST_RT.ROUTESECT_GROUP_ID 
+		        AND RST_RT.STOP_ORD = (EE.STOP_ORD - EE.REST_STOP) 
+		        AND RST_STOP.STOP_ID = RST_RT.STOP_ID 
+		        AND SEL_STOP.STOP_ID = BT.INSTALL_STOP_ID(+) 
+		        AND BT.AREA_CODE = #{area_code}
+		        AND EE.REST_STOP BETWEEN #{start_range} AND #{end_range}
+				<if test="(stop_id != null and !stop_id.equalsIgnoreCase('')) and (bit_id != null and !bit_id.equalsIgnoreCase('') and check_all == 'false')">
+				AND SEL_STOP.STOP_ID = #{stop_id}
+				AND BT.BIT_ID = #{bit_id}
+				</if>
+		        ORDER BY EE.ROUTE_ID, SEND_DT) 
+		GROUP BY BIT_ID, STOP_NAME, STOP_ID, SERVICE_ID 
+		ORDER BY TRUST
+	</select>
+	
+	<!-- 김주암 / 분석/가공 - 도착정보 신뢰도 분석/상세 -->
+	<select id="selectArrivalTrustInfo" parameterType="ArrivalTrustVO" resultType="ArrivalTrustVO">
+		SELECT 
+		    BR.ROUTE_NAME, 
+		    EE.ROUTE_ID,
+		    SEL_STOP.STOP_NAME,
+		    BT.BIT_ID,
+		    EE.REST_STOP,
+		    RST_STOP.STOP_NAME AS CURRENT_STOP,
+		    RST_STOP.SERVICE_ID AS CURRENT_SERVICE_ID,
+		    RST_STOP.STOP_ID AS CURRENT_STOP_ID,
+		    TO_CHAR(TO_DATE(EE.SEND_DT,'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS') AS SEND_DT,
+		    TO_CHAR(TO_DATE(EE.ARRIVAL_DT, 'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS') AS ARRIVAL_DT,
+		    TO_CHAR(ROUND(MOD(TO_DATE(EE.ESTIMATE_DT,'YYYYMMDDHH24MISS') - TO_DATE(EE.SEND_DT,'YYYYMMDDHH24MISS'),1)* 24 * 60)) AS PROVIDE_TIME,
+		    TO_CHAR(CAST(MOD(TO_DATE(EE.ESTIMATE_DT,'YYYYMMDDHH24MISS') - TO_DATE(EE.SEND_DT,'YYYYMMDDHH24MISS'),1)* 24 * 60 * 60 AS DECIMAL)) AS ARRIVAL_TIME,
+		    TO_CHAR(TO_DATE(EE.ESTIMATE_DT, 'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS') AS ESTIMATE_DT,
+		    EE.ERROR,
+		    CASE WHEN ABS(EE.ERROR) <![CDATA[>]]> 180 THEN '아니오' ELSE '예' END AS ERROR_PASS_FLAG,
+		    VH.PLATE_NO
+		FROM 
+		    ESTIMATE_INFORMATION_ERROR EE,
+		    BUSROUTE BR,
+		    M_BUSROUTE_STOP VST,
+		    M_BUSROUTE_STOP RST_RT,
+		    BUSSTOP  SEL_STOP,
+		    BUSSTOP  RST_STOP,
+		    BIT BT,
+		    VEHICLE VH
+		WHERE EE.ROUTE_ID = BR.ROUTE_ID
+		    AND EE.SEND_DT BETWEEN #{start_date_time} AND  #{end_date_time}
+		    AND BR.ROUTESECT_GROUP_ID = VST.ROUTESECT_GROUP_ID
+		    AND EE.STOP_ORD = VST.STOP_ORD
+		    AND VST.STOP_ID = SEL_STOP.STOP_ID
+		    AND BT.BIT_ID = #{bit_id}
+		    AND SEL_STOP.STOP_ID = #{stop_id} 
+		    AND BR.ROUTESECT_GROUP_ID = RST_RT.ROUTESECT_GROUP_ID
+		    AND RST_RT.STOP_ORD = (EE.STOP_ORD - EE.REST_STOP)
+		    AND RST_STOP.STOP_ID = RST_RT.STOP_ID
+		    AND SEL_STOP.STOP_ID = BT.INSTALL_STOP_ID(+)
+		    AND EE.VEH_ID = VH.VEH_ID(+)
+			AND EE.REST_STOP BETWEEN #{start_range} AND #{end_range}
+			ORDER BY EE.ROUTE_ID, SEND_DT
+	</select>
+	
+	<!-- 도착정보 신뢰도 그래프 용  -->
+	<select id="selectTrustChartList" parameterType="ArrivalTrustVO" resultType="ArrivalTrustVO">
+    	SELECT 
+	    	SUBSTR(SEND_DT,1,4)||'/'||SUBSTR(SEND_DT,5,2)||'/'||SUBSTR(SEND_DT,7,2) AS SEND_DT,   
+ 				(   
+ 					CASE 
+ 						WHEN ROUTE_TYPE = '11' THEN '직행좌석형시내'   
+  						WHEN ROUTE_TYPE = '12' THEN '좌석형시내'   
+				   	WHEN ROUTE_TYPE = '13' THEN '일반형시내'   
+				   	WHEN ROUTE_TYPE = '21' THEN '직행좌석형 농어촌'   
+				   	WHEN ROUTE_TYPE = '22' THEN '좌석형 농어촌'
+				   	WHEN ROUTE_TYPE = '23' THEN '일반형 농어촌'
+				   	WHEN ROUTE_TYPE = '30' THEN '마을버스'
+				   	WHEN ROUTE_TYPE = '41' THEN '고속형 시외'   
+				   	WHEN ROUTE_TYPE = '42' THEN '좌석형 시외'   
+				   	WHEN ROUTE_TYPE = '43' THEN '일반형 시외'
+				   	WHEN ROUTE_TYPE = '99' THEN '공항버스' ELSE '기타' END
+			) BRT_TYPE_NAME,   
+	      	B.ROUTE_NAME,  
+	      	B.ROUTE_TYPE,   
+	      	A.REST_STOP,    
+	      	A.ERROR,
+	      	BT.BIT_ID  
+		FROM  
+			ESTIMATE_INFORMATION_ERROR A, 
+     			BUSROUTE B, M_BUSROUTE_STOP C,  
+     			BUSSTOP D, BIT BT
+		WHERE 
+			1=1                                                            
+		    AND A.ROUTE_ID =B.ROUTE_ID
+		    AND B.ROUTESECT_GROUP_ID =  C.ROUTESECT_GROUP_ID
+		    AND A.STOP_ORD = C.STOP_ORD
+		    AND C.STOP_ID = D.STOP_ID                 
+		    AND A.SEND_DT BETWEEN #{start_date_time} AND  #{end_date_time}
+		    AND D.STOP_ID = #{stop_id}
+		    AND B.ROUTE_ID = #{route_id}
+		    AND C.STOP_ID = BT.INSTALL_STOP_ID
+		    AND BT.BIT_ID = #{bit_id}
+			AND A.REST_STOP BETWEEN #{start_range} AND #{end_range}
+		ORDER BY A.REST_STOP
+	</select>
+	
+	
+	<!-- 분석/가공 - 지점별 통행시간 -->
+	<select id="selectBitPassTimeList" parameterType="MProcessCurrentVO" resultType="MProcessCurrentVO">
+		SELECT 
+			BS1.STOP_NAME STOP_NAME1, 
+			BS2.STOP_NAME STOP_NAME2, 
+			MPC.* 
+		FROM 
+			M_PROCESS_CURRENT MPC, 
+			BUSSTOP BS1,
+			BUSSTOP BS2
+		WHERE 
+			MPC.ST_NODE_ID = BS1.STOP_ID(+)
+			AND MPC.ED_NODE_ID = BS2.STOP_ID(+)
+	</select>
+</mapper>

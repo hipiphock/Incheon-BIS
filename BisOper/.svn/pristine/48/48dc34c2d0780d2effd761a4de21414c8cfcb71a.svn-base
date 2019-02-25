@@ -1,0 +1,171 @@
+package com.bis.dao;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.stereotype.Repository;
+
+import com.bis.vo.re.TbAdmBusVO;
+import com.bis.vo.re.TbAdmBusrouteVO;
+import com.bis.vo.re.TbAdmGarageVO;
+import com.bis.vo.re.TbBmcMdtstatVO;
+import com.bis.vo.re.TbBmhIncidRespVO;
+import com.bis.vo.re.TbBmhRunevtcollVO;
+import com.bis.vo.re.TbBmmIncidScnroVO;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 운영단말
+ * Business Name  : 
+ * Class Name 	  : BusDAO.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                        수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2017.010.20	    			 김주암                    최초생성
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Repository("busDAO")
+public class BusDAO {
+	
+	@Resource
+	private SqlSessionTemplate sqlSession;
+	
+	/**
+	 * 부당운행조희 - 우측 부당운행검색리스트 테이블 (v0108)
+	 */
+	public List<TbBmhRunevtcollVO> selectViolRunList(TbBmhRunevtcollVO vo) throws SQLException {
+		return sqlSession.selectList("BUS.selectViolRunList", vo);
+	}
+	
+	/**
+	 * 부당운행조희 - 좌측 버스목록 테이블 (v0108)
+	 */
+	public List<TbAdmBusVO> selectBusList(TbAdmBusVO vo) throws SQLException {
+		return sqlSession.selectList("BUS.selectBusList", vo);
+	}
+	
+	/**
+	 * 운행종합상황조회 - 왼쪽 테이블에서 한 row를 더블클릭시 나타나는 오른쪽 아래 테이블 (v0109)
+	 */
+	public List<TbBmhRunevtcollVO> selectBusViolList(TbBmhRunevtcollVO vo) throws SQLException {
+		return sqlSession.selectList("BUS.selectBusViolList", vo); 
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 차고지명 카테고리 정보  (v0603) 
+	 */
+	public List<TbAdmGarageVO> selectGarageCateList() throws SQLException {
+		return sqlSession.selectList("BUS.selectGarageCateList");
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 신규등록 시  쓸  garageapid (v0603) 
+	 */
+	public TbAdmGarageVO selectMaxGarageapid() throws SQLException {
+		return sqlSession.selectOne("BUS.selectMaxGarageapid");
+	}
+	
+	/**
+	 * 차량단말기 상태정보조회/제어 - 차량단말기상태검색 (v0604)
+	 */
+	public List<TbBmcMdtstatVO> selectMdtStat(TbBmcMdtstatVO vo) throws SQLException {
+		return sqlSession.selectList("BUS.selectMdtStat", vo);
+	}
+	
+    /**
+     * 버스 운행 이력/통계
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public List<TbBmhRunevtcollVO> selectOperationHisList(TbBmhRunevtcollVO vo)throws SQLException {
+		return sqlSession.selectList("BUS.selectOperationHisList", vo);
+	}	
+	
+	/**
+	 * 버스 돌발 이력/통계
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<TbBmhRunevtcollVO> selectBusIncidentHisList(TbBmhRunevtcollVO vo)throws SQLException{
+		return sqlSession.selectList("BUS.selectBusIncidentHisList", vo);
+	}
+	
+	/**
+	 * 버스 위반 이력/통계
+	 * @param voa
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<TbBmhRunevtcollVO> selectBusViolationHisList(TbBmhRunevtcollVO vo)throws SQLException {
+		return sqlSession.selectList("BUS.selectBusViolationHisList", vo);
+	}
+	
+	/**
+	 * 실시간 버스 돌발 목록 조회
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<TbBmhRunevtcollVO> selectBusInciList() throws SQLException {
+		return sqlSession.selectList("BUS.selectBusInciList");
+	}
+
+	 
+
+
+	
+	 /**
+     * 차량 기초정보 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+   public List<TbAdmBusrouteVO> selectBusBasicInfoList(TbAdmBusrouteVO vo) throws SQLException{
+      return sqlSession.selectList("BUS.selectBusBasicInfoList", vo);
+   }
+
+   /**
+     * 처리여부 변경
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+   public int updateBusTreatyn(TbAdmBusrouteVO vo) {
+      return sqlSession.update("BUS.updateBusTreatyn", vo);
+   }
+
+	
+	/**
+	 * 버스운행관리 / 돌발상황관리 / 돌발대응 시나리오 관리
+	 * added by 박주언
+	 */
+	public List<TbBmhIncidRespVO> selectIncidReactHisList(TbBmhIncidRespVO vo) throws SQLException{
+		return sqlSession.selectList("BUS.selectIncidReactHisList", vo);
+	}
+
+	/**
+	 * 버스운행관리 / 돌발상황관리 / 돌발대응 시나리오 관리
+	 * added by 박주언
+	 */
+	public List<TbBmmIncidScnroVO> selectIncidReactScnroList(TbBmmIncidScnroVO vo) {
+		return sqlSession.selectList("BUS.selectIncidReactScnroList", vo);
+	}
+
+	public List<TbBmhIncidRespVO> selectRespHistList(TbBmhIncidRespVO vo) {
+		return sqlSession.selectList("BUS.selectRespHistList", vo);
+	}
+
+	
+	
+	/***************************** 이하 DB 변경 전 *****************************/
+	
+}

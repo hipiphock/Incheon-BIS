@@ -1,0 +1,39 @@
+package com.bis.service;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+import com.bis.vo.re.TbAdhRoutepnodeupdVO;
+import com.bis.vo.re.TbDmhBusrunrecVO;
+import com.bis.vo.re.TbDmhTmspaceChartVO;
+import com.bis.vo.re.TbDmsAllocobsrvVO;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 회차
+ * Business Name  : BIT 관련
+ * Class Name 	  : RunService.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.30	박주언		created new file
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+public interface RunService {
+
+	List<TbDmhBusrunrecVO> selectBusRunList(TbDmhBusrunrecVO vo) throws SQLException;
+
+	List<Map<String, String>> selectRunObey(TbDmsAllocobsrvVO vo) throws SQLException; //운행평가 - 배차준수율통계조회 - 그리드/그래프 데이터
+
+	List<TbDmsAllocobsrvVO> selectRunObeyRoutenoList(TbDmsAllocobsrvVO vo)throws SQLException; //운행평가 - 배차준수율통계조회 - 노선명 출력 리스트
+
+	List<TbDmhTmspaceChartVO> selectTimeSpaceBusRunList(TbDmhTmspaceChartVO vo) throws SQLException;	// 이력통계/분석 - 운행이력조회 - 시공간 운행이력 조회
+
+	List<TbAdhRoutepnodeupdVO> selectStopListforGrid(TbAdhRoutepnodeupdVO vo) throws SQLException;	// 이력통계/분석 - 운행이력조회 - 시공간 운행이력 조회
+
+}

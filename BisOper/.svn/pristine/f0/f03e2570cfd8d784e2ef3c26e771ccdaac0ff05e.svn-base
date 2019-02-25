@@ -1,0 +1,146 @@
+$(document).ready(function(){
+	appendLoader("로딩중");
+	initBox();
+	initGrid();
+	initEvent();
+});
+
+var model = [
+	{label:"전송일시",		name:"snddt",		index:"snddt"},
+	{label:"전송자명"},
+	{label:"노선번호",		name:"routeno",		index:"routeno"},
+	{label:"버스ID",		name:"busid",		index:"busid"},
+	{label:"차량번호"},
+	{label:"단말기ID",	name:"mdtid",		index:"mdtid"},
+	{label:"메시지유형",	name:"msgtype",		index:"msgtype"},
+	{label:"전송대상",		name:"msgtargetcd",	index:"target"},
+	{label:"메시지내용",	name:"msgcontent",	index:"content"},
+	{label:"전송결과"}
+];
+
+//function for initalizing boxes - first, second
+function initBox(){
+	// initializing first box - bus company
+	ajaxCall("./route/selectCompList.do", null, null, dealwithCompany, null);
+	// initializing second box - bus route
+	ajaxCall("./route/selectRouteList.do", null, null, dealwithRoute, null);
+}
+
+//function for company selection box
+function dealwithCompany(data){
+	var parsedData = data.companyList;
+	var select = document.getElementById("busCompany");
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].compid;
+		opt.text = parsedData[i].compnm;
+		select.appendChild(opt);
+	}
+}
+
+//function for route selection box
+function dealwithRoute(data){	
+	var select = document.getElementById("busRoute");
+	select.disabled = true;
+	select.options.length = 0;
+	var opt = document.createElement("option");
+	opt.value = "";
+	opt.text = "전체";
+	select.appendChild(opt);
+	select.options[0].selected = "selected";
+	var parsedData = data.resultList;
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].routeid;
+		opt.text = parsedData[i].routeno;
+		select.appendChild(opt);
+	}
+	select.disabled = false;
+}
+
+function initGrid(){
+	makeGrid("#message_list", model, 800, null, null, null);
+	$(window).bind('resize', function() {
+		$("#message_list").jqGrid('setGridHeight', $(".main_chart").height() - 23);
+		$("#message_list").jqGrid('setGridWidth', $(".main_chart").width());
+
+	}).trigger('resize');
+	loadGrid();
+}
+
+function loadGrid(){
+	showLoader();
+	var param = {
+		snddt	: $("#input_date").val(),
+		carno	: $("#input_carno").val(),
+		msgtpcd	: $("#select_msgtpcd").val()
+	}
+	console.log(param);
+	reloadGrid("#message_list", "./message/selectMessageList.do", param, "resultList");
+}
+
+function initEvent(){
+	// 새로고침
+	$("#btn_refresh").click(function(){
+		location.reload();
+	});
+	
+	$("#btn_search").click(function(){
+		loadGrid();
+	})
+	
+	// when you change company
+	$("#busCompany").change(function(){
+		var compID = $("#busCompany option:selected").val();
+		if(compID == ""){
+			ajaxCall("./route/selectRouteList.do", null, null, dealwithRoute, null);
+		}
+		else ajaxCall("./route/selectRouteListbyCompany.do", {compid:compID}, null, refreshRoute, null);
+		function refreshRoute(data){
+			dealwithRoute(data);
+
+		}
+	});
+	
+	// 엑셀 다운로드
+	$("#btn_excel").click(function(){
+		if(0 < $("#message_list").getGridParam("reccount"))
+			excelDownload($(".pop_title h2").text(), "#message_list");
+		else
+			showAlert("조회된 내용이 없습니다.");
+	});
+	
+	// 다운로드 함수
+	function excelDownload(title, grid_id){
+		$("#excelDown").remove();
+		var grid = $(grid_id);
+		
+		var form = document.createElement("FORM");
+		form.setAttribute("id", "excelDown");
+		form.action = "./stop/downloadExcelFile.do";
+		form.method = "POST";
+		
+		var fileName = JSON.stringify(title);
+		var param = document.createElement("INPUT");
+		var rowData = grid.jqGrid("getRowData");
+		var columnData = JSON.stringify(rowData);
+		
+		var columnLabel = JSON.stringify(grid.jqGrid("getGridParam", "colNames"));
+		
+		var idData = grid.jqGrid("getGridParam", "colModel");
+		var columnName = [];
+		$.each(idData, function(index, value){
+			columnName.push(value.name);
+		})
+		columnName = JSON.stringify(columnName);
+		
+		param.type = "HDDEN";
+		param.name = "json";
+		param.value = fileName + columnLabel + columnName + columnData;
+		
+		form.appendChild(param);
+		
+		document.body.appendChild(form);
+		inquiryFileDownload("excelDown", true);
+	}
+}

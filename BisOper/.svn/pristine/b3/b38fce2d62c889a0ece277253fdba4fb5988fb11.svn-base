@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="USM">
+
+	<!-- 버스운행관리 / 돌발상황관리 / 돌발상황 대응이력관리 -->
+	<!-- added by 박주언 -->
+	<select id="selectIncidReactHisList" parameterType="TbBmhIncidRespVO" resultType="TbBmhIncidRespVO">
+	<!-- PARAMETER : INCID_OCCURDT , INCIDTPCD, INCIDCURYN -->
+	SELECT 
+     	HISTNO, 
+	    INCIDID, 
+    	UPD_REGSEQ, 
+	    FC_BUS_CARREGNO(BUSID) CARNO, 
+    	BUSID, 
+	    MDTID, 
+	    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO, 
+	    ROUTEID, 
+	    FC_LINK_LINKNM(OCCUR_LINKID) LINKNM, 
+	    OCCUR_LINKID, 
+	    FC_CODE_CDNM('INCIDTPCD', INCIDTPCD) INCIDTPCD, 
+	    INCIDTPCD, 
+	    FC_CODE_CDNM('INCIDS.RCCD', INCIDSRCCD) INCIDSRCCD, 
+	    INCIDSRCCD, 
+	    FC_CODE_CDNM('INCIDRESPTPCD', INCIDRESPTPCD) INCIDRESPTPCD, 
+	    INCIDRESPTPCD, 
+    	FC_CODE_CDNM('INCIDCURYN', INCIDCURYN) INCIDCURYN, 
+    	INCIDCURYN, 
+    	FC_CODE_CDNM('INFOOFFERYN', INFOOFFERYN) INFOOFFER, 
+    	INFOOFFERYN, 
+    	TO_CHAR(INCID_OCCURDT, 'YY-MM-DD HH24:MI:SS') INCID_OCCURDT, 
+    	TO_CHAR(INCID_COLLDT, 'YY-MM-DD HH24:MI:SS') INCID_COLLDT, 
+    	TO_CHAR(INCID_ENDDT, 'YY-MM-DD HH24:MI:SS') INCID_ENDDT, 
+    	INCID_DETAIL, 
+    	DESCR
+	FROM
+		TB_BMH_INCIDRESP
+	WHERE INCIDID = INCIDID
+		<if test="searchStartDate != null and searchEndDate != null
+				and !searchStartDate.equalsIgnoreCase('')
+				and !searchEndDate.equalsIgnoreCase('')">
+		<![CDATA[
+		AND #{searchStartDate} <= TO_CHAR(INCID_OCCURDT, 'YYMMDD') 
+ 		AND	TO_CHAR(INCID_OCCURDT, 'YYMMDD') <= #{searchEndDate}
+ 		]]>
+ 		</if>
+ 		<if test="incidtpcd != null and !incidtpcd.equalsIgnoreCase('')">
+ 		AND INCIDTPCD = #{incidtpcd} 
+ 		</if>
+ 		<if test="incidcuryn != null and !incidcuryn.equalsIgnoreCase('')">
+		AND INCIDCURYN = #{incidcuryn}
+ 		</if>
+	ORDER BY HISTNO DESC
+	</select>
+	
+	<!-- 버스운행관리 / 돌발상황관리 / 돌발대응시나리오관리  -->
+	<!-- added by 박주언 -->
+	<select id="selectIncidReactScnroList" parameterType="TbBmmIncidScnroVO" resultType="TbBmmIncidScnroVO">
+	SELECT * 
+    	<!-- REGSEQ, 
+    	FC_CODE_CDNM('INCIDTPCD', INCIDTPCD) CD, 
+    	FC_CODE_CDNM('INCIDRESPTPCD', INCIDRESPTPCD) SUBCD, 
+    	DETAIL  -->
+	FROM TB_BMM_INCIDSCNRO
+	<where>
+		<if test="incidtpcd != null and !incidtpcd.equalsIgnoreCase('')">
+  		INCIDTPCD = #{incidtpcd} 
+  		</if>
+  	 	<if test="incidresptpcd != null and !incidresptpcd.equalsIgnoreCase('')"> 
+  		AND INCIDRESPTPCD = #{incidresptpcd} 
+  		</if>
+  	</where>
+  	ORDER BY REGSEQ
+	</select>
+	
+	<!-- 버스운행관리 / 돌발상황관리 / 돌발상황발생대응관리 -->
+	<!-- added by 박주언 -->
+	<select id="selectRespHistList" parameterType="TbBmhIncidRespVO" resultType="TbBmhIncidRespVO">
+	SELECT 
+		HISTNO,
+		INCIDID,
+		UPD_REGSEQ,
+		FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO, 
+		ROUTEID, 
+		FC_CODE_CDNM('INCIDTPCD', INCIDTPCD) INCIDTYPE,
+		INCIDTPCD,
+		FC_CODE_CDNM('INCIDSRCCD', INCIDSRCCD) INCIDSRC,
+		INCIDSRCCD,
+		FC_CODE_CDNM('INCIDRESPTPCD', INCIDRESPTPCD) INCIDRESPTYPE,
+		INCIDRESPTPCD,
+		FC_CODE_CDNM('INCIDCURYN', INCIDCURYN) INCIDCUR,
+		INCIDCURYN,
+		FC_CODE_CDNM('INFOOFFERYN', INFOOFFERYN) INFOOFFER,
+		INFOOFFERYN,
+		INCID_DETAIL,
+		FC_BUS_CARREGNO(BUSID) CARNO,
+		BUSID, 
+    	MDTID,
+		FC_LINK_LINKNM(OCCUR_LINKID) LINKNM,
+		OCCUR_LINKID AS LINKID,
+		TO_CHAR(INCID_OCCURDT, 'YY-MM-DD HH24:MI:SS') OCCURDT, 
+    	TO_CHAR(INCID_COLLDT, 'YY-MM-DD HH24:MI:SS') COLLDT, 
+    	TO_CHAR(INCID_ENDDT, 'YY-MM-DD HH24:MI:SS') ENDDT,
+    	DESCR
+	FROM TB_BMH_INCIDRESP
+	<if test="incidtpcd != null and !incidtpcd.equalsIgnoreCase('')">
+	WHERE INCIDTPCD = #{incidtpcd}
+	</if> 
+	ORDER BY HISTNO DESC
+	</select>
+	
+	<!-- 버스운행관리 / 돌발상황관리 / 돌발대응시나리오관리 / 신규등록 -->
+	<!-- added by 박주언 -->
+	<insert id="insertIncidReactScnro" parameterType="TbBmmIncidScnroVO">
+	INSERT INTO TB_BMM_INCIDSCNRO
+	VALUES(
+		#{incidtpcd},
+		#{regseq},
+		#{incidresptpcd},
+		#{detail}
+	)
+	</insert>
+	
+	<!-- 버스운행관리 / 돌발상황관리 / 돌발대응시나리오관리 / 수정 -->
+	<!-- added by 박주언 -->
+	<update id="modifyIncidReactScnro" parameterType="TbBmmIncidScnroVO">
+	UPDATE  TB_BMM_INCIDSCNRO
+	SET     INCIDTPCD = #{incidtpcd, jdbcType=VARCHAR},
+        	INCIDRESPTPCD = #{incidresptpcd, jdbcType=VARCHAR},
+        	DETAIL = #{detail, jdbcType=VARCHAR}
+	WHERE	REGSEQ = #{regseq}
+	</update>
+	
+	<!-- 버스운행관리 / 돌발상황관리 / 돌발대응시나리오관리 / 삭제 -->
+	<!-- added by 박주언 -->
+	<delete id="deleteIncidReactScnro" parameterType="TbBmmIncidScnroVO">
+	DELETE FROM TB_BMM_INCIDSCNRO
+	WHERE       REGSEQ = #{regseq}
+	</delete>
+	
+	<!-- 버스운행관리 / 돌발상황관리 / 돌발상황발생대응관리 / 신규등록 -->
+	<!-- added by 박주언 -->
+	<insert id="insertReaction" parameterType="TbBmhIncidRespVO">
+	INSERT INTO tb_bmh_incidresp (
+		histno,
+		incidid,
+        upd_regseq,
+        busid,
+        mdtid,
+        routeid,
+        occur_linkid,
+        incidtpcd,
+        incidsrccd,
+        incidresptpcd,
+        incidcuryn,
+        infoofferyn,
+        incid_occurdt,
+        incid_colldt,
+        incid_enddt,
+        incid_detail,
+        descr
+	)
+	VALUES (
+		sq_bmh_incidresp_histno.nextval,
+        #{incidid, jdbcType=VARCHAR},
+        1,
+		FC_BUS_BUSID(#{busid}),
+		#{mdtid, jdbcType=INTEGER},
+		#{routeid, jdbcType=INTEGER},
+		#{linkid, jdbcType=VARCHAR},
+        #{incidtpcd, jdbcType=VARCHAR},
+        #{incidsrccd, jdbcType=VARCHAR},
+		#{incidresptpcd, jdbcType=VARCHAR},
+		'1',
+		#{infoofferyn, jdbcType=VARCHAR},
+		TO_DATE(#{incid_occurdt}, 'YY-MM-DD HH24:MI:SS'),
+		SYSDATE,
+		NULL,
+        #{incid_detail, jdbcType=VARCHAR},
+        #{descr, jdbcType=VARCHAR}
+	)
+	</insert>
+	
+	<!-- 버스운행관리 / 돌발상황관리 / 돌발상황발생대응관리 / 수정 -->
+	<!-- added by 박주언 -->
+	<update id="modifyReaction" parameterType="TbBmhIncidRespVO">
+	
+	</update>
+
+</mapper>

@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ROUTE">
+
+	<!-- 도로 조회 -->
+	<select id="selectRoadList" resultType="TbAdmBusrouteVO">
+		SELECT ROADNO, ROADNM From TB_ADM_ROAD WHERE USEYN = '1' ORDER BY ROADNM ASC
+	</select>
+	
+	<!-- 노선 팝업 검색창 -->
+	<select id="selectRouteList" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+		SELECT 
+		    BR.ROUTEID, 
+		    BR.ROUTENO, 
+		    BR.ROUTEDESC,
+		    FC_CODE_CDNM('ROUTETPCD',BR.ROUTETPCD) ROUTETPCD
+		FROM 
+		    TB_ADM_BUSROUTE BR     
+		WHERE 
+		    BR.USEYN = '1'
+		    <!-- AND BR.AREA_CODE = #{area_code} //해당 컬럼 없음 -->		    
+		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		    AND BR.ROUTEID = #{searchWord}
+		    </if>
+		    ORDER BY BR.ROUTENO		
+	</select>
+	
+	<!-- 전체버스  조회-->
+ 	<select id="selectMapBusList" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+ 		SELECT
+ 		    BUS.CARREGNO, 
+		    BUS.BUSID,
+		    BRUN.RUNDISTINCTCD, <!-- RUNSTATCD / 해당 컬럼이 더 적합하나 data 수집되지 않는 것으로 사료  -->
+		    BRUN.EVTTPCD,
+		    BRUN.ROUTEID,
+		    <!-- BRUN.CURRENT_BOARD_COUNT, //현재 탑승인원 정보 없음 -->
+		    BRUN.POSX LNG,
+		    BRUN.POSY LAT,
+		    BC.COMPNM,
+		    BR.ROUTENO,
+		    BRUNCODE.CDNM AS BRUN_STATUS,
+            CURCODE.CDNM AS CUR_STATUS,
+		    BUS.LOWPLATEYN, 
+		    BRUN.HEADING,
+		    BRUN.RUNSPD,
+		    TO_CHAR(BRUN.EVT_OCCURDT,'YYYY-MM-DD HH24:MI:SS')AS UPDATE_DT
+		FROM 
+		    TB_BMC_BUSRUN BRUN, 
+		    TB_ADM_BUS BUS, 
+		    TB_ADM_BUSROUTE BR, 
+		    TB_ADM_BUSCOMP BC,            
+		   (SELECT * FROM TB_OMM_CODE WHERE CDCATEGID = 'RUNDISTINCTCD') BRUNCODE,
+		   (SELECT * FROM TB_OMM_CODE WHERE CDCATEGID = 'EVTTPCD') CURCODE
+		WHERE
+		    BRUN.BUSID = BUS.BUSID(+)
+		    AND BRUN.ROUTEID = BR.ROUTEID(+)
+		    AND BUS.COMPID = BC.COMPID(+)
+		    AND BRUN.RUNDISTINCTCD = BRUNCODE.CD(+)
+            AND BRUN.EVTTPCD = CURCODE.CD(+)
+            AND BRUN.EVT_OCCURDT <![CDATA[>=]]> (SYSDATE - 20/1440)
+      		AND BRUN.RUNDISTINCTCD NOT IN (0, 1)
+		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		   	AND BRUN.ROUTEID = #{searchWord}		    
+		    </if>
+		ORDER BY BRUN.ROUTEID
+	</select>
+	
+ 	<!-- 선택 노선의 버스위치 조회 -->
+ 	<select id="selectBusLocList" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+		SELECT 
+		    BRUN.*, 
+		    BUS.CARREGNO, 
+		    BUSTPCD, 
+		    BUS.LOWPLATEYN,
+		    BUS.COMPID, 
+		    BR.ROUTETPCD, 
+		    BR.ROUTENO,
+		    BRUN.POSY AS LAT,
+		    BRUN.POSX AS LNG
+		FROM 
+		    TB_BMC_BUSRUN BRUN, 
+		    TB_ADM_BUS BUS, 
+		    TB_ADM_BUSROUTE BR
+		WHERE 
+		    BRUN.BUSID = BUS.BUSID(+)
+		    AND BRUN.ROUTEID = BR.ROUTEID
+		    AND BRUN.EVT_OCCURDT <![CDATA[>=]]> (SYSDATE - 20/1440)
+      		AND BRUN.RUNDISTINCTCD NOT IN (0, 1)
+			AND BRUN.ROUTEID = #{searchWord}
+ 	</select>
+ 	
+ 	<!-- 선택 노선 정보 조회 -->
+ 	<select id="selectRouteInfo" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+	 	SELECT DISTINCT
+		    A.ROUTENO,
+		    A.ROUTEID,
+		    D.CDNM,
+		    B.BSTOPNM AS ST_STOP_NAME,
+		    C.BSTOPNM AS ED_STOP_NAME
+		FROM 
+		    TB_ADM_BUSROUTE A, TB_ADM_BUSSTOP B, TB_ADM_BUSSTOP C,
+            (SELECT * FROM TB_OMM_CODE WHERE CDCATEGID = 'ROUTETPCD') D
+		WHERE
+		    A.ROUTEID = #{searchWord}
+		    AND A.ROUTETPCD = D.CD
+		    AND A.ORIGIN_BSTOPID = B.BSTOPID
+		    AND A.DEST_BSTOPID = C.BSTOPID
+ 	</select>
+	
+	<!-- 차량 정보 조회  & 차량 선택 팝업 --> 		
+	<select id="selectVehicleList" parameterType="TbAdmBusVO" resultType="TbAdmBusVO">
+		<choose>
+			<when test='view_flag == "popup"'><!-- 차량 선택 팝업 -->
+				SELECT 
+					B.*, 
+					CODE.CDNM AS BUS_TYPE_NAME
+				FROM
+					TB_ADM_BUS B, 
+					(SELECT * FROM TB_OMM_CODE WHERE CDCATEGID = 'BUSTPCD' ORDER BY CD) CODE
+				WHERE
+					B.BUSTPCD = CODE.CD(+)
+					<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+					AND (B.BUSID LIKE '%'||#{searchWord}||'%' OR B.CARREGNO LIKE '%'||#{searchWord}||'%') 
+					</if>
+					ORDER BY BUSID
+			</when>
+			<otherwise><!-- 차량 정보 조회 -->
+				SELECT 
+					B.BUSID, B.CARREGNO, B.BUSTPCD, 
+					B.LOWPLATEYN, B.COMPID, B.VEHCAPA, B.USEYN, B.DESCR,
+					<!-- B.OBE_ID, B.AREA_CODE / 대체 컬럼 불명하여 제외 -->
+					TO_CHAR(B.REGYMD,'YYYY-MM-DD HH24:MI:SS') AS REGIST_DT,
+					TO_CHAR(B.UPDDT,'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DT,
+					BS_TYPE.CDNM AS BUS_TYPE_NAME,
+                    BC.COMPNM
+				FROM
+					TB_ADM_BUS B,
+				    (SELECT * FROM TB_OMM_CODE WHERE CDCATEGID = 'BUSTPCD') BS_TYPE,
+				    TB_ADM_BUSCOMP BC
+			    WHERE
+                    B.BUSTPCD = BS_TYPE.CD(+)
+					AND B.COMPID = BC.COMPID(+)					
+					<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+					AND (B.CARREGNO LIKE '%'||#{searchWord}||'%' OR B.BUSID LIKE '%'||#{searchWord}||'%')
+					</if>
+					ORDER BY CARREGNO
+			</otherwise>		
+		</choose>
+	</select>
+		
+	<!-- 김주암 추가 / 기반정보 - 노선 시간표 관리(왼쪽) -->
+	<select id="selectRouteScheduleList" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+		SELECT
+			BR.ROUTEID,
+		    BR.ROUTENO,
+		    BR.ROUTETPCD,
+		    BT.CDNM AS ROUTE_TYPE_NAME,
+		    BR.USEYN,
+		    BR.COMPID,
+            BC.COMPNM
+		FROM
+			(SELECT A.*, B.COMPID FROM TB_ADM_BUSROUTE A, TB_ADM_ROUTETOCOMP B
+            WHERE A.ROUTEID = B.ROUTEID(+)) BR,<!-- 한 노선에 3개 회사가 적용된 사례 발견 / 중복노선 select 가능 -->
+		    (SELECT TRIM(CD) CD, CDNM 
+		    FROM TB_OMM_CODE
+		    WHERE CDCATEGID = 'ROUTETPCD' ORDER BY CD) BT,            
+		    TB_ADM_BUSCOMP BC
+		WHERE 
+		    BR.ROUTETPCD = BT.CD(+)
+		    AND TRIM(BR.USEYN) = '1'
+		    AND BR.COMPID = BC.COMPID(+)
+		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			    AND
+			    <choose>
+				    <when test="routeid == routeno"><!-- 둘 모두 체크, 또는 해제 상태 -->
+					    (BR.ROUTEID LIKE '%'||#{searchWord}||'%'
+						OR BR.ROUTENO LIKE '%'||#{searchWord}||'%')
+					</when>
+				    <when test="routeid == 'true'">
+				    	BR.ROUTEID LIKE '%'||#{searchWord}||'%'
+				    </when>
+				    <when test="routeno == 'true'">
+				    	BR.ROUTENO LIKE '%'||#{searchWord}||'%'
+				    </when>
+			    </choose>
+		    </if>
+			ORDER BY BR.ROUTENO
+	</select>	
+		
+	<!-- 김주암 추가 / 기반정보 - 노선 시간표 관리(오른쪽) -->
+	<select id="selectRouteScheduleInfo"  parameterType="TbAdmRouteschedVO" resultType="TbAdmRouteschedVO">
+	<!-- 전반적으로 변경되어 UI 및 변경 내용 저장방식 수정 요함(delete, insert) -->
+		SELECT
+			BO.*, 
+			CODE_TAB.CDNM OPERATION_TYPE
+		FROM
+		    TB_ADM_ROUTESCHED BO,
+            (SELECT * FROM TB_OMM_CODE WHERE CDCATEGID = 'DOWTPCD') CODE_TAB            
+		WHERE
+            BO.DOWTPCD = CODE_TAB.CD
+		    AND BO.ROUTEID = #{routeid}            
+		    ORDER BY DOWTPCD
+	</select>
+		
+	<!-- 기반정보 - 노선  정보 조회 -->
+	<select id="selectRouteInfoList" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+		SELECT 
+      		C.COMPNM,
+      		R.ROUTEID,
+			R.ROUTENO,
+      		FC_CODE_CDNM('ROUTETPCD', R.ROUTETPCD) AS ROUTETPCD,
+      		R.ROUTEDESC,
+      		R.PASS_BSTOPCNT,
+      		R.ROUTELEN / 1000 AS ROUTELEN,
+      		R.ROUTECURV,
+      		FC_CODE_CDNM('JOINTALLOCYN', R.JOINTALLOCYN) AS JOINTALLOCYN,
+      		FC_BUSSTOP_BSTOPNM(R.ORIGIN_BSTOPID) AS ORIGIN_BSTOPID,
+      		FC_BUSSTOP_BSTOPNM(R.DEST_BSTOPID) AS DEST_BSTOPID,
+      		R.APP_STARTDT,
+      		R.APP_ENDDT,
+      		FC_CODE_CDNM('USEYN', R.USEYN) AS USEYN,
+      		R.LIC_BUSCNT,
+      		R.RSV_BUSCNT,
+      		R.RUNDIST / 1000 AS RUNDIST,
+      		R.RUNTM / 60 AS RUNTM,
+      		R.RUNCNT,
+      		R.ADMINNM,
+      		R.UPD_USERID,
+      		R.UPDDT
+		FROM 
+			TB_ADM_BUSROUTE R, TB_ADM_ROUTETOCOMP RC,
+      		TB_ADM_BUSCOMP C
+    	WHERE
+      		R.ROUTEID = RC.ROUTEID
+      		AND RC.COMPID = C.COMPID
+      		<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+      		AND (R.ROUTEID like '%'||#{searchWord}||'%'
+      			OR R.ROUTENO like '%'||#{searchWord}||'%')
+      		</if>
+    		ORDER BY C.COMPNM
+	</select>
+	
+	<!-- 기반정보 - 경로정보 상세(아래) -->
+	<!-- NODEGBCD  2:정류장 1:지점  -->
+	<select id="selectViaNodeList" parameterType="TbAdmNodeVO" resultType="TbAdmNodeVO">
+		SELECT 
+			A.BSTOPSEQ,
+			A.NODEID,
+			FC_BUSSTOP_SHORT_BSTOPID(A.NODEID) AS SHORTID,
+			B.NODENM,
+			FC_CODE_CDNM('NODEGBCD', A.NODEGBCD) NODEGBCD, 
+			A.BSTOP_SECTDIST,
+			A.PATHSEQ,
+			FC_CODE_CDNM('DIRCD', A.DIRCD) AS DIRCD,
+			FC_CODE_CDNM('ROUTETPCD', C.ROUTETPCD) ROUTETPCD,
+      		FC_BUSSTOP_BSTOPNM(C.ORIGIN_BSTOPID) ST_BSTOPNM,
+      		FC_BUSSTOP_BSTOPNM(C.DEST_BSTOPID) ED_BSTOPNM,
+      		A.ROUTEID,
+      		C.ROUTENO,
+			N.LAT,
+      		N.LNG
+		FROM
+			TB_ADM_ROUTEPNODE A, TB_ADM_NODE B, TRANS_POSITION_NODE N, TB_ADM_BUSROUTE C
+		WHERE
+		  	A.NODEID = B.NODEID(+)
+		  	AND A.NODEID = N.NODE_ID(+)
+		  	<if test="nodegbcd != null and !nodegbcd.equalsIgnoreCase('')">
+		  	AND A.NODEGBCD = #{nodegbcd}
+		  	</if>
+		  	AND A.ROUTEID = C.ROUTEID
+			AND A.ROUTEID = #{routeid}
+		ORDER BY PATHSEQ
+	</select>	
+		
+	<!--  노선 버텍스 조회 -->
+	<select id="selectRouteVtxList" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+		SELECT LINKSEQ, SEQ,
+		       B.LAT,
+		       B.LNG
+		FROM
+			(
+				SELECT 
+					RL.ROUTEID, RL.LINKSEQ, LINK.* 
+				FROM 
+				(
+					SELECT * 
+					FROM TB_ADM_ROUTELLINK 
+					WHERE ROUTEID = #{routeid} 
+				) RL, 
+				(
+					SELECT LLINKID, LINKID, USEYN 
+					FROM TB_ADM_LGCALLINK 
+					WHERE ROWID IN (SELECT MAX(ROWID) FROM TB_ADM_LGCALLINK GROUP BY LINKID) ORDER BY LINKID
+				) LINK
+				WHERE 
+					RL.LLINKID = LINK.LLINKID
+					AND LINK.USEYN = '1'
+			) A, 
+			TRANS_POSITION_LINKVTX B
+		WHERE A.LINKID = B.LINK_ID
+		ORDER BY LINKSEQ, SEQ
+ 	</select>	
+		
+		
+	<!-- ###################### 이하 변경 전 SQL ###################### -->	
+	
+ 	<!-- 노선 버텍스 조회 -->
+<!--  	<select id="selectRouteVtxList" parameterType="BusrouteVO" resultType="BusrouteVO">
+ 		SELECT 
+ 			LINKS.LINK_LIST AS LINK_ID,
+         	LINKS.ROUTE_ORD,
+         	LINKS.SECT_DISTANCE,
+         	VTX.ORD,
+         	VTX.LAT,
+         	VTX.LNG,
+         	LINKS.LINK_LEN,
+         	ROUTE_TYPE,
+         	ROUTE_NAME
+    	FROM 
+	   		(
+	   			SELECT 
+	    			RTL.ROUTE_ORD, RTL.LINK_ID, 
+	    			DECODE(RTL.LINK_ID, LAG (RTL.LINK_ID, 1) OVER (ORDER BY RTL.ROUTE_ORD ASC), '', RTL.LINK_ID) AS LINK_LIST,
+	                RTL.SECT_DISTANCE,
+	                LK.LINK_LEN,
+	                ROUTE_TYPE,
+	                ROUTE_NAME
+	            FROM 
+	            	LINK LK,
+	            	(  
+	            		SELECT 
+	            			B.*, A.LINK_ID, A.ROUTE_ORD,
+	                        A.SECT_DISTANCE, BR.ROUTE_TYPE, BR.ROUTE_NAME
+	                    FROM 
+	                    	BUSROUTE BR, BUSROUTE_SECTION_DETAIL_EDIT A, BISNODE B
+	                    WHERE     
+	                    	A.ED_NODE_ID = B.NODE_ID
+	                        AND BR.ROUTE_ID = #{route_id}
+	                        AND BR.ROUTESECT_GROUP_ID = A.ROUTESECT_GROUP_ID
+	                  	ORDER BY ROUTE_ORD
+	              	) RTL
+	       		WHERE 
+	       			LK.LINK_ID = RTL.LINK_ID
+			) LINKS, 
+			LINK_VERTEX VTX
+   		WHERE 
+   			LINK_LIST IS NOT NULL 
+   			AND LINKS.LINK_LIST = VTX.LINK_ID
+		ORDER BY ROUTE_ORD, VTX.ORD
+ 	</select> -->
+ 	
+ 	<!-- 선택노선 경유지 목록 조회 -->
+ 	<!-- <select id="selectViaNodeList" parameterType="NodeVO" resultType="NodeVO">
+ 		SELECT 
+ 			AA.* 
+ 		FROM
+ 		(
+	 		SELECT 
+	  			VB.ROUTE_ORD, 
+			  	BS.STOP_NAME, 
+			  	BS.LAT, 
+			  	BS.LNG, 
+			  	TO_CHAR(BS.SERVICE_ID) SERVICE_ID, 
+			  	TO_CHAR(BS.STOP_ID) STOP_ID,
+			  	BR.ROUTE_NAME
+			FROM 
+			  	M_BUSROUTE_STOP VB, BUSROUTE BR, BUSSTOP BS
+			WHERE 
+				BR.ROUTE_ID = #{route_id}
+				AND BR.ROUTESECT_GROUP_ID = VB.ROUTESECT_GROUP_ID
+				AND BS.STOP_ID = VB.STOP_ID
+		
+			UNION 
+			SELECT
+			  	A.ROUTE_ORD,
+			  	B.NODE_NAME,
+			  	B.LAT,
+			  	B.LNG,
+			  	'' SERVICE_ID,
+			  	'' STOP_ID,
+			  	BR.ROUTE_NAME
+			FROM 
+		  		M_BUSROUTE_SECTION_DETAIL A, NODE B, BUSROUTE BR
+			WHERE   
+				BR.ROUTE_ID = #{route_id}
+				AND BR.ROUTESECT_GROUP_ID = A.ROUTESECT_GROUP_ID
+				AND A.ED_NODE_ID = B.NODE_ID
+				AND A.ROUTE_ORD NOT IN 
+					(
+						SELECT 
+							A.ROUTE_ORD 
+						FROM 
+							M_BUSROUTE_STOP A, BUSROUTE B 
+						WHERE  
+			      			B.ROUTE_ID = #{route_id}
+			      			AND B.ROUTESECT_GROUP_ID = A.ROUTESECT_GROUP_ID
+			  		)
+		) AA
+		ORDER BY AA.ROUTE_ORD
+ 	</select> -->
+ 	
+	<!-- 기반정보 - 경로정보 상세(위) -->
+	<select id="selectExploreUpList" parameterType="BusrouteVO" resultType="BusrouteVO">
+		SELECT 
+			BR.ROUTE_ID, 
+			BR.ROUTE_NAME, 
+			BR.ROUTE_SUBID, 
+			SE.*, 
+			ST.STOP_NAME ST_STOP_NAME, 
+			ED.STOP_NAME ED_STOP_NAME
+		FROM
+    		BUSROUTE BR, BUSROUTE_SECTION_EDIT SE, BUSSTOP ST, BUSSTOP ED
+		WHERE
+		    BR.ROUTESECT_GROUP_ID(+) = SE.ROUTESECT_GROUP_ID
+		    AND SE.ST_STOP_ID = ST.STOP_ID(+)
+		    AND SE.ED_STOP_ID = ED.STOP_ID(+)
+		   	AND SE.ROUTESECT_GROUP_ID <![CDATA[>]]> 0
+		 	AND BR.AREA_CODE = #{area_code}
+		ORDER BY ROUTE_NAME
+	</select>
+	
+	<!-- 기반정보 - 경로정보 상세(아래) -->
+	<select id="selectExploreDownList" parameterType="BusrouteVO" resultType="BusrouteVO">
+		SELECT 
+			VB.*,
+	       	BS.STOP_NAME,
+	       	BS.LAT,
+	       	BS.LNG,
+	       	BS.SERVICE_ID,
+	       	BR.ROUTE_NAME
+	  	FROM 	
+	  		M_BUSROUTE_STOP VB, BUSROUTE BR, BUSSTOP BS
+	 	WHERE     
+	 		BR.ROUTE_ID = #{route_id}
+	       	AND BR.ROUTESECT_GROUP_ID = VB.ROUTESECT_GROUP_ID
+	       	AND BS.STOP_ID = VB.STOP_ID
+     	ORDER BY VB.STOP_ORD
+	</select>
+
+	<!-- 김주암 추가 / 기반정보 - 노선 시간표 관리(오른쪽) / delete 편집 -->
+	<insert id="insertRouteScheduleInfo"  parameterType="BusTimeTableVO">
+		INSERT INTO 
+		    BUS_TIME_TABLE (
+		        ROUTE_ID, 
+		        ORD, 
+		        DEPARTURE_TIME, 
+		        ARRIVAL_TIME, 
+		        WEEK_OPERATION_FLAG, 
+		        SAT_OPERATION_FLAG, 
+		        HOLIDY_OPERATION_FLAG, 
+		        VACATION_OPERATION_FLAG, 
+		        REMARK)
+    	VALUES (
+    		#{route_id}, 
+	        #{ord}, 
+	        #{departure_time}, 
+	        #{arrival_time}, 
+	        #{week_operation_flag}, 
+	        #{sat_operation_flag}, 
+	        #{holidy_operation_flag}, 
+	        #{vacation_operation_flag}, 
+	        #{remark})
+	</insert>
+	
+	<!-- 김주암 추가 / 기반정보 - 노선 시간표 관리(오른쪽) / insert 편집 -->	
+	<delete id="deleteRouteScheduleInfo"  parameterType="BusTimeTableVO">
+		DELETE 
+		FROM 
+    		BUS_TIME_TABLE
+		WHERE
+    		ROUTE_ID = #{route_id}
+	</delete>
+	
+	<!-- 분석/가공 - 가공 파라미터>파라미터 리스트 -->
+	<select id="selectProcParamList" parameterType="ProcessParameterVO" resultType="ProcessParameterVO">
+		SELECT 
+			* 
+		FROM 
+			PROCESS_PARAMETER 
+			ORDER BY PROC_PARAM_ID, CHANGE_HS_NO
+	</select>
+	
+	<!-- 분석/가공 - 가공 파라미터>노선 파라미터 리스트 -->
+	<select id="selectRouteProcParamList" parameterType="ProcessParameterVO" resultType="ProcessParameterVO">
+		SELECT 
+		    PR.*, 
+		    BR.ROUTE_NAME, 
+		    ST.NODE_NAME AS ST_NODE_NAME, 
+		    ED.NODE_NAME AS ED_NODE_NAME, 
+		    BS.ROUTE_ORD 
+		FROM 
+		    ROUTE_PROCESS_PARAMETER PR, 
+		    BUSROUTE BR, 
+		    BISNODE ST, 
+		    BISNODE ED, 
+		    M_BUSROUTE_SECTION BS
+		WHERE 
+		    PR.ROUTE_ID = #{route_id}
+		    AND PR.ROUTE_ID = BR.ROUTE_ID
+		    AND PR.ST_NODE_ID = ST.NODE_ID
+		    AND PR.ED_NODE_ID = ED.NODE_ID
+		    AND BR.ROUTESECT_GROUP_ID = BS.ROUTESECT_GROUP_ID
+		    AND PR.ST_NODE_ID = BS.ST_NODE_ID
+		    AND PR.ED_NODE_ID = BS.ED_NODE_ID
+		    ORDER BY ROUTE_ORD
+	</select>
+	
+	<!-- 노선도 노선 목록 조회 -->
+	<select id="selectImgRouteList" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+		SELECT
+    		A.ROUTEID ROUTEID,
+    		B.COMPID COMPID,
+    		FC_BUSCOMP_COMPNM(B.COMPID) COMPNM,
+    		FC_CODE_CDNM('ROUTETPCD', A.ROUTETPCD) ROUTETPCD,
+    		A.ROUTENO
+		FROM
+    		TB_ADM_BUSROUTE A,
+    		TB_ADM_ROUTETOCOMP B
+		WHERE
+    		A.ROUTEID = B.ROUTEID
+    		AND A.USEYN = '1'
+    		AND A.ROUTEID LIKE '165'||'%'
+    		<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+    			AND A.ROUTENO LIKE '%'||#{searchWord}||'%'
+    		</if>
+		ORDER BY ROUTEID   	
+	</select>
+	
+	
+	<!-- 경유 노드 목록 조회 -->
+	<select id="selectRouteNodeList" parameterType="TbAdmNodeVO" resultType="TbAdmNodeVO">
+		SELECT 
+			TO_NUMBER (NVL(A.DESCR, '0')) LINKID, 
+			A.PATHSEQ, 
+			A.NODEID,        
+			FC_NODE_NODENM(A.NODEID) NODENM,                                 
+			A.NODEGBCD, 
+  			FC_CODE_CDNM('NODEGBCD',A.NODEGBCD) NODEGBNM,
+			A.DIRCD,        
+			FC_NODETOBIT_COUNT(A.NODEID) BITYN,                              
+			NVL(B.SHORT_BSTOPID, 0) SHORT_BSTOPID,    
+			B.BSTOPID,                       
+			TO_NUMBER(NVL(C.CONGESTLEVCD, '0')) CONGESTLEVCD,                      
+			ROUND(C.MOVAVG_TRVSPD, 0) MOVAVG_TRVSPD                            
+		FROM 
+			TB_ADM_ROUTEPNODE A, 
+			TB_ADM_BUSSTOP B, 
+			TB_BMC_LINKTRF C    
+		WHERE 
+			A.ROUTEID = #{routeid}  
+			AND A.NODEID = B.BSTOPID(+)                                      
+			AND A.DESCR  = C.LINKID                                        
+		ORDER BY A.PATHSEQ
+	</select>
+	
+	<!-- 노선별 버스 위치 정보 조회 -->
+	<select id="selectBusOperInfoList" parameterType="TbAdmNodeVO" resultType="TbAdmNodeVO">
+  		SELECT
+    		AA.BUSID,
+   		 	D.CARREGNO,
+        	FC_CODE_CDNM('EVTSUBTPCD',AA.EVTSUBTPCD) EVTSUBTPCDNM,
+        	FC_CODE_CDNM('RUNVIOLTPCD',AA.RUNVIOLTPCD) RUNVIOLTPCDNM,
+    		NVL(AA.ROUTEID,0) ROUTEID,
+    		TO_NUMBER(NVL(AA.DIRCD,'0') ) DIRCD,
+    		NVL(AA.POSX,0) POSX,
+    		NVL(AA.POSY,0) POSY,
+    		AA.NODEID,
+    		NVL(AA.RUNDISTINCTCD,'0') RUNDISTINCTCD,
+    		FC_CODE_CDNM('RUNDISTINCTCD',AA.RUNDISTINCTCD) RUNDISTINCTCDNM,
+    		NVL(AA.PATHSEQ,999) PATHSEQ,
+    		NVL(CC.TMGAP,99999) TMGAP,
+    		NVL(AA.EVTTPCD,'0') EVTTPCD,
+    		NVL(AA.EVTSUBTPCD,'0') EVTSUBTPCD,
+    		NVL(AA.RUNVIOLTPCD,'0') RUNVIOLTPCD,
+    		NVL(AA.INCIDTPCD,'0') INCIDTPCD,
+    		AA.C00,
+    		AA.C01,
+    		AA.C02,
+    		AA.C03,
+		    AA.C04,
+		    AA.C05,
+		    AA.C06,
+		    AA.C07,
+		    AA.C08
+		FROM
+    		(
+        		SELECT
+		            BUSID,
+		            ROUTEID,
+		            DIRCD,
+		            POSX,
+		            POSY,
+		            EVTTPCD,
+		            EVTSUBTPCD,
+		            RUNVIOLTPCD,
+		            INCIDTPCD,
+		            RUNDISTINCTCD,
+		            TO_CHAR(EVT_OCCURDT,'HH24:MI:SS') EVT_DT,
+		            NODEID,
+		            RUNTM,
+		            PATHSEQ,
+		            DECODE(RUNDISTINCTCD,0,1,0) C00,
+		            DECODE(RUNDISTINCTCD,1,1,0) C01,
+		            DECODE(RUNDISTINCTCD,2,1,0) C02,
+		            DECODE(RUNDISTINCTCD,3,1,0) C03,
+		            DECODE(RUNDISTINCTCD,4,1,0) C04,
+		            DECODE(RUNDISTINCTCD,5,1,0) C05,
+		            DECODE(RUNDISTINCTCD,6,1,0) C06,
+		            DECODE(RUNDISTINCTCD,7,1,0) C07,
+		            DECODE(RUNDISTINCTCD,8,1,0) C08
+	        	FROM
+	            	TB_BMC_BUSRUN
+    		) AA,
+    		(
+		        SELECT
+		            ROUTEID,
+		            BUSID,
+		            MDTID,
+		            EVT_OCCURDT,
+		            GPS_STATYN,
+		            WLAN_STATYN,
+		            SUB_TERM_STATYN,
+		            MEM_STATYN,
+		            BSTART_STATYN
+		        FROM
+		            TB_BMC_MDTSTAT
+		        WHERE
+		            STATREQYN = 0
+		    ) BB,
+    		(
+		        SELECT
+		            BUSID,
+		            DECODE(FBUS_TMGAP,-999,99999,FBUS_TMGAP) TMGAP
+		        FROM
+		            TB_BMC_MDTOFFER
+		    ) CC, TB_ADM_BUS D
+		WHERE
+    		AA.BUSID = BB.BUSID
+    		AND AA.BUSID = D.BUSID
+    		AND BB.BUSID = CC.BUSID     
+    		AND AA.ROUTEID = #{routeid}
+    		AND RUNDISTINCTCD <![CDATA[<>]]> 0
+    	ORDER BY PATHSEQ
+	</select>
+	
+	
+</mapper>

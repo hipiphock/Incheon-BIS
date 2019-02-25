@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RUN">
+
+	<select id="selectBusRunList" parameterType="TbDmhBusrunrecVO" resultType="TbDmhBusrunrecVO">
+	SELECT 
+	    A.BUSID BUSID, 
+    	B.CARREGNO CARNO,
+    	TO_CHAR(A.RUN_STARTDT, 'YYYY/MM/DD HH24:MI:SS') RUN_STARTDT, 
+    	TO_CHAR(A.RUN_ENDDT,  'YYYY/MM/DD HH24:MI:SS') RUN_ENDDT, 
+    	A.ROUTEID ROUTEID, 
+    	FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO, 
+    	A.DRIVERID DRIVERID, 
+    	A.COMPID COMPID, 
+    	FC_BUSCOMP_COMPNM(A.COMPID) COMPNM, 
+    	A.REAL_RUNORD REAL_RUNORD, FC_RUNSTART_BSTOPNM(A.ROUTEID, A.START_PATHSEQ) START_PATHSEQ, 
+    	FC_RUNEND_BSTOPNM(A.ROUTEID, A.END_PATHSEQ) END_PATHSEQ, 
+    	(A.OVERSPDCNT + A.OPENRUNCNT + A.ACCELCNT + A.DECELCNT + A.OUTROUTECNT + A.STOPSKIPCNT + A.VOLDELAYCNT) VIOL_CNT 
+	FROM 
+	    TB_DMH_BUSRUNREC A, 
+	    TB_ADM_BUS B 
+	WHERE
+	    A.BUSID = B.BUSID
+	    <if test="search_date != null and !search_date.equalsIgnoreCase('')">
+	    AND trunc(A.RUN_STARTDT) = TO_DATE(TO_CHAR(#{search_date}), 'YYYY-MM-DD')
+	    </if>
+	    <if test="compid != null and !compid.equalsIgnoreCase('')">
+	    AND B.COMPID = #{compid}
+	    </if>
+	    <if test="routeid != null and !routeid.equalsIgnoreCase('')">
+	    AND A.ROUTEID = #{routeid}
+	    </if>
+	ORDER BY A.BUSID, A.REAL_RUNORD
+	</select>
+</mapper>

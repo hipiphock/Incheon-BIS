@@ -1,0 +1,41 @@
+package com.bis.service.impl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.bis.dao.EvaluationDAO;
+import com.bis.service.EvaluationService;
+import com.bis.vo.re.TbDmhTmspaceVO;
+
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS / 운행서비스평가
+ * Business Name  : 
+ * Class Name 	  : EvaluationService.java
+ * Description 	  : 
+ * Modification History 
+ * 수정일			수정자		수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.18	박주언		created new file
+ * </PRE>
+ * 
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Service("evaluationService")
+public class EvaluationServiceImpl extends EgovAbstractServiceImpl implements EvaluationService{
+	
+	@Resource(name = "evaluationDAO")
+	private EvaluationDAO evaluationDAO;
+
+	public List<TbDmhTmspaceVO> selectViolentOperHistList(TbDmhTmspaceVO vo) throws SQLException {
+		return evaluationDAO.selectViolentOperHistList(vo);
+	}
+}

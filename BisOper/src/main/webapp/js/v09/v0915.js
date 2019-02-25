@@ -1,0 +1,83 @@
+$(document).ready(function(){
+	appendLoader("로딩중...");
+	initGrid();
+	initEvent();
+});
+
+var model = [
+	{label:"관리ID",			name:"bitmid"},
+	{label:"정류소ID",		name:"bstopid"},
+	{label:"단축정류소ID",		name:"short_bstopid"},
+	{label:"정류소명",			name:"bstopnm"},
+	{label:"안내기ID",		name:""},
+	{label:"소계",			name:""},
+	{label:"백분율",			name:""}
+];
+
+function initGrid(){
+	makeGrid("#search_result", model, null, null, null);
+	$(window).bind('resize', function() {
+		$("#search_result").jqGrid('setGridHeight', $(".main_chart").height() - 23);
+		$("#search_result").jqGrid('setGridWidth', $(".main_chart").width());
+	}).trigger('resize');
+}
+
+function loadGrid(){
+	// reload grid.
+	showLoader();
+	reloadGrid();
+}
+
+function initEvent(){
+	// 새로고침
+	$("#btn_refresh").click(function(){
+		location.reload();
+	});
+	
+	// 검색
+	$("#btn_search").click(function(){
+		loadGrid();
+	});
+	
+	// 엑셀 다운로드
+	$("#btn_excel").click(function(){
+		if(0 < $("#search_result").getGridParam("reccount"))
+			excelDownload($(".pop_title h2").text(), "#search_result");
+		else
+			showAlert("조회된 내용이 없습니다.");
+	});
+	
+	// 다운로드 함수
+	function excelDownload(title, grid_id){
+		$("#excelDown").remove();
+		var grid = $(grid_id);
+		
+		var form = document.createElement("FORM");
+		form.setAttribute("id", "excelDown");
+		form.action = "./stop/downloadExcelFile.do";
+		form.method = "POST";
+		
+		var fileName = JSON.stringify(title);
+		var param = document.createElement("INPUT");
+		var rowData = grid.jqGrid("getRowData");
+		var columnData = JSON.stringify(rowData);
+		
+		var columnLabel = JSON.stringify(grid.jqGrid("getGridParam", "colNames"));
+		
+		var idData = grid.jqGrid("getGridParam", "colModel");
+		var columnName = [];
+		$.each(idData, function(index, value){
+			columnName.push(value.name);
+		})
+		columnName = JSON.stringify(columnName);
+		
+		param.type = "HDDEN";
+		param.name = "json";
+		param.value = fileName + columnLabel + columnName + columnData;
+		
+		form.appendChild(param);
+		
+		document.body.appendChild(form);
+		inquiryFileDownload("excelDown", true);
+	}
+}

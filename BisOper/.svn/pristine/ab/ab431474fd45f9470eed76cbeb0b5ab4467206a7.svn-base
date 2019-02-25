@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="MESSAGE">
+
+	<select id="selectMessageList" parameterType="TbBmhMdtmsgVO" resultType="TbBmhMdtmsgVO">
+	SELECT 
+	    MDTID, 
+	    MSGSEQ, 
+	    SNDDT,
+	    BUSID, 
+	    FC_BUS_CARREGNO(BUSID) REGNO,
+	    FC_CODE_CDNM('MSGTPCD',MSGTPCD) MSGTYPE,
+	    FC_CODE_CDNM('MSGTARGETCD',MSGTARGETCD) MSGTARGETCD,
+	    A.ROUTEID ROUTEID, 
+	    FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO, 
+	    MSGCONTENT, 
+	    DISP_STARTDT,
+	    DISP_ENDDT,
+	    REG_USERID, 
+	    B.USERNM USERNM, 
+	    A.USERTPCD USERTPCD, 
+	    REPLY_COLLDT, 
+	    SUBSTR(FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD),1,10) SNDRSLTCD
+	FROM TB_BMH_MDTMSG A,
+		TB_OMM_USER B, 
+		TB_ADM_ROUTETOCOMP C
+	WHERE A.REG_USERID = B.USERID(+) 
+		AND A.ROUTEID = C.ROUTEID
+		<if test="snddt != null and !snddt.equalsIgnoreCase('')">
+		AND trunc(SNDDT) = TO_DATE(TO_CHAR(#{snddt}), 'YYYY-MM-DD')
+		</if>
+		<if test="carno != null and !carno.equalsIgnoreCase('')">
+		AND FC_BUS_CARREGNO(BUSID) LIKE '%'||#{carno}||'%'
+		</if>
+		<if test="msgtpcd != null and !msgtpcd.equalsIgnoreCase('')">
+		And MSGTPCD = #{msgtpcd}
+		</if>
+	ORDER BY SNDDT, MSGTYPE, REGNO
+	</select>
+	
+</mapper>

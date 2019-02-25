@@ -1,0 +1,1351 @@
+package com.bis.service.impl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.bis.dao.BitDAO;
+import com.bis.service.BitService;
+import com.bis.util.Const;
+import com.bis.vo.ArrivalTrustVO;
+import com.bis.vo.BitConnectHistoryVO;
+import com.bis.vo.BitVO;
+import com.bis.vo.MProcessCurrentVO;
+import com.bis.vo.re.TbAdmBusstopVO;
+import com.bis.vo.re.TbAdmGarageVO;
+import com.bis.vo.re.TbBitScenarioVO;
+import com.bis.vo.re.TbIscBitmsgVO;
+import com.bis.vo.re.TbIscBitstatVO;
+import com.bis.vo.re.TbIshBitbusarrivVO;
+import com.bis.vo.re.TbIshBitshockVO;
+import com.bis.vo.re.TbNewBitparamVO;
+import com.bis.vo.re.TbOmcBitctrlVO;
+import com.bis.vo.re.TbOmcBitfileregVO;
+import com.bis.vo.re.TbOmcMdtctrlVO;
+import com.bis.vo.re.TbOmhFacilfailasVO;
+import com.bis.vo.re.TbOmmBitVO;
+import com.bis.vo.re.TbOmmBitparamVO;
+import com.bis.vo.re.TbOmmFacilVO;
+import com.bis.vo.re.TbOmmWbitparamVO;
+
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 운영단말
+ * Business Name  : 
+ * Class Name 	  : BitServiceImpl.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                        수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2017.09.20	    황중모                       최초생성
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Service("bitService")
+public class BitServiceImpl extends EgovAbstractServiceImpl implements BitService {
+
+	@Resource(name = "bitDAO")
+	private BitDAO bitDAO;
+
+	
+	/**
+	 *안내기통신메시지현황/이력  - 상단과 하단 수동메시지 항목 (v0302)
+	 */
+	public List<TbIscBitmsgVO> selectManualMsg(TbIscBitmsgVO vo) throws SQLException {
+		return bitDAO.selectManualMsg(vo);
+	}
+	
+	/**
+	 *안내기통신메시지현황/이력  - 상단과 하단 파라미터, 안내기제어 항목 (v0302)
+	 */
+	public List<TbIscBitmsgVO> selectParamControl(TbIscBitmsgVO vo) throws SQLException {
+		return bitDAO.selectParamControl(vo);
+	}
+
+	/**
+	 *안내기통신메시지현황/이력  - 상단과 하단 파일다운로드 항목 (v0302)
+	 */
+	public List<TbIscBitmsgVO> selectFileDownload(TbIscBitmsgVO vo) throws SQLException {
+		return bitDAO.selectFileDownload(vo);
+	}
+	
+	/**
+	 *안내기통신메시지현황/이력  - 상단과 하단 광역 BIT 수동메시지 (v0302)
+	 */
+	public List<TbIscBitmsgVO> selectWbitManual(TbIscBitmsgVO vo) throws SQLException {
+		return bitDAO.selectWbitManual(vo);
+	}
+	
+	/**
+	 *제공시나리오 관리  - 파라미터ID 카테고리 정보 (v0304)
+	 */
+	public List<TbOmmBitparamVO> selectParamCateList() throws SQLException {
+		return bitDAO.selectParamCateList();
+	}
+	
+	  /**
+  	 *제공시나리오 관리  - 인천안내기 제공시나리오 검색 (v0304)
+  	 */
+	public List<TbOmmBitparamVO> selectBitScenario(TbOmmBitparamVO vo) throws SQLException {
+		return bitDAO.selectBitScenario(vo);
+	}
+	
+	/**
+	 *제공시나리오 관리  - 광역안내기 제공시나리오 검색 (v0304)
+	 */
+	public List<TbOmmWbitparamVO> selectWBitScenario(TbOmmWbitparamVO vo) throws SQLException {
+		return bitDAO.selectWBitScenario(vo);
+	}
+	
+	/**
+	 *제공정보표출현황조회 - 상단 설치장소, 안내기 ID 카테고리 정보(v0305)
+	 */
+	public List<TbOmmBitVO> selectBitInstallLocList() throws SQLException {
+		return bitDAO.selectBitInstallLocList();
+	}
+	
+   /**
+  	 *제공정보표출현황조회 - 안내기검색결과 조회(v0305)
+  	 */
+	public List<TbOmmBitVO> selectBitLocation(TbOmmBitVO vo) throws SQLException {
+		return bitDAO.selectBitLocation(vo);
+	}
+	
+    /**
+	 *안내기부가정보조회 - 좌측 인천 안내기 검색 리스트(v0307)
+	 */
+	public List<TbIscBitstatVO> selectIncheonBitStat() throws SQLException {
+		return bitDAO.selectIncheonBitStat();
+	}
+	
+	/**
+	 *안내기부가정보조회 - 좌측 광역, 부천, 김포 안내기(v0307)
+	 */
+	public List<TbIscBitstatVO> selectOtherBitStat() throws SQLException {
+		return bitDAO.selectOtherBitStat();
+	}
+	
+	/**
+	 *차량단말기 기초정보관리 - 차량단말기검색 (v0601)
+	 */
+	public List<TbOmmFacilVO> selectBusTerminal(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.selectBusTerminal(vo);
+	}
+	
+	/**
+	 *전산장비 기초정보관리 - 전산장비 검색(v0603)
+	 */
+	public List<TbOmmFacilVO> selectEquip(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.selectEquip(vo);
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 전산장비 정보 수정, 차고지명  AP유형(v0603) 
+	 */
+	public int updateGarageIdType(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.updateGarageIdType(vo);
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 전산장비 정보 수정(v0603)
+	 */
+	public int updateEquipInfo(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.updateEquipInfo(vo);
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 전산장비 신규등록, 시설물id AP유형 차고지명 (v0603)
+	 */
+	public int insertGarageap(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.insertGarageap(vo);
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 전산장비 신규등록, 시설물id AP유형 차고지명 (v0603)
+	 */
+	public int insertFacil(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.insertFacil(vo);
+	}
+	
+	/**
+	 *전산장비 기초정보관리 - 운영단말기 전산장비 검색(v0603)
+	 */
+	public List<TbOmmFacilVO> selectOptermEquip(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.selectOptermEquip(vo);
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 운영단말기 정보 수정 (v0603)
+	 */
+	public int updateOpterm(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.updateOpterm(vo);
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 신규등록 시  쓸  optermid (v0603)
+	 */
+	public TbAdmGarageVO selectMaxOptermid() throws SQLException {
+		return bitDAO.selectMaxOptermid();
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 -  운영단말기 신규등록 1 (v0603)
+	 */
+	public int insertOpterm(TbOmmFacilVO vo) throws SQLException {
+		return bitDAO.insertOpterm(vo);
+	}
+	
+	/**
+	 * 차량단말기 상태정보조회/제어 - 제어정보입력/전송 (v0604) 
+	 */
+	public int updateMdtCtrl(TbOmcMdtctrlVO vo) throws SQLException {
+		return bitDAO.updateMdtCtrl(vo);
+	}
+	
+	/**
+	 * 시설물유지보수관리(BIT) - BIT A/S 이력검색 (v0606)
+	 */
+	public List<TbOmmBitVO> selectBitAsList(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.selectBitAsList(vo);
+	}
+	
+	/**
+	 *시설물유지보수관리(BIT)- BIT A/S 내역 수정  (v0606)
+	 */
+	public int updateBitAs(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.updateBitAs(vo);
+	}
+	
+	/**
+	 *시설물유지보수관리(BIT)- BIT A/S 내역 삭제 (v0606
+	 */
+	public int deleteBitAs(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.deleteBitAs(vo);
+	}
+	
+	/**
+	 * 시설물유지보수관리(BIT) - BIT A/S 이력검색 (v0606)
+	 */
+	public List<TbOmhFacilfailasVO> selectBitAsBMTList(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.selectBitAsBMTList(vo);
+	}
+	
+	/**
+	 *시설물유지보수관리(BMT) - 차량번호 카테고리 정보 (v0607) 
+	 */
+	public List<TbOmmBitVO> selectCarInstallLoc() throws SQLException {
+		return bitDAO.selectCarInstallLoc();
+	}
+	
+	/**
+	 *시설물유지보수관리(AP무선) - 시설물명 카테고리 정보 (v0608)
+	 */
+	public List<TbOmmBitVO> selectFacilnmCate() throws SQLException {
+		return bitDAO.selectFacilnmCate();
+	}
+	
+	/**
+	 *시설물유지보수관리(AP무선) - 무선AP A/S 이력검색 (v0608)
+	 */
+	public List<TbOmhFacilfailasVO> selectWAPAsList(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.selectWAPAsList(vo);
+	}
+	
+	/**
+	 *장애통계조회  (v0610)
+	 */
+	public List<TbOmhFacilfailasVO> selectFailStatList(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.selectFailStatList(vo);
+	}
+	
+	/**
+	 *BIT외부충격이력 - (인천)정류소안내기검색 (v0611)
+	 */
+	public List<TbOmmBitVO> selectStopTerminal(TbOmmBitVO vo) throws SQLException {
+		return bitDAO.selectStopTerminal(vo);
+	}
+	
+	/**
+	 *BIT외부충격이력 - (인천)충격 이력 (v0611)
+	 */
+	public List<TbIshBitshockVO> selectColHistory(TbIshBitshockVO vo) throws SQLException {
+		return bitDAO.selectColHistory(vo);
+	}
+	
+	/**
+	 *BIT외부충격이력 - (광역) 정류소안내기 검색 (v0611)
+	 */
+	public List<TbOmmBitVO> selectWStopTerminal(TbOmmBitVO vo) throws SQLException {
+		return bitDAO.selectWStopTerminal(vo);
+	}
+	
+	/**
+	 * BIT 목록 조회
+	 * 
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<TbOmmBitVO> selectBitList(TbOmmBitVO vo) throws SQLException {
+		return bitDAO.selectBitList(vo);
+	}
+	
+	/**
+     * BIT 목록 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmmBitVO> selectMapBitList(TbOmmBitVO vo) throws SQLException {
+    	return bitDAO.selectMapBitList(vo);
+    }
+    
+	/**
+	 * BIT 충격감지 이력
+	 * @return BIT 충격감지 이력 - 조회결과
+	 * @throws SQLException
+	 */
+	public List<TbIshBitshockVO> selectShockHisList(TbIshBitshockVO vo) throws SQLException {		
+		return bitDAO.selectShockHisList(vo);
+	}
+
+	/**
+	 * BIT 상태 이력
+	 * @return BIT 상태 이력
+	 * @throws SQLException
+	 */
+	public List<TbIscBitstatVO> selectBitStateHisList(TbIscBitstatVO vo) throws SQLException {
+		return bitDAO.selectBitStateHisList(vo);
+	}
+
+	/**
+	 * 이력/통계 - BIT 제공정보 이력 조회
+	 * 
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<TbIshBitbusarrivVO> selectBitOfferInfoHisList(TbIshBitbusarrivVO vo) throws SQLException {
+		return bitDAO.selectBitOfferInfoHisList(vo);
+	}
+	
+	/**
+	 * BIT 상태 리스트 조회
+	 * @return BIT 상태 리스트 조회
+	 * @throws SQLException
+	 */
+	public List<TbIscBitstatVO> selectBitStateList(TbIscBitstatVO vo) throws SQLException {
+		return bitDAO.selectBitStateList(vo);
+	}
+
+	/**
+     * BIT 장애 이력 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmhFacilfailasVO> selectBitFailList(TbOmhFacilfailasVO vo) throws SQLException {
+    	return bitDAO.selectBitFailList(vo);
+    }
+    
+    /**
+     * BIT 장애 이력조회 - BIT지점목록
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmmBitVO> selectBitLocationList(TbOmmBitVO vo) throws SQLException {
+    	return bitDAO.selectBitLocationList(vo);
+    }
+    
+    /**
+     * BIT 장애 이력조회 - BIT 장애 처리유형
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmhFacilfailasVO> selectFailTreatTypeList(TbOmhFacilfailasVO vo) throws SQLException {
+    	return bitDAO.selectFailTreatTypeList(vo);
+    }
+    
+    /**
+     * BIT 장애 이력조회 - BIT 장애유형
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmhFacilfailasVO> selectFailTypeList(TbOmhFacilfailasVO vo) throws SQLException {
+    	return bitDAO.selectFailTypeList(vo);
+    }
+    
+    /**
+     * BIT 장애 업데이트
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int updateBitFail(TbOmhFacilfailasVO vo) throws SQLException {
+    	bitDAO.updateBitFail(vo);
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * BIT 장애 등록
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int insertBitFail(TbOmhFacilfailasVO vo) throws SQLException {
+    	bitDAO.insertBitFail(vo);
+    	return Const.SQL_SUCCESS;
+    }
+
+    /**
+     * BIT 제공파라미터(시나리오) 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbNewBitparamVO> selectBitParamList(TbNewBitparamVO vo) throws SQLException {    	
+    	return bitDAO.selectBitParamList(vo);
+    }
+    
+    /**
+     * BIT 제공파라미터(시나리오) 등록
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int insertBitParam(TbNewBitparamVO vo) throws SQLException {
+    	return bitDAO.insertBitParam(vo);
+    }
+    
+    /**
+     * BIT 제공파라미터(시나리오) 수정
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int updateBitParam(TbNewBitparamVO vo) throws SQLException {
+    	return bitDAO.updateBitParam(vo);
+    }
+    
+    /**
+     * BIT 제공파라미터(시나리오) 삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int deleteBitParam(TbNewBitparamVO vo) throws SQLException {
+    	return bitDAO.deleteBitParam(vo);
+    }
+
+    /**
+	 * BIT 이상 목록 조회
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<TbOmmBitVO> selectBitFaultList(TbOmmBitVO vo) throws SQLException {
+		return bitDAO.selectBitFaultList(vo);
+	}
+	
+	/**
+     * BIT제공정보 현황조회 - 노선별 문자메세지 전송
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitSmsListByRoute(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitSmsListByRoute(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 도로별 문자메세지 전송
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitSmsListByRoad(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitSmsListByRoad(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 문자메세지 - 메세지폼리스트
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectMsgFormList(TbIscBitmsgVO vo) throws SQLException {
+    	return bitDAO.selectMsgFormList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 메세지폼 추가
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int insertMsgForm(TbIscBitmsgVO vo) throws SQLException {
+    	bitDAO.insertMsgForm(vo);
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 메세지폼 수정
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int updateMsgForm(TbIscBitmsgVO vo) throws SQLException {
+    	bitDAO.updateMsgForm(vo);
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 메세지폼 삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int deleteMsgForm(TbIscBitmsgVO vo) throws SQLException {
+    	bitDAO.deleteMsgForm(vo);
+    	return Const.SQL_SUCCESS;
+    }
+	
+    /**
+     * BIT제공정보 현황조회 - 수동메세지
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitCurMessageList(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitCurMessageList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 수동메세지 이력
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitHisMessageList(TbIscBitmsgVO vo) throws SQLException {
+    	return bitDAO.selectBitHisMessageList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 파라미터
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitCurParameterList(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitCurParameterList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 파라미터 이력
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitHisParameterList(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitHisParameterList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 안내기제어
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitCurControlList(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitCurControlList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 안내기제어  이력
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitHisControlList(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitHisControlList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 파일 다운로드
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitCurDownloadList(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitCurDownloadList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 파일 다운로드 이력
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitHisDownloadList(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitHisDownloadList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 광역수동메세지
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitCurWMessageList(TbIscBitmsgVO vo) throws SQLException {
+   		return bitDAO.selectBitCurWMessageList(vo);
+    }
+    
+    /**
+     * BIT제공정보 현황조회 - 광역수동메세지 이력
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIscBitmsgVO> selectBitHisWMessageList(TbIscBitmsgVO vo) throws SQLException {
+    	return bitDAO.selectBitHisWMessageList(vo);
+    }
+    
+    /**
+     * BIT 설치 위치 조회
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmmBitVO> selectBitInstallLoc() throws SQLException {
+    	return bitDAO.selectBitInstallLoc();
+    }
+
+    /**
+     * BIT 정보관리 조회
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmmBitVO> selectBitManageList(TbOmmBitVO vo) throws SQLException {
+    	return bitDAO.selectBitManageList(vo);
+    }
+
+    /**
+     * BIT 제어이력 등록
+     * @return
+     * @throws SQLException
+     */
+    public int insertBitCtrlResult(TbOmcBitctrlVO vo) throws SQLException {
+    	bitDAO.deleteBitCtrlResult(vo);
+    	bitDAO.insertBitCtrlResult(vo);
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * BIT 제어 결과 목록 조회
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmcBitctrlVO> selectBitCtrlResultList(TbOmcBitctrlVO vo) throws SQLException {
+    	return bitDAO.selectBitCtrlResultList(vo);
+    }
+    
+    /**
+     * BIT 파라미터 한건
+     * @return
+     * @throws SQLException
+     */
+    public TbNewBitparamVO selectBitParam(TbNewBitparamVO vo) throws SQLException {
+    	return bitDAO.selectBitParam(vo);
+    }
+
+    /**
+     * BIT 정보관리 등록
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public final int registBit(TbOmmBitVO vo) throws SQLException {
+    	bitDAO.insertBitInfoFacil(vo);	// 선행 필수
+		bitDAO.insertBitInfo(vo);		// 후행 필수
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * BIT 정보관리 업데이트
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public final int modBitInfo(TbOmmBitVO vo) throws SQLException {
+    	bitDAO.updateBitInfoFacil(vo);
+    	bitDAO.updateBitInfo(vo);
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+	 * 시나리오 화면 자료 추가
+	 * @return success 1
+	 * @throws SQLException
+	 */
+	public int insertScenarioDisplay(BitVO vo) throws SQLException {
+		bitDAO.insertScenarioDisplay(vo);
+		return Const.SQL_SUCCESS;
+	}
+
+	/**
+	 * 시나리오 화면 자료 추가(text)
+	 * @return success 1
+	 * @throws SQLException
+	 */
+	public int insertScenarioText(BitVO vo) throws SQLException {
+		bitDAO.insertScenarioText(vo);
+		return Const.SQL_SUCCESS;
+	}
+    
+	
+	public int updateScenario(BitVO vo) throws SQLException {
+		bitDAO.updateScenario(vo); //시나리오 업데이트
+		return Const.SQL_SUCCESS;
+	}
+	
+	/**
+     * BIT 제공정보 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbIshBitbusarrivVO> selectBitArrivalList(TbIshBitbusarrivVO vo) throws SQLException {
+    	return bitDAO.selectBitArrivalList(vo);
+    }
+    
+	/**
+	 * BIT 지점등록 - 정류장 리스트 조회
+	 * @param vo
+	 * @return 지점 리스트
+	 * @throws SQLException
+	 */
+	public List<TbAdmBusstopVO> selectBusStopList(TbAdmBusstopVO vo) throws SQLException {
+		return bitDAO.selectBusStopList(vo);
+	}
+	
+	/**
+	 * BIT 등록 - 신규 아이디 조회
+	 * @param vo
+	 * @return 
+	 * @throws SQLException
+	 */
+	public TbOmmBitVO selectAddBitFacilid() throws SQLException {
+		return bitDAO.selectAddBitFacilid();
+	}
+	
+    /**
+     * BIT 제어된 파라미터 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public TbNewBitparamVO selectCtrlBitParam(TbNewBitparamVO vo) throws SQLException {
+    	return bitDAO.selectCtrlBitParam(vo);
+    }
+    
+    /**
+     * FTP 등록 파일 목록 조회 
+     * @param vo
+     * @return 지점 리스트
+     * @throws SQLException
+     */
+    public List<TbOmcBitfileregVO> selectFtpFileList(TbOmcBitfileregVO vo) throws SQLException {
+    	return bitDAO.selectFtpFileList(vo);
+    }
+    
+    /**
+     * FTP 파일 등록 
+     * @param vo
+     * @throws SQLException
+     */
+    public int insertFtpFile(TbOmcBitfileregVO vo) throws SQLException {
+    	return bitDAO.insertFtpFile(vo);
+    }
+    
+    /**
+     * BIT 장애 이미지 조회 
+     * @param vo
+     * @throws SQLException
+     */
+    public TbOmhFacilfailasVO selectFaultImg(TbOmhFacilfailasVO vo) throws SQLException {
+    	return bitDAO.selectFaultImg(vo);
+    }
+    
+    /**
+     * BIT 장애 이미지 등록 
+     * @param vo
+     * @throws SQLException
+     */
+    public int insertFaultImg(TbOmhFacilfailasVO vo) throws SQLException {
+    	bitDAO.deleteFaultImg(vo);
+    	return bitDAO.insertFaultImg(vo);
+    }
+    
+    /**
+     * BIT 장애 이미지 삭제 
+     * @param vo
+     * @throws SQLException
+     */
+    public int deleteFaultImg(TbOmhFacilfailasVO vo) throws SQLException {
+    	return bitDAO.deleteFaultImg(vo);
+    }
+    
+    /**
+     * 시설물상태현황 - 선택된 시설물 카운트 
+     * @param vo
+     * @throws SQLException
+     */
+	public List<TbOmhFacilfailasVO> selectFacilitiesCount(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.selectFacilitiesCount(vo);
+	}
+
+	/**
+     * 시설물상태현황 - 선택된 시설물 장애요약 
+     * @param vo
+     * @throws SQLException
+     */
+	public List<TbOmhFacilfailasVO> selectObstacleSumupList(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.selectObstacleSumupList(vo);
+	}
+    
+	/**
+     * 시설물상태현황 - 선택된 시설물 장애현황
+     * @param vo
+     * @throws SQLException
+     */
+	public List<TbOmhFacilfailasVO> selectObstacleDetailList(TbOmhFacilfailasVO vo) throws SQLException {
+		return bitDAO.selectObstacleDetailList(vo);
+	}
+	
+    
+    
+	//##### 이하 구버전 소스
+	//##################
+	/**
+	 * BIT 통신 상태 조회
+	 */
+	public List<BitVO> selectBitStatusList(BitVO vo) throws SQLException {
+		return bitDAO.selectBitStatusList(vo);
+	}
+
+	
+	/**
+	 * BIT 목록 조회2
+	 * 
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitList2(BitVO vo) throws SQLException {
+		return bitDAO.selectBitList2(vo);
+	}
+
+	/**
+	 * 선택된 BIT 정보 조회
+	 * 
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public BitVO selectSelBitInfo(BitVO vo) throws SQLException {
+		return bitDAO.selectSelBitInfo(vo);
+	}
+
+	/**
+	 * BIT 정보 관리 리스트 조회
+	 * @param vo
+	 * @return BIT 정보 관리
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitInfoList(BitVO vo) throws SQLException {
+		return bitDAO.selectBitInfoList(vo);
+	}
+	
+	/**
+	 * BIT 시나리오 상세 조회
+	 * 
+	 * @param vo
+	 * @return 선택된 BIT에 적용중인 시나리오 상세 목록
+	 * @throws SQLException
+	 */
+	public List<TbBitScenarioVO> selectScenarioDetailList(TbBitScenarioVO vo) throws SQLException {
+		return bitDAO.selectScenarioDetailList(vo);
+	}
+	
+	/**
+	 * BIT에 사용 중인 시나리오 목록 조회
+	 * 
+	 * @param vo
+	 * @return 사용 중인 시나리오 목록
+	 * @throws SQLException
+	 */
+	public List<TbBitScenarioVO> selectScenarioList(TbBitScenarioVO vo) throws SQLException {
+		return bitDAO.selectScenarioList(vo);
+	}
+	
+	/**
+	 * BIT 시나리오 업데이트
+	 * 
+	 * @param vo
+	 * @return 
+	 * @throws SQLException
+	 */
+	public int updateBitScenario(List<BitVO> vo) throws SQLException {
+		for (int i = 0; i < vo.size(); i++) {
+			bitDAO.updateBitScenario(vo.get(i));
+		}
+		return Const.SQL_SUCCESS;
+	}
+	
+	/**
+	 * 시나리오 업데이트, 상세목록 추가, 화면자료 업데이트
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public int saveScenario(List<BitVO> vo1, List<BitVO> vo2) throws SQLException {
+		
+		bitDAO.deleteScenarioDetail(vo1.get(0)); //시나리오 상세목록 삭제
+		for (int i = 0; i < vo1.size(); i++) {
+		
+			bitDAO.insertScenarioDetail(vo1.get(i)); //시나리오 상세목록 추가
+		}
+//		for (int i = 0; i < vo2.size(); i++) {
+//			bitDAO.updateScenarioDisplay(vo2.get(i)); //시나리오 화면 자료 업데이트
+//		}
+		return Const.SQL_SUCCESS;
+	}
+	
+	/**
+	 * 광역 시나리오  상세목록 추가
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public int saveWideScenario(List<TbBitScenarioVO> list) throws SQLException {
+		
+		TbBitScenarioVO one = list.get(0);
+		bitDAO.deleteWideScenarioData(one);
+		bitDAO.updateWideScenarioInfo(one);
+		for(int i=0; i<list.size(); i++) {
+			bitDAO.insertWideScenarioData(list.get(i));
+		}
+		return Const.SQL_SUCCESS;
+	}
+	
+	
+	/**
+	 * BIT 그룹 조회
+	 * @param vo
+	 * @return BIT 그룹
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitGroupList(BitVO vo) throws SQLException {
+		return bitDAO.selectBitGroupList(vo);
+	}
+	
+	/**
+	 * BIT 그룹 상세 조회
+	 * @param vo
+	 * @return BIT 그룹 상세 리스트
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitGroupDetailList(BitVO vo) throws SQLException {
+		return bitDAO.selectBitGroupDetailList(vo);
+	}
+	
+	 /**
+     * BIT 정보관리 - BIT 그룹 - 우측 BIT 리스트
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public List<BitVO> selectBitRightList(BitVO vo) throws SQLException {
+		return bitDAO.selectBitRightList(vo);
+	}
+	
+	/**
+	 * BIT 그룹 추가
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int insertBitCate(BitVO vo) throws SQLException {
+		bitDAO.insertBitCate(vo);
+		return Const.SQL_SUCCESS;
+	}
+	
+	/**
+     * BIT 그룹 삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public final int deleteBitCate(List<BitVO> vo) throws SQLException {
+    	//BIT_GROUP_DETAIL 삭제
+    	bitDAO.deleteBitCateDetail(vo.get(0));
+    	//BIT TABLE BIT_CATE_ID column null 업데이트
+    	for (int i = 1; i < vo.size(); i++) {
+    		bitDAO.updateBitCateId(vo.get(i));
+    	}
+    	//BIT_CATEGORIZAION 삭제
+    	bitDAO.deleteBitCate(vo.get(0));
+    	
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * BIT 그룹 업데이트
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public final int updateBitCate(BitVO vo) throws SQLException {
+    	return bitDAO.updateBitCate(vo);
+    }
+    
+    /**
+     * BIT 그룹 저장
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public final int saveBitCate(List<BitVO> vo, List<BitVO> vo2) throws SQLException {
+    	//BIT_CATEGORIZAION 업데이트
+    	bitDAO.updateBitCate(vo.get(0));
+    	//BIT_GROUP_DETAIL 삭제
+    	bitDAO.deleteBitCateDetail(vo.get(0));
+    	
+    	for (int i = 1; i < vo.size(); i++) {
+    		bitDAO.insertBitCateDetail(vo.get(i)); //BIT_GROUP_DETAIL 추가
+    		bitDAO.updateBitCateId(vo.get(i)); //BIT TABLE BIT_CATE_ID column 업데이트
+    	}
+    	
+    	for (int i = 0; i < vo2.size(); i++) {
+    		bitDAO.updateBitCateId(vo2.get(i)); //BIT TABLE BIT_CATE_ID column null업데이트
+    	}
+    	
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * BIT 그룹 상세 삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public final int deleteBitCateDetail(BitVO vo) throws SQLException {
+    	return bitDAO.deleteBitCateDetail(vo);
+    }
+	
+	/**
+	 * BIT 사업 조회
+	 * @param vo
+	 * @return BIT 사업
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBusinessList(BitVO vo) throws SQLException {
+		return bitDAO.selectBusinessList(vo);
+	}
+	
+	/**
+	 * BIT 사업 추가
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int insertBusiness(BitVO vo) throws SQLException {
+		return bitDAO.insertBusiness(vo);
+	}
+	
+	/**
+	 * BIT 사업 삭제
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int deleteBusiness(BitVO vo) throws SQLException {
+		return bitDAO.deleteBusiness(vo);
+	}
+	
+	/**
+	 * BIT 사업 저장
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int saveBusiness(List<BitVO> vo) throws SQLException {
+		bitDAO.deleteAllBusiness(vo.get(0));
+		
+		for (int i = 0; i < vo.size(); i++) {
+			bitDAO.insertBusiness(vo.get(i));
+		}
+		
+		return Const.SQL_SUCCESS;
+	}
+	
+    /**
+     * BIT 사업 전체 삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public final int deleteAllBusiness(BitVO vo) throws SQLException {
+    	return bitDAO.deleteAllBusiness(vo);
+    }
+    
+	/**
+	 * BIT 제조사 조회
+	 * @param vo
+	 * @return BIT 제조사
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitCompanyList(BitVO vo) throws SQLException {
+		return bitDAO.selectBitCompanyList(vo);
+	}
+	
+	/**
+	 * BIT 제조사 추가
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int insertBitCompany(BitVO vo) throws SQLException {
+		return bitDAO.insertBitCompany(vo);
+	}
+
+	/**
+	 * BIT 제조사 삭제
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int deleteBitCompany(BitVO vo) throws SQLException {
+		return bitDAO.deleteBitCompany(vo);
+	}
+	
+	/**
+	 * BIT 제조사 저장
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int saveBitCompany(List<BitVO> vo) throws SQLException {
+		bitDAO.deleteAllBitCompanyList(vo.get(0));
+		
+		for (int i = 0; i < vo.size(); i++)	 {
+			bitDAO.insertBitCompany(vo.get(i));
+		}
+		
+		return Const.SQL_SUCCESS;
+	}
+	/**
+	 * BIT type 조회
+	 * @return BIT type
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitType() throws SQLException {
+		return bitDAO.selectBitType();
+	}
+	
+	/**
+	 * BIT 설치 유형 조회
+	 * @return BIT 설치 유형 조회
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitInstallType() throws SQLException {
+		return bitDAO.selectBitInstallType();
+	}
+	
+	/**
+	 * 시나리오 이미지 리스트 조회
+	 * @param vo
+	 * @return 시나리오 이미지 리스트
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectImageList(BitVO vo) throws SQLException {
+		return bitDAO.selectImageList(vo);
+	}
+	
+	/**
+	 * 시나리오 영상 리스트 조회
+	 * @param vo
+	 * @return 시나리오 영상 리스트
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectVideoList(BitVO vo) throws SQLException {
+		return bitDAO.selectVideoList(vo);
+	}
+	
+	/**
+	 * 시나리오 홍보 리스트 조회
+	 * @param vo
+	 * @return 시나리오 홍보 리스트
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectPromotionList(BitVO vo) throws SQLException {
+		return bitDAO.selectPromotionList(vo);
+	}
+
+	/**
+	 * 시나리오 추가
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int insertBitScenario(TbBitScenarioVO vo) throws SQLException {
+		return bitDAO.insertBitScenario(vo);
+	}
+	
+	/**
+	 * 시나리오 삭제
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int deleteBitScenario(TbBitScenarioVO vo) throws SQLException {
+		BitVO dVo = new BitVO();
+		dVo.setScenario_id(vo.getScenario_id());
+		bitDAO.deleteScenarioDetail(dVo);
+		bitDAO.deleteBitScenario(vo);
+		return Const.SQL_SUCCESS;
+	}
+	
+	/**
+	 * BIT 제어 목록 조회
+	 * @param vo
+	 * @return BIT 제어 목록
+	 * @throws SQLExcpetion
+	 */
+	public List<TbIscBitstatVO> selectBitControlList(TbIscBitstatVO vo) throws SQLException {
+		return bitDAO.selectBitControlList(vo);
+	}
+	
+	/**
+	 * BIT 제어 업데이트
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public final int updateBitControl(BitVO vo) throws SQLException {
+		List<String> id_list = vo.getBit_id_list();
+		
+		for (int i = 0; i < id_list.size(); i++) {
+			System.out.println("##### bit_id = " + id_list.get(i));
+			vo.setBit_id(id_list.get(i));
+			bitDAO.updateBitControl(vo);
+		}
+		
+		return Const.SQL_SUCCESS;
+	}
+	
+	/**
+	 * BIT 모니터링 리스트 조회
+	 * @param vo
+	 * @return BIT 모니터링 리스트
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitMonitoringList(BitVO vo) throws SQLException {
+		return bitDAO.selectBitMonitoringList(vo);
+	}
+	
+	/**
+	 * 전체 BIT 리스트 조회
+	 * @return 전체 BIT 리스트
+	 * @throws SQLException
+	 */
+	public List<BitVO> selectBitListAll() throws SQLException {
+		return bitDAO.selectBitListAll();
+	}
+
+	/**
+     * BIT (지도표출용) 목록 조회
+     * @throws SQLException
+     */
+    public List<BitVO> selectBitMapList(BitVO vo) throws SQLException {
+    	return bitDAO.selectBitMapList(vo);
+    } 
+    
+	/**
+	 * BIT 초기 접속 이력
+	 * @return BIT 초기 접속 이력
+	 * @throws SQLException
+	 */
+	public List<BitConnectHistoryVO> selectBitEarlyConnList(BitConnectHistoryVO vo) throws SQLException {
+		return bitDAO.selectBitEarlyConnList(vo);
+	}
+	
+    /**
+     * 시나리오 화면 자료 ID
+     * @return
+     * @throws SQLException
+     */
+    public final int selectDisplayDataId() throws SQLException {
+    	return bitDAO.selectDisplayDataId();
+    }
+	
+	/**
+	 * 분석/가공 - 도착정보 신뢰도 분석
+	 * @return 도착정보 신뢰도 분석
+	 * @throws SQLException
+	 */
+	public List<ArrivalTrustVO> selectArrivalTrustList(ArrivalTrustVO vo) throws SQLException {
+		return bitDAO.selectArrivalTrustList(vo);
+	}
+
+	/**
+	 * 분석/가공 - 도착정보 신뢰도 분석/상세
+	 * @return 도착정보 신뢰도 분석/상세
+	 * @throws SQLException
+	 */
+	public List<ArrivalTrustVO> selectArrivalTrustInfo(ArrivalTrustVO vo) throws SQLException {
+		return bitDAO.selectArrivalTrustInfo(vo);
+	}
+
+	/**
+	 * 분석/가공 - 도착정보 신뢰도 분석 - 그래프 용
+	 * @return 도착정보 신뢰도 분석/상세
+	 * @throws SQLException
+	 */
+	public List<ArrivalTrustVO> selectTrustChartList(ArrivalTrustVO vo) throws SQLException {
+		return bitDAO.selectTrustChartList(vo);
+	}
+	
+	/**
+	 * 분석/가공 - 통행 시간
+	 * @return 도착정보 신뢰도 분석/상세
+	 * @throws SQLException
+	 */
+	public List<MProcessCurrentVO> selectBitPassTimeList(MProcessCurrentVO vo) throws SQLException {
+		return bitDAO.selectBitPassTimeList(vo);
+	}
+	
+	/**
+	 * 문자 메시지 전송 결과 등록
+	 * @return 도착정보 신뢰도 분석/상세
+	 * @throws SQLException
+	 */
+	public int insertBitMsg(TbIscBitmsgVO vo) throws SQLException {
+		bitDAO.deleteBitMsg(vo);
+		return bitDAO.insertBitMsg(vo);
+	}
+
+	
+
+	
+	
+}

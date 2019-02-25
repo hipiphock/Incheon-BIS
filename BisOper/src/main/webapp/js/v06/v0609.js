@@ -1,0 +1,367 @@
+$(document).ready(function() {
+	appendLoader("조회중..");
+	initGrid();
+	initEvent();
+	ajaxCall("./sys/selectCodeList.do",{cdcategid:'ORGTPCD'}, null, load_orgtpcd_list , null);
+	
+	$("#btn_left_modify").attr("class", "disabled");
+	$("#btn_left_modify").css({ 'pointer-events': 'none' });
+	$("#btn_left_delete").attr("class", "disabled");
+	$("#btn_left_delete").css({ 'pointer-events': 'none' });
+	$("#btn_right_modify").attr("class", "disabled");
+	$("#btn_right_modify").css({ 'pointer-events': 'none' });
+	$("#btn_right_delete").attr("class", "disabled");
+	$("#btn_right_delete").css({ 'pointer-events': 'none' });
+	$("#btn_right_new").attr("class", "disabled");
+	$("#btn_right_new").css({ 'pointer-events': 'none' });
+});
+
+function load_orgtpcd_list(data){
+	$.each(data.resultList, function(index, value){
+		if(value.cd > 90) {
+			var temp = document.createElement('option');
+			temp.innerHTML = value.cdnm; 
+			temp.value = value.cd; 
+			$("#orgtpcd_top").append(temp);
+		}
+	});	
+	$.each(data.resultList, function(index, value){
+		if(value.cd > 90) {
+			var temp = document.createElement('option');
+			temp.innerHTML = value.cdnm; 
+			temp.value = value.cd; 
+			$("#orgtpcd_bottom").append(temp);
+		}
+	});
+}
+
+var temp_relatorgid ="";
+var temp_regseq = "";
+
+var models =[
+             {label:"기관명", 		name:"orgnm", 	index:"orgnm",	width: "100", 	align:"center", sorttype:"text", type:"I"},
+             {label:"기관유형", 	name:"orgtpcd", index:"orgtpcd",	width: "100", 	align:"center", sorttype:"text"},
+             {label:"우편번호", 	name:"zipcode", index:"zipcode",	width: "60", 	align:"center", sorttype:"text", type:"I"},
+             {label:"주소", 		name:"addr", 	index:"addr",	width: "300", 	align:"center", sorttype:"text", type:"I"},
+             {label:"전화번호", 	name:"telno", 	index:"telno",	width: "70", 	align:"center", sorttype:"text", type:"I"},
+             {label:"비고", 		name:"descr", 	index:"descr",	width: "180", 	align:"center", sorttype:"text", type:"I"},
+             {name:"corpregno",	index:"corpregno",	type:"I",	hidden:true},         
+             {name:"faxno",		index:"faxno",		type:"I",	hidden:true},
+             {name:"relatorgid",index:"relatorgid",	type:"I",	hidden:true}
+             ];
+
+var models2 =[
+             {label:"담당자명", 	name:"responernm", 	index:"responernm",	width: "70", 	align:"center", sorttype:"text", type:"I"},
+             {label:"직책", 		name:"posnnm", 		index:"posnnm",		width: "50", 	align:"center", sorttype:"text", type:"I"},
+             {label:"휴대폰번호", 	name:"mobileno", 	index:"mobileno",	width: "75", 	align:"center", sorttype:"text", type:"I"},
+             {label:"이메일", 		name:"emailaddr", 	index:"emailaddr",	width: "150", 	align:"center", sorttype:"text", type:"I"},
+             {name:"telno",		index:"telno",	hidden:true},
+             {name:"regseq",	index:"regseq",	hidden:true}
+             ];
+
+function initGrid(){
+	makeFilterGrid("#left_table",models,300,"resultList",onSelected,onComplete,null);
+	makeGrid("#right_table",models2,300,"resultList",onSelected2,onComplete2,null);
+	
+	function onSelected(data){
+		var rowData = $("#left_table").jqGrid('getRowData', data);
+		$("#orgtpcd_bottom option:selected").attr("selected",false);
+		
+		if(rowData.orgtpcd)
+			$("#orgtpcd_bottom option:contains('"+rowData.orgtpcd+"')").attr("selected","selected");
+		temp_relatorgid = rowData.relatorgid;
+		
+		$("#btn_left_modify").attr("class", "");
+		$("#btn_left_modify").css({ 'pointer-events': 'auto' });
+		$("#btn_left_delete").attr("class", "");
+		$("#btn_left_delete").css({ 'pointer-events': 'auto' });
+		$("#btn_left_new").attr("class", "disabled"); 
+		$("#btn_left_new").css({ 'pointer-events': 'none' });
+		
+		reloadGrid("#right_table","./sys/selectExorgresponList.do",{relatorgid:temp_relatorgid},"resultList");
+	}
+	
+	function onComplete(data){
+		$(".sub_title").eq(0).find("h3").remove();
+		$(".sub_title").eq(0).append("<h3>기관정보 <span>"+data.records+"<span>건</h3>");
+		$("#left_table").jqGrid("setSelection",1);
+		hideLoader(); 
+	}
+	
+	function onSelected2(data){
+		var rowData = $("#right_table").jqGrid('getRowData', data);
+		$("#input_right_telno").val(rowData.telno);
+		
+		temp_regseq = rowData.regseq;
+		
+		$("#btn_right_modify").attr("class", "");
+		$("#btn_right_modify").css({ 'pointer-events': 'auto' });
+		$("#btn_right_delete").attr("class", "");
+		$("#btn_right_delete").css({ 'pointer-events': 'auto' });
+		$("#btn_right_new").attr("class", "disabled"); 
+		$("#btn_right_new").css({ 'pointer-events': 'none' }); 
+	}
+	
+	function onComplete2(data){
+		$(".sub_title").eq(2).find("h3").remove();
+		$(".sub_title").eq(2).append("<h3>담당자정보 <span>"+data.records+"<span>건</h3>");
+		$("#right_table").jqGrid("setSelection",1);
+	}
+	
+	$(window).bind('resize',function() {
+		$("#left_table").jqGrid('setGridHeight', $(".main_chart").height()-23);
+		$("#left_table").jqGrid('setGridWidth', $(".main_chart").width());
+		$("#right_table").jqGrid('setGridHeight', $(".main_chart").height()-23);
+		$("#right_table").jqGrid('setGridWidth', 400);
+	}).trigger('resize');
+}
+
+function initEvent(){
+	//파일저장
+	$("#btn_excel").click(function () {
+		if( 0 < $("#left_table").getGridParam("reccount") )
+			excelDownload("기관정보", "#left_table");
+		else
+			showAlert("조회된 기관정보가 없습니다.");
+		
+		if( 0 < $("#right_table").getGridParam("reccount") )
+			excelDownload("담당자정보", "#right_table");
+		else
+			showAlert("조회된 담당자정보가 없습니다.");
+	}); 
+	
+	//새로고침
+	$("#btn_refresh").click(function () {
+		location.reload();
+	});
+	
+	//검색
+	$("#btn_search").click(function() {
+		var params={
+			orgtpcd:$("#orgtpcd_top").val(),
+			orgnm:$("#orgnm").val()
+		};	
+		showLoader(); 
+		reloadGrid("#left_table","./sys/selectRelatorgList.do",params,"resultList");
+	});
+	
+	//왼쪽 초기화
+	$("#btn_left_reset").click(function() {
+		$("#input_orgnm").val("");
+		$("#input_corpregno").val("");
+		$("#input_zipcode").val("");
+		$("#input_addr").val("");
+		$("#input_telno").val("");
+		$("#input_faxno").val("");
+		$("#input_descr").val("");
+		
+		$("#btn_left_modify").attr("class", "disabled");
+		$("#btn_left_modify").css({ 'pointer-events': 'none' });
+		$("#btn_left_delete").attr("class", "disabled");
+		$("#btn_left_delete").css({ 'pointer-events': 'none' });
+		$("#btn_left_new").attr("class", ""); 
+		$("#btn_left_new").css({ 'pointer-events': 'auto' });
+		$("#left_table").jqGrid("resetSelection");
+		
+		temp_relatorgid="";
+	});
+	
+	//왼쪽 신규등록
+	$("#btn_left_new").click(function(){
+		if($("#input_orgnm").val() == ""){
+			showAlert("기관명을 입력하세요.");
+			return ;
+		}
+		showConfirmDlg("정보를 등록 하시겠습니까?", new_confirm);
+		function new_confirm() {
+			var params={
+				orgnm:$("#input_orgnm").val(),
+				orgtpcd:$("#orgtpcd_bottom").val(),
+				corpregno:$("#input_corpregno").val(),				
+				zipcode:$("#input_zipcode").val(),				
+				addr:$("#input_addr").val(),
+				telno:$("#input_telno").val(),
+				faxno:$("#input_faxno").val(),
+				descr:$("#input_descr").val(),
+			};
+			ajaxCall("./sys/insertRelatorg.do",params,null,check_new,null)
+		}
+	});
+	
+	//왼쪽 수정
+	$("#btn_left_modify").click(function(){
+		if($("#input_orgnm").val() == ""){
+			showAlert("기관명을 입력하세요.");
+			return ;
+		}
+		showConfirmDlg("기관정보를 수정 하시겠습니까?", modify_confirm);
+		function modify_confirm() {
+			var params={
+				relatorgid:temp_relatorgid,
+				
+				orgnm:$("#input_orgnm").val(),
+				orgtpcd:$("#orgtpcd_bottom").val(),
+				corpregno:$("#input_corpregno").val(),				
+				zipcode:$("#input_zipcode").val(),				
+				addr:$("#input_addr").val(),
+				telno:$("#input_telno").val(),
+				faxno:$("#input_faxno").val(),
+				descr:$("#input_descr").val(),
+			}
+			ajaxCall("./sys/updateRelatorg.do",params,null,check_modify,null)
+		}
+	});
+	
+	//왼쪽 삭제
+	$("#btn_left_delete").click(function(){
+		showConfirmDlg("기관정보/담당자정보를 삭제 하시겠습니까?", delete_confirm);
+		function delete_confirm() {
+			var params={
+				relatorgid:temp_relatorgid 
+			}
+			ajaxCall("./sys/deleteRelatorg.do",params,null,check_delete,null)
+		}
+	});
+	
+	//오른쪽 초기화
+	$("#btn_right_reset").click(function() {
+		$("#input_responernm").val("");
+		$("#input_posnnm").val("");
+		$("#input_right_telno").val("");
+		$("#input_mobileno").val("");
+		$("#input_emailaddr").val("");
+		
+		$("#btn_right_modify").attr("class", "disabled");
+		$("#btn_right_modify").css({ 'pointer-events': 'none' });
+		$("#btn_right_delete").attr("class", "disabled");
+		$("#btn_right_delete").css({ 'pointer-events': 'none' });
+		$("#btn_right_new").attr("class", ""); 
+		$("#btn_right_new").css({ 'pointer-events': 'auto' });
+		$("#right_table").jqGrid("resetSelection");
+		
+		temp_regseq="";
+	});
+	
+	//오른쪽 신규등록
+	$("#btn_right_new").click(function(){
+		if($("#input_responernm").val() == ""){
+			showAlert("담당자명을 입력하세요.");
+			return ;
+		}
+		if($("#input_posnnm").val() == ""){
+			showAlert("직책명을 입력하세요.");
+			return ;
+		}
+		if($("#input_mobileno").val() == ""){
+			showAlert("휴대폰번호를 입력하세요.");
+			return ;
+		}
+		showConfirmDlg("담당자정보를 등록 하시겠습니까?", new_confirm);
+		function new_confirm() {
+			var params={
+				relatorgid:temp_relatorgid,
+				responernm:$("#input_responernm").val(),
+				posnnm:$("#input_posnnm").val(),
+				telno:$("#input_right_telno").val(),
+				mobileno:$("#input_mobileno").val(),
+				emailaddr:$("#input_emailaddr").val()
+			};
+			ajaxCall("./sys/insertExorgrespon.do",params,null,check_new,null)
+		}
+	});
+	
+	//오른쪽 수정
+	$("#btn_right_modify").click(function(){
+		if($("#input_responernm").val()==""){
+			showAlert("담당자명을 입력하세요.");
+			return ;
+		}
+		if($("#input_posnnm").val()==""){
+			showAlert("직책을 입력하세요.");
+			return ;
+		}
+		showConfirmDlg("담당자정보를 수정 하시겠습니까?", modify_confirm);
+		function modify_confirm() {
+			var params={
+				relatorgid:temp_relatorgid,
+				regseq:temp_regseq,
+			
+				responernm:$("#input_responernm").val(),
+				posnnm:$("#input_posnnm").val(),
+				telno:$("#input_right_telno").val(),
+				mobileno:$("#input_mobileno").val(),
+				emailaddr:$("#input_emailaddr").val()
+			}
+			ajaxCall("./sys/updateExorgrespon.do",params,null,check_modify,null)
+		}
+	});
+	
+	//오른쪽 삭제
+	$("#btn_right_delete").click(function(){
+		showConfirmDlg("담당자정보를 삭제 하시겠습니까?", delete_confirm);
+		function delete_confirm() {
+			var params={
+				relatorgid:temp_relatorgid,
+				regseq:temp_regseq
+			}
+			ajaxCall("./sys/deleteExorgrespon.do",params,null,check_delete,null)
+		}
+	});
+}
+
+function check_new(data){
+	if(data.result==1)
+   		showAlert("등록되었습니다.");
+	else
+		showAlert("등록실패하였습니다.");
+	$("#btn_search").trigger("click");
+}
+
+function check_modify(data){
+	if(data.result==1)
+   		showAlert("수정 되었습니다.");
+	else
+		showAlert("수정에 실패하였습니다.");
+	$("#btn_search").trigger("click");
+}
+
+function check_delete(data){
+	if(data.result==1)
+   		showAlert("삭제 되었습니다.");
+	else
+		showAlert("삭제에 실패하였습니다.");
+	$("#btn_search").trigger("click");
+}
+
+
+function excelDownload(title, grid_id) {
+	$("#excelDown").remove();
+	var grid = $(grid_id);
+	var form = document.createElement("FORM");
+	form.setAttribute("id", "excelDown");
+	form.action = "./stop/downloadExcelFile.do";
+	form.method = "POST"; 
+	
+	var fileName = JSON.stringify(title);
+	var param = document.createElement('INPUT');
+	var rowData = grid.jqGrid("getRowData");
+	var columnData = JSON.stringify(rowData);
+	
+	var columnLabel = JSON.stringify(grid.jqGrid('getGridParam','colNames'));
+	
+	var idData = grid.jqGrid('getGridParam', 'colModel');
+	var columnName = []; 
+	$.each(idData, function (index,value){
+		columnName.push(value.name);
+	})
+	columnName = JSON.stringify(columnName);
+	
+	param.type = 'HIDDEN'; 
+	param.name = 'json';
+	param.value = fileName + columnLabel + columnName + columnData; 
+	
+	form.appendChild(param);
+	
+	document.body.appendChild(form);
+	inquiryFileDownload("excelDown", true); 
+}

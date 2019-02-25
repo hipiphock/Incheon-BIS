@@ -1,0 +1,926 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SYSTEM">
+    
+    <!-- 유지보수업체정보관리 - 관계기관정보검색 (v0609)-->
+	<select id="selectRelatorgList" parameterType="TbEcmExorgVO" resultType="TbEcmExorgVO">
+		SELECT 
+		    RELATORGID, 
+		    ORGNM, 
+		    FC_CODE_CDNM('ORGTPCD', ORGTPCD) ORGTPCD, 
+		    CORPREGNO, 
+		    ZIPCODE, 
+		    ADDR, 
+		    TELNO, 
+		    FAXNO, 
+		    DESCR
+		FROM TB_ECM_EXORG 
+		Where  
+			 ORGTPCD > '90'
+			 <if test="orgtpcd != null and !orgtpcd.equalsIgnoreCase('')">		
+			 AND ORGTPCD = #{orgtpcd}  
+			 </if>
+			 <if test="orgnm != null and !orgnm.equalsIgnoreCase('')">		
+			 AND ORGNM LIKE '%${orgnm}%'
+			 </if>
+		Order By RELATORGID
+	</select>
+    
+	<!-- 유지보수업체정보관리 - max 관계기관id(v0609)-->
+	<select id="selectMaxRelatorgid" resultType="TbEcmExorgVO">
+		SELECT NVL(MAX(TO_NUMBER(RELATORGID)),0) + 1 AS MAXSEQ FROM TB_ECM_EXORG
+	</select>
+	
+	<!--  유지보수업체정보관리 - 관계기관정보 신규등록(v0609)-->
+	<insert id="insertRelatorg" parameterType="TbEcmExorgVO">
+		INSERT INTO tb_ecm_exorg
+            (relatorgid,
+             ORGNM,
+             orgtpcd,
+             corpregno,
+             zipcode,
+             addr,
+             telno,
+             faxno,
+             descr)
+		VALUES     
+		   (#{relatorgid},
+            #{orgnm},
+            #{orgtpcd},
+            #{corpregno},
+            #{zipcode},
+            #{addr},
+            #{telno},
+            #{faxno},
+            #{descr})	
+	</insert>
+	
+	<!--  유지보수업체정보관리 - 관계기관정보 내용 수정(v0609)-->
+	<update id="updateRelatorg" parameterType="TbEcmExorgVO">
+		UPDATE tb_ecm_exorg
+		SET   
+			orgnm = #{orgnm},
+       	    orgtpcd = #{orgtpcd},
+      		corpregno = #{corpregno},
+      	 	zipcode = #{zipcode},
+       		addr = #{addr},
+       		telno = #{telno},
+       		faxno = #{faxno},
+       		descr = #{descr}
+		WHERE  relatorgid = #{relatorgid}
+	</update>
+	
+	<!--  유지보수업체정보관리 - 관계기관정보 내용 삭제(v0609)-->
+	<delete id="deleteRelatorg" parameterType="TbEcmExorgVO">
+		Delete From tb_ecm_exorg Where RELATORGID=#{relatorgid}
+	</delete>
+	
+	<!--  유지보수업체정보관리 - 관계기관정보 담당자 삭제(v0609)-->
+	<delete id="deleteExorgrespon" parameterType="TbEcmExorgVO">
+		Delete From TB_ECM_EXORGRESPON Where RELATORGID=#{relatorgid}
+		<if test="regseq != null and !regseq.equalsIgnoreCase('')">	
+		AND REGSEQ=#{regseq}
+		</if>
+	</delete>
+	
+	<!-- 유지보수업체정보관리 - 담당자정보검색 (v0609)-->
+	<select id="selectExorgresponList" parameterType="TbEcmExorgresponVO" resultType="TbEcmExorgresponVO">
+		SELECT 
+		    FC_EXORG_ORGNM(RELATORGID) ORGNM, 
+		    REGSEQ , 
+		    RESPONERNM,
+		    POSNNM, 
+		    TELNO, 
+		    MOBILENO,
+		    NVL(EMAILADDR,'') EMAILADDR 
+		From TB_ECM_EXORGRESPON 
+		WHERE RELATORGID = #{relatorgid}
+		Order By RELATORGID
+	</select>
+	
+	<!--  유지보수업체정보관리 - 담당자 신규등록(v0609)-->
+	<insert id="insertExorgrespon" parameterType="TbEcmExorgresponVO">
+		INSERT INTO tb_ecm_exorgrespon
+             (relatorgid,
+             regseq,
+             responernm,
+             posnnm,
+             telno,
+             mobileno,
+             emailaddr)
+		VALUES      
+			 (#{relatorgid},
+             Fc_exorgrespon_regseq(#{relatorgid}),
+             #{responernm},
+             #{posnnm},
+             #{telno},
+             #{mobileno},
+             #{emailaddr})
+	</insert>
+	
+	<!--  유지보수업체정보관리 - 담당자 내용 수정(v0609)-->
+	<update id="updateExorgrespon" parameterType="TbEcmExorgresponVO">
+		UPDATE tb_ecm_exorgrespon
+		SET    responernm = #{responernm},
+		       posnnm = #{posnnm},
+		       telno = #{telno},
+		       mobileno = #{mobileno},
+		       emailaddr = #{emailaddr}
+		WHERE  relatorgid = #{relatorgid}
+		       AND regseq = #{regseq}
+	</update>
+	
+	<!-- BIT외부충격이력 - (인천)유지보수 업체 정보 (v0611)-->
+	<select id="selectRelatorgInfo" parameterType="TbEcmExorgVO" resultType="TbEcmExorgVO">
+		SELECT 
+		    ORGNM, 
+		    ADDR,
+		    A.TELNO,
+		    FAXNO,
+		    RESPONERNM||'('||POSNNM||')' RESPONERNM, 
+		    MOBILENO,
+		    EMAILADDR 
+		FROM TB_ECM_EXORG A
+		JOIN TB_ECM_EXORGRESPON B
+		  ON A.RELATORGID = B.RELATORGID
+		WHERE A.RELATORGID = #{relatorgid}
+	</select>
+	
+	<!-- 무선업그레이드관리(lg) - 노선, 운영, GIS 최신버전 정보 (v0701)-->
+	<select id="selectUptodateVer" parameterType="TbOmcMdtfileregVO" resultType="TbOmcMdtfileregVO">
+		SELECT
+		    NVL(MAX(RUN_ROUTE_FILEVER), 1) RVER, 
+		    NVL(MAX(OPER_PGM_FILEVER), 1) OVER, 
+		    NVL(MAX(GIS_NODE_FILEVER), 1) NVER 
+		FROM TB_OMC_MDTFILEREG A
+			<if test="detail != null and detail.equalsIgnoreCase('2')">
+			,TB_OMM_MDT B 
+			</if>
+		WHERE 
+			<choose>
+			    <when test="detail != null and detail.equalsIgnoreCase('1')">
+			    MDTID NOT IN ( SELECT MDTID FROM TB_OMM_MDT WHERE DETAIL LIKE '로드%' )
+			    </when>
+			    <when test="detail != null and detail.equalsIgnoreCase('2')">
+			    A.MDTID = B.MDTID(+)
+			    AND B.DETAIL LIKE '로드%'
+			    </when>
+			</choose>
+			
+	</select>
+	
+	<!-- 무선업그레이드관리(lg) - 무선업그레이드 전송 (v0701) -->
+	<update id="updateUptodateVer" parameterType="TbOmcMdtfileregVO">
+		UPDATE tb_omc_mdtfilereg
+		SET    busid= #{busid},
+		       routeid=#{routeid}	
+		       <if test="rver != null and !rver.equalsIgnoreCase('')">
+		       ,run_route_filever=#{rver}, 
+		       run_route_app_startdt=To_date(#{rstartdt},'YYMMDDHH24'),
+		       run_route_fileloc = '/download/route/' 
+		       </if>
+		       <if test="over != null and !over.equalsIgnoreCase('')">
+		       ,oper_pgm_filever=#{over}, 
+		       <choose>
+		           <when test="detail != null and detail.equalsIgnoreCase('1')">
+		               oper_pgm_fileloc='/download/sw/',
+		           </when>
+		           <when test="detail != null and detail.equalsIgnoreCase('2')">
+		               oper_pgm_fileloc='/download/sw_road/',
+		           </when>
+		       </choose>
+		       oper_pgm_app_startdt=To_date(#{ostartdt},'YYMMDDHH24') 
+		       </if>
+		       <if test="nver != null and !nver.equalsIgnoreCase('')">
+		       ,gis_node_filever=#{nver},--GIS버전 조건 시작
+		       gis_node_app_startdt=To_date(#{nstartdt},'YYMMDDHH24'),
+		       gis_link_filever=#{nver},
+		       gis_link_app_startdt=To_date(#{nstartdt},'YYMMDDHH24'),
+		       gis_bstop_filever=#{nver},
+		       gis_bstop_app_startdt=to_date(#{nstartdt},'YYMMDDHH24') 
+		       </if>
+		       ,regdt=SYSDATE
+		WHERE  mdtid= #{mdtid} 	
+	</update>
+	
+	<!--무선업그레이드관리(lg) - 무선업그레이드 전송 신규등록 (v0701) -->
+	<insert id="insertUptodateVer" parameterType="TbOmcMdtfileregVO">
+		INSERT INTO TB_OMC_MDTFILEREG 
+			(MDTID, 
+			BUSID, 
+			ROUTEID
+			<if test="rver != null and !rver.equalsIgnoreCase('')">
+			,RUN_ROUTE_FILEVER, 
+			RUN_ROUTE_FILELOC, 
+			RUN_ROUTE_APP_STARTDT
+			</if> 
+			<if test="over != null and !over.equalsIgnoreCase('')">
+			,OPER_PGM_FILEVER, 
+			OPER_PGM_FILELOC, 
+			OPER_PGM_APP_STARTDT,
+			</if>
+			<if test="nver != null and !nver.equalsIgnoreCase('')">
+			GIS_NODE_FILEVER, 
+			GIS_NODE_FILELOC, 
+			GIS_NODE_APP_STARTDT, 
+			GIS_LINK_FILEVER, 
+			GIS_LI.NK_FILELOC, 
+			GIS_LINK_APP_STARTDT,
+			GIS_BSTOP_FILEVER,
+			GIS_BSTOP_FILELOC,
+			GIS_BSTOP_APP_STARTDT 
+			</if>
+			,REGDT)
+		VALUES( #{mdtid}, 
+			#{busid}, 
+			#{routeid}
+			<if test="rver != null and !rver.equalsIgnoreCase('')"> 
+			,#{rver}, 
+			'/download/route/',
+			TO_DATE(#{rstartdt},'YYMMDDHH24') 
+			</if>
+			<if test="over != null and !over.equalsIgnoreCase('')">
+			,#{over}, 
+			<choose>
+		           <when test="detail != null and detail.equalsIgnoreCase('1')">
+		           '/download/sw/',
+		           </when>
+		           <when test="detail != null and detail.equalsIgnoreCase('2')">
+		           '/download/sw_road/',
+		           </when>
+		       </choose>
+			TO_DATE(#{ostartdt},'YYMMDDHH24') 	
+			</if>
+			<if test="nver != null and !nver.equalsIgnoreCase('')">
+			,#{nver}, 
+			'/download/gis/', 
+			TO_DATE(#{nstartdt},'YYMMDDHH24'), 
+			#{nver}, 
+			'/download/gis/', 
+			TO_DATE(#{nstartdt},'YYMMDDHH24'), 
+			#{nver},
+			'/download/gis/', 
+			TO_DATE(#{nstartdt},'YYMMDDHH24')
+			</if> 
+			,SYSDATE)
+	</insert>
+	
+	<!-- 코드 카테고리 리스트 -->
+	<select id="selectCodeCateList" parameterType="TbOmmCodeVO" resultType="TbOmmCodeVO">
+		SELECT
+			*
+		FROM
+			TB_OMM_CODECATEGORY		
+		<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">		
+		WHERE
+			CDCATEGID LIKE '%' || #{searchWord} || '%'
+			OR CDCATEGNM LIKE '%' || #{searchWord} || '%'
+		</if>	
+			ORDER BY CDCATEGID			
+	</select>
+	
+	<!--코드 정보 조회  -->
+	<select id="selectCodeList" parameterType="TbOmmCodeVO" resultType="TbOmmCodeVO">
+		SELECT
+			CDCATEGID,
+            CD,
+            CDNM,
+            NVL(DETAIL, '-') DETAIL,
+            NVL(DESCR,'-') DESCR,
+            USEYN
+		FROM TB_OMM_CODE
+		WHERE
+		<choose>
+			<when test="cdcategid == 'PROJECTTPCD'">
+			CDCATEGID = #{cdcategid}
+			AND CD != '50' 
+			AND USEYN = '1'  ORDER BY CDNM ASC 
+			</when>			
+			<otherwise>
+			CDCATEGID = #{cdcategid}
+			ORDER BY TO_NUMBER(CD)
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!--신규코드 값 조회  -->
+	<select id="selectNewCodeCd" parameterType="TbOmmCodeVO" resultType="TbOmmCodeVO">
+		 SELECT NVL(MAX(CD)+1, 0) AS CD FROM TB_OMM_CODE WHERE CDCATEGID = #{cdcategid}
+	</select>
+	
+	<!-- 관계기관 목록 -->
+	<select id="selectRelatorgidList" parameterType="TbOmmCodeVO" resultType="TbOmmCodeVO">
+		SELECT 
+		    RELATORGID, ORGTPCD, ORGNM
+		FROM 
+		    TB_ECM_EXORG
+		WHERE
+			1=1
+			<if test="orgtpcd != null and !orgtpcd.equalsIgnoreCase('')">
+		    AND ORGTPCD = #{orgtpcd}
+			</if>
+	</select>
+	
+	<!-- 코드 삭제 -->
+	<update id="deleteCode" parameterType="TbOmmCodeVO">
+		DELETE FROM
+			TB_OMM_CODE
+		WHERE
+			CDCATEGID = #{cdcategid}		
+	</update>
+	
+	<!-- 코드 삽입 -->
+	<update id="insertCode" parameterType="TbOmmCodeVO">
+		INSERT INTO 
+			TB_OMM_CODE
+				(CDCATEGID, CD, CDNM, DETAIL, DESCR, USEYN) 
+			VALUES
+				(
+				#{cdcategid},
+				#{cd},
+				#{cdnm},
+				#{detail},
+				#{descr},
+				#{useyn}
+				)				
+	</update>
+	
+	<!-- 시스템 접속 이력 조회 -->
+	<select id="selectLoginHisList" parameterType="TbOmmUserVO" resultType="TbOmmUserVO">
+  		SELECT   
+	  		SH.HISTNO,
+	  		SH.USERID,
+	  		B.USERNM,
+	  		A.AUTHNM,
+            TO_CHAR(LOGIN_STARTDT, 'YYYY-MM-DD HH24:MI:SS') AS LOGIN_STARTDT,
+            TO_CHAR(LOGIN_ENDDT, 'YYYY-MM-DD HH24:MI:SS') AS LOGIN_ENDDT,
+            IPADDR
+    	FROM   
+    		TB_OMH_BITUSERLOGIN SH, TB_OMM_USER B, TB_OMM_USERAUTH C, TB_OMM_AUTH A 
+   		WHERE       
+   			LOGIN_STARTDT <![CDATA[>=]]> TO_DATE(#{login_startdt}||'000000', 'YYYYMMDDHH24MISS')
+           	AND (LOGIN_ENDDT <![CDATA[<=]]> TO_DATE(#{login_enddt}||'235959', 'YYYYMMDDHH24MISS')
+           		OR LOGIN_ENDDT IS NULL)
+           	<if test="userid != null and !userid.equalsIgnoreCase('')">
+	           	AND SH.USERID LIKE '%' || #{userid} || '%'
+			</if>
+			<if test="ipaddr != null and !ipaddr.equalsIgnoreCase('')">
+	           	AND IPADDR LIKE '%' || #{ipaddr} || '%'
+			</if>
+           	AND SH.USERID = B.USERID
+            AND B.USERID = C.USERID
+            AND C.AUTHID = A.AUTHID 
+		ORDER BY LOGIN_STARTDT
+	</select>
+	
+	<!-- 데이터베이스 사용량 조회 -->
+	<select id="selectTableSpaceList" resultType="TableSpaceVO">
+		SELECT   
+			A.*, 
+			CASE
+            	WHEN A.USED_RATE <![CDATA[>]]> 85.0 AND A.USED_RATE <![CDATA[<=]]> 95.0 THEN 1
+                WHEN A.USED_RATE <![CDATA[>]]> 95.0 THEN 2
+                ELSE 0
+            END AS SIZE_WARNING, 
+            TO_CHAR(A.USED_SIZE,'FM99990.00') || '/' || TO_CHAR(A.CURRENT_SIZE,'FM99990.00')  CURRENT_USAGE                
+  		FROM   
+  			(SELECT   
+  				A.TABLESPACE_NAME,
+                ROUND (A.BYTES_ALLOC / 1024 / 1024 / 1024, 2) CURRENT_SIZE,
+                ROUND (NVL (B.BYTES_FREE, 0) / 1024 / 1024 / 1024, 2) FREE_SIZE,
+                ROUND ((A.BYTES_ALLOC - NVL (B.BYTES_FREE, 0)) / 1024 / 1024 / 1024,2) USED_SIZE,
+                ROUND ( (NVL (B.BYTES_FREE, 0) / A.BYTES_ALLOC) * 100, 2) FREE_RATE,
+                100 - ROUND ( (NVL (B.BYTES_FREE, 0) / A.BYTES_ALLOC) * 100, 2) USED_RATE,
+                ROUND (MAXBYTES / 1024 / 1024 / 1024, 2) MAX_SIZE
+             FROM   
+             	(SELECT   
+             		F.TABLESPACE_NAME,
+       		        SUM (F.BYTES) BYTES_ALLOC,
+                    SUM (DECODE (F.AUTOEXTENSIBLE,
+                                            'YES',
+                                            F.MAXBYTES,
+                                            'NO',
+                                            F.BYTES))
+                                  MAXBYTES
+                        FROM   DBA_DATA_FILES F
+                    GROUP BY   TABLESPACE_NAME) A,
+                   (  SELECT   F.TABLESPACE_NAME, SUM (F.BYTES) BYTES_FREE
+                        FROM   DBA_FREE_SPACE F
+                    GROUP BY   TABLESPACE_NAME) B
+       		WHERE   A.TABLESPACE_NAME = B.TABLESPACE_NAME(+)
+          	UNION
+            SELECT   TABLESPACE_NAME,
+                     ROUND (SUM (BYTES_USED + BYTES_FREE) / 1048576 / 1024, 2),
+                     ROUND (SUM (BYTES_FREE) / 1048576 / 1024, 2),
+                     ROUND (SUM (BYTES_USED) / 1048576 / 1024, 2),
+                     ROUND ((SUM (BYTES_FREE) / SUM (BYTES_USED + BYTES_FREE)) * 100, 2 ) FREE_RATE,
+                     100 - ROUND ((SUM (BYTES_FREE) / SUM (BYTES_USED + BYTES_FREE)) * 100, 2 ) USED_RATE,
+                     ROUND (MAX (BYTES_USED + BYTES_FREE) /  1024 / 1024 / 1024, 2)
+              FROM   SYS.V_$TEMP_SPACE_HEADER
+        	  GROUP BY   TABLESPACE_NAME) A
+ 		WHERE 
+ 			A.TABLESPACE_NAME IN('TS_IBMS_DED', 'TS_IBMS_DEI', 'TS_HIXF', 'TS_HIXG')  
+	</select>
+	
+	<!-- 서버 상태 조회 -->
+	<select id="selectServerStateList" resultType="TbServerStatusVO">
+		SELECT 
+			B.SERVER_NAME, 
+            TO_CHAR(TO_DATE(A.UPDATE_DT, 'YYYY-MM-DD HH24:MI:SS'),'YYYY-MM-DD HH24:MI:SS') UPDATE_DT,
+            CASE
+            	WHEN TO_DATE(A.UPDATE_DT, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[>=]]> (SYSDATE - 5/1440)
+            	THEN A.SERVER_STATE
+            	ELSE '0' 
+            END SERVER_STATE,	 
+            A.TOTAL_MEMORY,
+            A.USE_MEMORY
+		FROM 
+			SERVER_STATUS A, SERVER B
+    	WHERE 
+    		A.SERVER_ID = B.SERVER_ID
+    		AND A.SERVER_ID  NOT IN ('124', '200')
+	</select>
+	
+	<!-- 서버별 BIT 상태 조회 -->
+	<select id="selectBitServerStatList"  resultType="TbServerStatusVO">
+  		WITH IC_STAT AS
+    	(
+    		SELECT 
+              A.SERVER_ID
+              ,C.SERVER_NAME
+              ,CASE 
+                WHEN B.COLLDT IS NULL OR B.COLLDT <![CDATA[<]]> (SYSDATE - 5 / 1440)
+              	THEN 0
+              	ELSE 1
+              END FLAG
+          	FROM 
+          		TB_BIT_PROTOCOL_MAPPING A, TB_ISC_BITSTAT B, SERVER C, TB_OMM_BIT D
+            WHERE 
+            	A.BITID = B.BITID(+)
+              	AND A.BITID = D.BITID
+              	AND A.SERVER_ID = C.SERVER_ID
+              	AND A.SERVER_ID NOT IN (123)
+    	),
+    	W_STAT AS
+    	(
+    		SELECT 
+           		A.SERVER_ID
+               ,C.SERVER_NAME
+               ,CASE 
+               	WHEN B.REG_DATE IS NULL OR B.REG_DATE <![CDATA[<]]> (SYSDATE - 5 / 1440)
+              	THEN 0
+              	ELSE 1
+               END FLAG
+       		FROM 
+       			TB_BIT_PROTOCOL_MAPPING A, WBISOWNER.TB_WBIS_BIT_STAT B, SERVER C, TB_OMM_BIT D
+            WHERE 
+            	A.BITID = B.BIT_ID(+)
+             	AND A.BITID = D.BITID
+              	AND A.SERVER_ID = C.SERVER_ID
+             	AND A.SERVER_ID IN (123)
+      	) 
+      	
+   	 	SELECT 
+        	A.*,
+        	A.TOTAL_CNT - A.FAIL_CNT AS CONN_CNT
+      	FROM  
+      	(  
+	    	SELECT 
+	    		A.SERVER_ID,
+	    		A.SERVER_NAME
+	        	,COUNT(*) AS TOTAL_CNT
+	      		,(	SELECT COUNT(*) 
+	      			FROM IC_STAT B  
+	      			WHERE	
+	      				B.SERVER_ID = A.SERVER_ID 
+	                  	AND B.FLAG = 0
+	          	) AS FAIL_CNT
+	     	FROM
+	      		IC_STAT A
+	      	GROUP BY A.SERVER_ID, A.SERVER_NAME
+	      	UNION 
+	      	SELECT 
+	      		A.SERVER_ID,
+	      		A.SERVER_NAME
+	        	,COUNT(*) AS TOTAL_CNT
+	      		,(SELECT COUNT(*) FROM W_STAT B  WHERE	B.SERVER_ID = A.SERVER_ID 
+	                  AND B.FLAG = 0
+	           	) AS FAIL_CNT
+	      	FROM
+	      		W_STAT A
+	      	GROUP BY A.SERVER_ID, A.SERVER_NAME
+		) A
+		ORDER BY A.SERVER_ID
+	
+	
+	
+		<!-- SELECT 
+			AA.SERVER_ID
+     		,BB.SERVER_NAME
+     		,AA.TOTAL_CNT
+     		,AA.FAIL_CNT
+     		,AA.TOTAL_CNT - AA.FAIL_CNT AS CONN_CNT
+  		FROM (
+  			SELECT 
+  				A.SERVER_ID
+             	,COUNT(*) AS TOTAL_CNT
+             	,(SELECT COUNT(*) FROM TB_BIT_CONNECT_SERVER AA, TB_ISC_BITSTAT BB  WHERE	AA.SERVER_ID = A.SERVER_ID 
+                  AND AA.BITID = BB.BITID
+                	AND BB.COLLDT <![CDATA[<]]> (SYSDATE - 5 / 1440)
+               	) AS FAIL_CNT
+          	FROM 
+          		TB_BIT_CONNECT_SERVER A
+         	GROUP BY A.SERVER_ID 
+         	) AA
+      		,SERVER BB
+ 		WHERE 
+ 			AA.SERVER_ID = BB.SERVER_ID
+ 		ORDER BY 1 ASC -->
+	</select>
+	
+	<!-- 코드 카테고리 삭제 -->
+	<delete id="deleteCodecategory" parameterType="TbOmmCodeVO">
+		DELETE
+			TB_OMM_CODECATEGORY
+		WHERE
+			CDCATEGID = #{cdcategid}
+	</delete>
+	
+	
+	<!-- 코드 카테고리 수정 -->
+	<update id="updateCodecategory" parameterType="TbOmmCodeVO">
+		UPDATE TB_OMM_CODECATEGORY
+		SET
+			CDCATEGNM = #{cdcategnm},
+			DETAIL = #{detail, jdbcType=VARCHAR},
+			DESCR = #{descr, jdbcType=VARCHAR}
+		WHERE
+			CDCATEGID = #{cdcategid}
+	</update>
+	
+	<!-- 코드 카테고리 등록 -->
+	<insert id="insertCodecategory" parameterType="TbOmmCodeVO">
+		INSERT INTO TB_OMM_CODECATEGORY
+		(
+			CDCATEGID,
+			CDCATEGNM,
+			DETAIL,
+			DESCR
+		)
+		VALUES
+		(
+			#{cdcategid},
+			#{cdcategnm},
+			#{detail, jdbcType=VARCHAR},
+			#{descr, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<!-- 행정구역 정보조회 - 행정구역 조회  -->
+	<select id="selectAdminareaList" parameterType="TbOmmAdminareaVO" resultType="TbOmmAdminareaVO"> 
+		<choose>
+			<when test='sel_code == "AREACD"'>
+				SELECT ADMINCD, AREACD From TB_OMM_ADMINAREA ORDER BY AREACD ASC
+			</when>
+			<when test='sel_code == "GAREANM"'>
+				SELECT distinct GAREANM From TB_OMM_ADMINAREA ORDER BY GAREANM ASC
+			</when>
+			<otherwise>
+				SELECT 
+				    AREACD, 
+				    ADMINCD, 
+				    AREANM, 
+				    GAREANM,
+				    SVCAREACD, 
+				    ZIPCODE 
+				FROM TB_OMM_ADMINAREA
+				WHERE 1=1 
+				<if test="areacd != null and !areacd.equalsIgnoreCase('')">
+				  AND AREACD = #{areacd}
+				</if>
+				<if test="gareanm != null and !gareanm.equalsIgnoreCase('')">
+				  AND GAREANM = #{gareanm}
+				</if>
+				<if test="areanm != null and !areanm.equalsIgnoreCase('')">
+				  AND AREANM LIKE '%'||#{areanm}||'%'
+				</if>
+				ORDER BY AREACD
+			</otherwise>
+		</choose>
+	</select>
+		
+	<!-- 운영파라미터관리 - 프로세스목록조회 -->
+	<select id="selectProcessList" parameterType="TbOmmProcessVO" resultType="TbOmmProcessVO">
+		<choose>
+			<when test='sel_code == "PROCESSID"'>
+				SELECT PROCESSNM, PROCESSID From TB_OMM_PROCESS ORDER BY PROCESSID ASC
+			</when>
+			<when test='sel_code == "IDCHECK"'>
+				SELECT COUNT(*) AS COUNT From TB_OMM_PROCESS Where PROCESSID = #{processid}
+			</when>
+			<otherwise>
+				SELECT 
+				    PROCESSID, 
+				    PROCESSNM, 
+				    IPADDR, 
+				    PORTNO, 
+				    USERID, 
+				    PASSWD 
+				FROM TB_OMM_PROCESS 
+				WHERE 1=1
+				<if test="processid != null and !processid.equalsIgnoreCase('')">
+				  AND PROCESSID = #{processid}
+				</if>   
+				<if test="processnm != null and !processnm.equalsIgnoreCase('')">
+				  AND PROCESSNM LIKE '%'||#{processnm}||'%'
+				</if> 
+				ORDER By PROCESSID
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 운영파라미터관리 - 프로세스신규등록 -->
+	<insert id="insertProcess" parameterType="TbOmmProcessVO">
+		INSERT INTO 
+		    tb_omm_process( 
+		            PROCESSID, 
+		            PROCESSNM, 
+		            IPADDR, 
+		            PORTNO, 
+		            USERID, 
+		            PASSWD )
+		VALUES(		#{processid},
+		            #{processnm, jdbcType=VARCHAR},
+		            #{ipaddr, jdbcType=VARCHAR},
+		            #{portno, jdbcType=VARCHAR},
+		            #{userid, jdbcType=VARCHAR},
+		            #{passwd, jdbcType=VARCHAR} )
+	</insert>
+	
+	<!-- 운영파라미터관리 - 프로세스수정 -->
+	<update id="updateProcess" parameterType="TbOmmProcessVO">
+		UPDATE tb_omm_process
+		SET    PROCESSNM = #{processnm, jdbcType=VARCHAR},
+		       IPADDR = #{ipaddr, jdbcType=VARCHAR},
+		       PORTNO = #{portno, jdbcType=VARCHAR},
+		       USERID = #{userid, jdbcType=VARCHAR},
+		       PASSWD = #{passwd, jdbcType=VARCHAR} 
+		WHERE  PROCESSID = #{processid}
+	</update>
+	
+	<!-- 운영파라미터관리 - 프로세스 삭제 -->
+	<delete id="deleteProcess" parameterType="TbOmmProcessVO">
+		DELETE FROM tb_omm_process
+		WHERE  PROCESSID = #{processid}
+	</delete>
+	
+	
+	<!-- 운행위반기준정보관리 - 운행위반기준정보검색 -->
+	<select id="selectViolateList" parameterType="TbOmmViolparamVO" resultType="TbOmmViolparamVO">
+		SELECT
+			ROWID,
+		    ROWNUM,
+		    TO_CHAR(APP_STARTDT, 'YYYY-MM-DD') APP_STARTDT,
+		    TO_CHAR(APP_ENDDT, 'YYYY-MM-DD') APP_ENDDT, 
+		    NVL(OPEN_RUN_THRESDIST,0) OPEN_RUN_THRESDIST,
+		    NVL(OPEN_RUN_THRESSPD, 0) OPEN_RUN_THRESSPD,
+		    NVL(OVERSPD_THRESSPD, 0) OVERSPD_THRESSPD,
+		    NVL(OVERSPD_CRITICTM, 0) OVERSPD_CRITICTM, 
+		    NVL(ACCEL_THRESSPD, 0) ACCEL_THRESSPD, 
+		    NVL(DECEL_THRESSPD, 0) DECEL_THRESSPD, 
+		    NVL(ACCEL_DECEL_CRITICTM, 0) ACCEL_DECEL_CRITICTM,
+		    NVL(OUTROUTE_THRESDIST, 0) OUTROUTE_THRESDIST, 
+		    NVL(OUTROUTE_THRESTM, 0) OUTROUTE_THRESTM,
+		    NVL(VOLUN_DELAY_THRESTM, 0) VOLUN_DELAY_THRESTM,
+		    NVL(DYNA_EVT_THRESTM, 0) DYNA_EVT_THRESTM, 
+		    NVL(BSTOP_SVC_THRESSPD, 0) BSTOP_SVC_THRESSPD
+		FROM TB_OMM_VIOLPARAM 
+		WHERE APP_STARTDT <![CDATA[<=]]> TO_DATE(#{search_startdt},'YYYYMMDD') 
+		ORDER BY APP_STARTDT DESC
+	</select>
+
+	<!-- 운행위반기준정보관리 - 운행위반기준정보 신규등록-->
+	<insert id="insertViolate" parameterType="TbOmmViolparamVO">
+		INSERT INTO 
+		    TB_OMM_VIOLPARAM (
+		            APP_STARTDT,
+		            APP_ENDDT,
+		            OPEN_RUN_THRESDIST,
+		            OPEN_RUN_THRESSPD,
+		            OVERSPD_THRESSPD,
+		            OVERSPD_CRITICTM,
+		            ACCEL_THRESSPD,
+		            DECEL_THRESSPD,
+		            ACCEL_DECEL_CRITICTM,
+		            OUTROUTE_THRESDIST,
+		            OUTROUTE_THRESTM,
+		            VOLUN_DELAY_THRESTM,
+		            DYNA_EVT_THRESTM,
+		            BSTOP_SVC_THRESSPD
+		        )
+		    VALUES(
+		            TO_DATE(#{app_startdt, jdbcType=VARCHAR},'YYYYMMDD'),
+		            TO_DATE(#{app_enddt, jdbcType=VARCHAR},'YYYYMMDD'),
+		            #{open_run_thresdist, jdbcType=VARCHAR},
+		            #{open_run_thresspd, jdbcType=VARCHAR},
+		            #{overspd_thresspd, jdbcType=VARCHAR},
+		            #{overspd_critictm, jdbcType=VARCHAR},
+		            #{accel_thresspd, jdbcType=VARCHAR},
+		            #{decel_thresspd, jdbcType=VARCHAR},
+		            #{accel_decel_critictm, jdbcType=VARCHAR},
+		            #{outroute_thresdist, jdbcType=VARCHAR},
+		            #{outroute_threstm, jdbcType=VARCHAR},
+		            #{volun_delay_threstm, jdbcType=VARCHAR},
+		            #{dyna_evt_threstm, jdbcType=VARCHAR},
+		            #{bstop_svc_thresspd, jdbcType=VARCHAR}
+		    )
+	</insert>
+	
+	<!-- 운행위반기준정보관리 - 운행위반기준정보 수정 -->
+	<update id="updateViolate" parameterType="TbOmmViolparamVO">
+		UPDATE TB_OMM_VIOLPARAM
+		SET     APP_STARTDT = to_date(#{app_startdt, jdbcType=VARCHAR},'YYYYMMDD'),
+		        APP_ENDDT = to_date(#{app_enddt, jdbcType=VARCHAR},'YYYYMMDD'),
+		        OPEN_RUN_THRESDIST = #{open_run_thresdist, jdbcType=VARCHAR},
+		        OPEN_RUN_THRESSPD = #{open_run_thresspd, jdbcType=VARCHAR},
+		        OVERSPD_THRESSPD = #{overspd_thresspd, jdbcType=VARCHAR},
+		        OVERSPD_CRITICTM = #{overspd_critictm, jdbcType=VARCHAR},
+		        ACCEL_THRESSPD = #{accel_thresspd, jdbcType=VARCHAR},
+		        DECEL_THRESSPD = #{decel_thresspd, jdbcType=VARCHAR},
+		        ACCEL_DECEL_CRITICTM =  #{accel_decel_critictm, jdbcType=VARCHAR},
+		        OUTROUTE_THRESDIST = #{outroute_thresdist, jdbcType=VARCHAR},
+		        OUTROUTE_THRESTM =  #{outroute_threstm, jdbcType=VARCHAR},
+		        VOLUN_DELAY_THRESTM = #{volun_delay_threstm, jdbcType=VARCHAR},
+		        DYNA_EVT_THRESTM = #{dyna_evt_threstm, jdbcType=VARCHAR},
+		        BSTOP_SVC_THRESSPD =#{bstop_svc_thresspd, jdbcType=VARCHAR}
+		WHERE rowid = #{rowid}
+	</update>
+	
+	<!-- 운행위반기준정보관리 - 운행위반기준정보 삭제 -->
+	<delete id="deleteViolate" parameterType="TbOmmViolparamVO">
+		delete from TB_OMM_VIOLPARAM where rowid = #{rowid}
+	</delete>
+
+	
+	<!-- ************************ 이하 구 버전 / 수정 코드 위로 올리기 ********************* -->
+	
+	
+
+	<!-- 시스템 등록 -->
+	<insert id="insertSysInfo" parameterType="SystemInformationVO">
+		INSERT INTO 
+			SYSTEM_INFORMATION 
+		(
+   			SYSTEM_ID, 
+   			SYSTEM_NAME, 
+   			USE_FLAG, 
+  			PORT
+		) 
+		VALUES 
+		( 
+			#{system_id},
+ 			#{system_name},
+			'1', 
+			6000
+		)
+	</insert>
+
+	<!-- 파라미터 그룹 조회 -->
+	<select id="selectParamGrpList" resultType="BisParameterVO">
+		SELECT 
+			* 
+		FROM 
+			BIS_PARAMETER_GROUP 
+		ORDER BY PARAM_GROUP_ID
+	</select>
+	
+	<!-- 파라미터 조회 -->
+	<select id="selectParamList" resultType="BisParameterVO">
+		SELECT 
+			* 
+		FROM 
+			BIS_PARAMETER
+		WHERE
+			TRIM(PARAM_GROUP_ID) = #{param_group_id} 
+		ORDER BY PARAM_ID
+	</select>
+	
+	<!-- 시스템 접속 이력 조회 -->
+	<!-- <select id="selectLoginHisList" parameterType="SystemLoginHistoryVO" resultType="SystemLoginHistoryVO">
+  		SELECT   
+	  		SH.SYSTEM_ID,
+	  		SH.SESSION_ID,
+	  		SH.USER_ID,
+	  		B.USER_NAME,
+	  		C.RANK_NAME,
+	  		SH.HOST_NAME,
+	  		SH.HOST_IP,
+		  	CD.CODE_EXPLAIN,
+            TO_CHAR(TO_DATE(SH.CONN_DT,'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') AS CONNECT_DT,
+            TO_CHAR(TO_DATE(SH.DISCONNECT_DT,'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') AS DISCONNECT_DT,
+            TO_CHAR(TO_DATE(SH.DISCONNECT_DT,'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') AS KEEPALIVE_DT
+    	FROM   
+    		SYSTEM_LOGIN_HISTORY SH, USERS B, USER_RANK C, 
+            (SELECT * FROM COMMON_CODE WHERE TABLE_NAME = 'OPERATIONMENU' AND FIELD_NAME = 'PROGRAM_ID' ORDER BY CODE) CD
+   		WHERE       
+   			CONN_DT <![CDATA[>=]]> #{st_date}||'000000'
+           	AND CONN_DT <![CDATA[<=]]> #{ed_date}||'235959'
+           	<if test="user_id != null and !user_id.equalsIgnoreCase('')">
+	           	AND USER_ID LIKE '%' || #{user_id} || '%'
+			</if>
+			<if test="host_ip != null and !host_ip.equalsIgnoreCase('')">
+	           	AND HOST_IP LIKE '%' || #{host_ip} || '%'
+			</if>
+			<if test="host_name != null and !host_name.equalsIgnoreCase('')">
+	           	AND HOST_NAME LIKE '%' || #{host_name} || '%'
+			</if>
+           	AND CD.CODE = SH.SYSTEM_ID
+           	AND SH.USER_ID = B.USER_ID
+            AND B.RANK_ID = C.RANK_ID
+		ORDER BY CONN_DT
+	</select> -->
+	
+	<!-- 파라미터 수정 -->
+	<update id="updateParameter" parameterType="BisParameterVO">
+		UPDATE 
+			BIS_PARAMETER 
+		SET 
+			PARAM_VALUE = #{param_value, jdbcType=VARCHAR},
+			PARAM_EXPLAIN = #{param_explain, jdbcType=VARCHAR},
+			REMARK = #{remark, jdbcType=VARCHAR},
+			UPDATE_DT = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		WHERE
+			TRIM(PARAM_GROUP_ID) = #{param_group_id} 
+			AND TRIM(PARAM_ID) = #{param_id}
+	</update>
+
+	<!-- 공휴일 조회 -->
+	<select id="selectHolidayList" parameterType="DatePlanVO" resultType="DatePlanVO">
+		SELECT
+			*
+		FROM
+			DATE_PLAN
+		WHERE
+			0 = 0
+			<if test="st_dt != null and !st_dt.equalsIgnoreCase('')">
+			AND TO_DATE(ST_DT, 'YYYY') = TO_DATE(#{st_dt}, 'YYYY')
+			</if>
+		ORDER BY ST_DT
+	</select> 
+	
+	<!-- 공휴일 등록 -->
+	<insert id="insertHoliday" parameterType="DatePlanVO">
+		INSERT INTO DATE_PLAN
+		(
+			DATE_TYPE,
+			ST_DT,
+			ED_DT,
+			DATA_EXPLAIN
+		)
+		VALUES
+		(
+			(SELECT MAX(DATE_TYPE) FROM DATE_PLAN),
+			#{st_dt},
+			#{ed_dt},
+			#{data_explain}
+		)
+	</insert> 
+	
+	<!-- 공휴일 수정 -->
+	<update id="updateHoliday" parameterType="DatePlanVO">
+		UPDATE
+			 DATE_PLAN
+		SET
+			ST_DT = #{st_dt},
+			ED_DT = #{ed_dt},
+			DATA_EXPLAIN = #{data_explain}
+		WHERE
+			DATE_TYPE = #{date_type}
+	</update> 
+	
+	<!-- 공휴일 삭제 -->
+	<delete id="deleteHoliday" parameterType="DatePlanVO">
+		DELETE FROM 
+			 DATE_PLAN
+		WHERE
+			DATE_TYPE = #{date_type}
+	</delete> 
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

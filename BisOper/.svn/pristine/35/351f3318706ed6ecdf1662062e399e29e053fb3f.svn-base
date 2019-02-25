@@ -1,0 +1,44 @@
+package com.bis.service;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import com.bis.vo.re.TbDmhTmspaceVO;
+import com.bis.vo.re.TbDmsRunonschedVO;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS / 운행서비스평가
+ * Business Name  : 
+ * Class Name 	  : EvaluationService.java
+ * Description 	  : 
+ * Modification History 
+ * 수정일			수정자		수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.18	박주언		created new file
+ * </PRE>
+ * 
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+public interface EvaluationService {
+
+	List<TbDmhTmspaceVO> selectViolentOperHistList(TbDmhTmspaceVO vo) throws SQLException;
+
+	List<TbDmsRunonschedVO> selectOperTiming_Date(TbDmsRunonschedVO vo) throws SQLException;
+	
+	List<TbDmsRunonschedVO> selectOperTiming_Month(TbDmsRunonschedVO vo) throws SQLException;
+
+	List<TbDmsRunonschedVO> selectOperTiming_Route(TbDmsRunonschedVO vo) throws SQLException;
+
+	List<TbDmsRunonschedVO> selectOperTiming_RoutebyDate(TbDmsRunonschedVO vo) throws SQLException;
+	
+	List<TbDmsRunonschedVO> selectOperTiming_RoutebyMonth(TbDmsRunonschedVO vo) throws SQLException;
+
+	List<TbDmsRunonschedVO> selectOperTiming_Comp(TbDmsRunonschedVO vo) throws SQLException;
+
+	List<TbDmsRunonschedVO> selectOperTiming_CompbyDate(TbDmsRunonschedVO vo) throws SQLException;
+
+	List<TbDmsRunonschedVO> selectOperTiming_CompbyMonth(TbDmsRunonschedVO vo) throws SQLException;
+}

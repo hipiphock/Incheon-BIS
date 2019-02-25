@@ -1,0 +1,213 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+<title>메시지관리</title>
+<link rel="stylesheet" type="text/css" href="./css/sub_bootstrap.css"/>
+<link rel="stylesheet" type="text/css" href="./css/style_comm.css"/>
+<link rel="stylesheet" type="text/css" href="./css/style_sub_new.css"/>
+
+<script src="./js/comm/commGrid.js"></script>
+<script src="./js/comm/commDialog.js"></script>
+<script src="./js/comm/common.js"></script>
+<script src="./js/comm/jquery.js"></script>
+
+<script src="./js/v03/v0302.js"></script>
+
+</head>
+
+<body>
+	<input type="hidden" id="view_attr" value="BMS-V-203">
+
+	<div class="wrap1">
+            <header class="pop_title">
+                <h2>안내기통신메시지현황/이력</h2>
+            </header>
+            
+            <article class="contenWrap">
+            	<!--상단버튼시작-->
+                <div class="sub_top_btn">
+                    <ul>
+                        <li><a id="btn_excel" href="javascript:void(0);"><img src="./images/btn_big_save.png"><p>파일저장</p></a></li>
+                        <li><a id="btn_refresh"><img src="./images/btn_big_re.png"></a><p><a id="btn_refresh">새로고침</a></p></li>
+                    </ul>
+                </div>
+                <!--상단버튼끝--> 
+                
+                <!--탭 시작--> 
+                <div class="tab">
+                	<ul>
+                		<li class="tab1 click">수동메시지</li>
+                		<li class="tab2">파라미터</li>
+                		<li class="tab3">안내기제어</li>
+                		<li class="tab4">파일다운로드</li>
+                		<li class="tab5">광역BIT 수동메시지</li>
+                	</ul>
+                </div>                                               
+                <!--탭 끝-->
+                
+                <section class="bodytBox towdep v0302tabDep">
+                
+                	<!-- 수동메시지 -->
+                	<div class="contenBox allBody tabCon1">
+                		<!-- 위-->
+                		<div class="contop v0302top">
+                			<div class="sub_title">
+                				<h3>수동메시지 전송현황 <span>0</span> 건</h3>
+                			</div>
+
+                			<div class="conten con1">
+                				<div class="main_chart">
+                    				<table id="table1_top"></table>
+                    			</div>
+                			</div>
+                			
+                		</div>
+                		
+                		<!-- 아래 -->
+                		<div class="conbottom v0302bottom">
+                			<div class="sub_title">
+                				<h3>선택이름 <span>0</span> 건</h3>
+                			</div>
+							<div class="conten">
+                				<div class="main_chart">
+                    				<table id="table1_bottom"></table>
+                    			</div>
+                			</div>
+
+                		</div>
+                	</div> 
+                	<!-- 수동메시지 끝--> 
+                	
+                	<!-- 파라미터 -->
+                	<div class="contenBox allBody tabCon2">
+                		<!-- 위-->
+                		<div class="contop v0302top">
+                			<div class="sub_title">
+                				<h3>파라미터 <span>0</span> 건</h3>
+                			</div>
+
+                			<div class="conten con1">
+                				<div class="main_chart">
+                    				<table id="table2_top"></table>
+                    			</div>
+                			</div>
+                			
+                		</div>
+                		
+                		<!-- 아래 -->
+                		<div class="conbottom v0302bottom">
+                			<div class="sub_title">
+                				<h3>선택이름 <span>0</span> 건</h3>
+                			</div>
+							<div class="conten">
+                				<div class="main_chart">
+                    				<table id="table2_bottom"></table>
+                    			</div>
+                			</div>
+
+                		</div>
+                	</div> 
+                	<!-- 파라미터 끝--> 
+                	
+                	<!-- 안내기제어 -->
+                	<div class="contenBox allBody tabCon3">
+                		<!-- 위-->
+                		<div class="contop v0302top">
+                			<div class="sub_title">
+                				<h3>안내기제어 <span>0</span> 건</h3>
+                			</div>
+
+                			<div class="conten con1">
+                				<div class="main_chart">
+                    				<table id="table3_top"></table>
+                    			</div>
+                			</div>
+                			
+                		</div>
+                		
+                		<!-- 아래 -->
+                		<div class="conbottom v0302bottom">
+                			<div class="sub_title">
+                				<h3>선택이름 <span>0</span> 건</h3>
+                			</div>
+							<div class="conten">
+                				<div class="main_chart">
+                    				<table id="table3_bottom"></table>
+                    			</div>
+                			</div>
+
+                		</div>
+                	</div> 
+                	<!-- 안내기제어 끝--> 
+                	
+                	<!-- 파일다운로드 -->
+                	<div class="contenBox allBody tabCon4">
+                		<!-- 위-->
+                		<div class="contop v0302top">
+                			<div class="sub_title">
+                				<h3>파일다운로드 <span>0</span> 건</h3>
+                			</div>
+
+                			<div class="conten con1">
+                				<div class="main_chart">
+                    				<table id="table4_top"></table>
+                    			</div>
+                			</div>
+                			
+                		</div>
+                		
+                		<!-- 아래 -->
+                		<div class="conbottom v0302bottom">
+                			<div class="sub_title">
+                				<h3>선택이름 <span>0</span> 건</h3>
+                			</div>
+							<div class="conten">
+                				<div class="main_chart">
+                    				<table id="table4_bottom"></table>
+                    			</div>
+                			</div>
+
+                		</div>
+                	</div> 
+                	<!-- 파일다운로드 끝--> 
+                	
+                	<!-- 광역BIT수동메시지 -->
+                	<div class="contenBox allBody tabCon5">
+                		<!-- 위-->
+                		<div class="contop v0302top">
+                			<div class="sub_title">
+                				<h3>광역 BIT 수동메시지<span>0</span> 건</h3>
+                			</div>
+
+                			<div class="conten con1">
+                				<div class="main_chart">
+                    				<table id="table5_top"></table>
+                    			</div>
+                			</div>
+                			
+                		</div>
+                		
+                		<!-- 아래 -->
+                		<div class="conbottom v0302bottom">
+                			<div class="sub_title">
+                				<h3>선택이름 <span>0</span> 건</h3>
+                			</div>
+							<div class="conten">
+                				<div class="main_chart">
+                    				<table id="table5_bottom"></table>
+                    			</div>
+                			</div>
+
+                		</div>
+                	</div> 
+                	<!-- 광역BIT수동메시지 끝--> 
+                	
+                </section>
+        </article>
+	</div><!-- wrap1 끝 -->
+</body>
+</html>

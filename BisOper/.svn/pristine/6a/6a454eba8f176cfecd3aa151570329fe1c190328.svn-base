@@ -1,0 +1,790 @@
+package com.bis.controller;
+
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.bis.service.BusService;
+import com.bis.util.Const;
+import com.bis.util.ExcelUtil;
+import com.bis.vo.re.TbAdmBusVO;
+import com.bis.vo.re.TbAdmBusrouteVO;
+import com.bis.vo.re.TbAdmGarageVO;
+import com.bis.vo.re.TbBmcMdtstatVO;
+import com.bis.vo.re.TbBmhRunevtcollVO;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 운영단말
+ * Business Name  : 
+ * Class Name 	  : CtlrBUS.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                        수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2017.010.20	    			 김주암                    최초생성
+ * </PRE>
+ * 
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+
+@Controller
+@RequestMapping(value = "/bus")
+public class CtlrBUS {
+
+	@Resource(name = "busService")
+	private BusService busService;
+	
+	private Logger logger = LogManager.getLogger(this.getClass());
+
+	/**
+	 * 부당운행조희 - 우측 부당운행검색리스트 테이블 (v0108)
+	 */
+	@RequestMapping(value = "/selectViolRunList.do")
+    public ModelAndView selectViolRunList(Model model, HttpServletRequest request,
+    		@RequestParam(value= "carregno", required= true) String carregno,
+    		@RequestParam(value= "type", required = false, defaultValue="") String runvioltpcd) {
+       
+        ModelAndView mv = new ModelAndView();
+        Map<String, List<TbBmhRunevtcollVO>> resultMap = new HashMap<String, List<TbBmhRunevtcollVO>>();
+        try {
+        	TbBmhRunevtcollVO vo = new TbBmhRunevtcollVO();
+        	vo.setCarregno(carregno);
+        	vo.setRunvioltpcd(runvioltpcd); 
+        	List<TbBmhRunevtcollVO> resultList = busService.selectViolRunList(vo);	
+        	resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectViolRunList exception " + e.toString());
+		}
+        mv.addAllObjects(resultMap);
+        mv.setViewName("jsonView");
+        return mv;
+    }
+	
+	/**
+	 * 부당운행조희 - 좌측 버스목록 테이블 (v0108)
+	 */
+	@RequestMapping(value = "/selectBusList.do")
+    public ModelAndView selectBusList(Model model, HttpServletRequest request,
+    		@RequestParam(value= "compid", required= true) String compid,
+    		@RequestParam(value= "routeid", required= false, defaultValue="") String routeid ){
+       
+        ModelAndView mv = new ModelAndView();
+        Map<String, List<TbAdmBusVO>> resultMap = new HashMap<String, List<TbAdmBusVO>>();
+        try {
+        	TbAdmBusVO vo = new TbAdmBusVO();
+        	vo.setCompid(compid);
+        	vo.setRouteid(routeid);
+        	List<TbAdmBusVO> resultList = busService.selectBusList(vo);	
+        	resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectBusList exception " + e.toString());
+		}
+        mv.addAllObjects(resultMap);
+        mv.setViewName("jsonView");
+        return mv;
+    }
+
+	
+	/**
+	 * 운행종합상황조회 - 왼쪽 테이블에서 한 row를 더블클릭시 나타나는 오른쪽 아래 테이블 (v0109)
+	 */
+	@RequestMapping(value = "/selectBusViolList.do")
+    public ModelAndView selectBusViolList(Model model, HttpServletRequest request,
+    		@RequestParam(value= "busid", required= true) String busid) {
+       
+        ModelAndView mv = new ModelAndView();
+        Map<String, List<TbBmhRunevtcollVO>> resultMap = new HashMap<String, List<TbBmhRunevtcollVO>>();
+        try {
+        	TbBmhRunevtcollVO vo = new TbBmhRunevtcollVO();
+        	vo.setBusid(busid);
+        	List<TbBmhRunevtcollVO> resultList = busService.selectBusViolList(vo);	
+        	resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectBusViolList exception " + e.toString());
+		}
+        mv.addAllObjects(resultMap);
+        mv.setViewName("jsonView");
+        return mv;
+    }
+	
+	/**
+	 * 실시간 버스 돌발 목록 조회 (v0111)
+	 */
+	@RequestMapping(value = "/selectBusInciList2.do")
+    public ModelAndView selectBusInciList2(Model model, HttpServletRequest request) {
+       
+        ModelAndView mv = new ModelAndView();
+        Map<String, List<TbBmhRunevtcollVO>> resultMap = new HashMap<String, List<TbBmhRunevtcollVO>>();
+        try {
+        	List<TbBmhRunevtcollVO> resultList = busService.selectBusInciList();	
+        	resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectBusInciList exception " + e.toString());
+		}
+        mv.addAllObjects(resultMap);
+        mv.setViewName("jsonView");
+        return mv;
+    }
+	
+	/**
+	 * 전산장비 기초정보관리 - 차고지명 카테고리 정보  (v0603) 
+	 */
+	@RequestMapping(value = "/selectGarageCateList.do")
+    public ModelAndView selectGarageCatelist(Model model, HttpServletRequest request) {
+       
+        ModelAndView mv = new ModelAndView();
+        Map<String, List<TbAdmGarageVO>> resultMap = new HashMap<String, List<TbAdmGarageVO>>();
+        try {
+        	List<TbAdmGarageVO> resultList = busService.selectGarageCateList();	
+        	resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectGarageCateList exception " + e.toString());
+		}
+        mv.addAllObjects(resultMap);
+        mv.setViewName("jsonView");
+        return mv;
+    }
+	
+	/**
+	 * 전산장비 기초정보관리 - 신규등록 시  쓸  garageapid (v0603) 
+	 */
+	@RequestMapping(value = "/selectMaxGarageapid.do")
+    public ModelAndView selectMaxGarageapid(Model model, HttpServletRequest request) {
+       
+        ModelAndView mv = new ModelAndView();
+        Map<String, TbAdmGarageVO> resultMap = new HashMap<String, TbAdmGarageVO>();
+        try {
+        	TbAdmGarageVO resultList = busService.selectMaxGarageapid();	
+        	resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectMaxGarageapid exception " + e.toString());
+		}
+        mv.addAllObjects(resultMap);
+        mv.setViewName("jsonView");
+        return mv;
+    }
+	
+	/**
+	 * 차량단말기 상태정보조회/제어 - 차량단말기상태검색 (v0604)
+	 */
+	@RequestMapping(value = "/selectMdtStat.do")
+    public ModelAndView selectMdtStat(Model model, HttpServletRequest request,
+    		@RequestParam(value= "compid", required=false, defaultValue="") String compid,
+    		@RequestParam(value= "routeid", required= false, defaultValue="") String routeid,
+    		@RequestParam(value="mdtid", required=false, defaultValue="") String mdtid,
+    		@RequestParam(value="carregno", required=false, defaultValue="") String carregno,
+    		@RequestParam(value="statyn", required=false, defaultValue="") String statyn){
+       
+        ModelAndView mv = new ModelAndView();
+        Map<String, List<TbBmcMdtstatVO>> resultMap = new HashMap<String, List<TbBmcMdtstatVO>>();
+        try {
+        	TbBmcMdtstatVO vo = new TbBmcMdtstatVO();
+        	vo.setCompid(compid);
+        	vo.setRouteid(routeid);
+        	vo.setMdtid(mdtid);
+        	vo.setCarregno(carregno);
+        	vo.setStatyn(statyn);
+        	List<TbBmcMdtstatVO> resultList = busService.selectMdtStat(vo);	
+        	resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectMdtStat exception " + e.toString());
+		}
+        mv.addAllObjects(resultMap);
+        mv.setViewName("jsonView");
+        return mv;
+    }
+	
+	/**
+	 * 버스 운행 이력/통계
+	 * 
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/selectOperationHisList.do")
+	public ModelAndView selectOperationHisList(Model model, HttpServletRequest request,
+			@RequestParam(value = "searchWord", required = false, defaultValue="") String searchWord,
+			@RequestParam(value = "route_id", required = true) String routeid,
+			@RequestParam(value = "veh_id", required = true) String busid,
+			@RequestParam(value = "start_date_time", required = true) String start_date_time,
+			@RequestParam(value = "end_date_time", required = true) String end_date_time) {
+
+		ModelAndView mv = new ModelAndView();
+		Map<String, List<TbBmhRunevtcollVO>> resultMap = new HashMap<String, List<TbBmhRunevtcollVO>>();
+		TbBmhRunevtcollVO vo = new TbBmhRunevtcollVO();
+
+		vo.setSearchWord(searchWord);
+		vo.setRouteid(routeid);
+		vo.setBusid(busid);
+		vo.setStart_date_time(start_date_time);
+		vo.setEnd_date_time(end_date_time);		
+
+		try {
+			List<TbBmhRunevtcollVO> resultList = busService.selectOperationHisList(vo);
+			resultMap.put("resultList", resultList);			
+			logger.debug("##selectOperationHisList resultList " + resultList.size());
+		} catch (Exception e) {
+			logger.error("##selectOperationHisList Exception " + e.toString());
+		}
+		
+		mv.addAllObjects(resultMap);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+
+	/**
+	 * 버스 운행 이력/통계 - 조회결과 Excel 다운로드
+	 *
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/downloadBusOperationExcel.do")
+	public void downloadBusOperationExcel(HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "event_type_name", required = true) String[] event_type_name,
+			@RequestParam(value = "evt_occurdt", required = true) String[] evt_occurdt,
+			@RequestParam(value = "routeno", required = true) String[] routeno,
+			@RequestParam(value = "carregno", required = true) String[] carregno,
+			@RequestParam(value = "collect_type", required = true) String[] collect_type,
+			@RequestParam(value = "pathseq", required = true) String[] pathseq,
+			@RequestParam(value = "nodenm", required = true) String[] nodenm,
+			@RequestParam(value = "busid", required = true) String[] busid,
+			@RequestParam(value = "lat", required = true) String[] lat,
+			@RequestParam(value = "lng", required = true) String[] lng,
+			@RequestParam(value = "heading", required = true) String[] heading,
+			@RequestParam(value = "runspd", required = true) String[] runspd,
+			@RequestParam(value = "nodeid", required = true) String[] nodeid,
+			@RequestParam(value = "routeid", required = true) String[] routeid,
+			@RequestParam(value = "center_colldt", required = true) String[] center_colldt) {
+
+		try{
+		ArrayList<String[]> rowData = new ArrayList<>();
+
+		rowData.add(event_type_name);
+		rowData.add(evt_occurdt);
+		rowData.add(routeno);
+		rowData.add(carregno);
+		rowData.add(collect_type);
+		rowData.add(pathseq);
+		rowData.add(nodenm);
+		rowData.add(busid);
+		rowData.add(lat);
+		rowData.add(lng);
+		rowData.add(heading);
+		rowData.add(runspd);
+		rowData.add(nodeid);
+		rowData.add(routeid);
+		rowData.add(center_colldt);
+
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet("버스 운행 목록");
+
+		sheet.setGridsPrinted(false);
+		sheet.setFitToPage(true);
+		sheet.setDisplayGuts(true);
+
+		ArrayList<HSSFRow> excRowList = new ArrayList<HSSFRow>();
+
+		for (int i = 0; i < (event_type_name.length + 1); i++) {
+			excRowList.add(sheet.createRow(i));
+			sheet.setColumnWidth(i, 4000);
+			excRowList.get(i).setHeight((short) 400);
+		}
+
+		HSSFCell cell = null;
+
+		cell = excRowList.get(0).createCell(0);
+		cell.setCellValue("이벤트종류");
+		cell = excRowList.get(0).createCell(1);
+		cell.setCellValue("OBE 이력시간");
+		cell = excRowList.get(0).createCell(2);
+		cell.setCellValue("노선명");
+		cell = excRowList.get(0).createCell(3);
+		cell.setCellValue("차량번호");
+		cell = excRowList.get(0).createCell(4);
+		cell.setCellValue("돌발유형");
+		cell = excRowList.get(0).createCell(5);
+		cell.setCellValue("지점순번");
+		cell = excRowList.get(0).createCell(6);
+		cell.setCellValue("지점명");
+		cell = excRowList.get(0).createCell(7);
+		cell.setCellValue("차량ID");
+		cell = excRowList.get(0).createCell(8);
+		cell.setCellValue("위도");
+		cell = excRowList.get(0).createCell(9);
+		cell.setCellValue("경도");
+		cell = excRowList.get(0).createCell(10);
+		cell.setCellValue("차량각도");
+		cell = excRowList.get(0).createCell(11);
+		cell.setCellValue("차량속도");
+		cell = excRowList.get(0).createCell(12);
+		cell.setCellValue("지점ID");
+		cell = excRowList.get(0).createCell(13);
+		cell.setCellValue("노선ID");
+		cell = excRowList.get(0).createCell(14);
+		cell.setCellValue("이력등록시간");
+
+		for (int i = 0; i < event_type_name.length; i++) {
+			cell = excRowList.get(i + 1).createCell(0);
+			cell.setCellValue(rowData.get(0)[i]);
+			cell = excRowList.get(i + 1).createCell(1);
+			cell.setCellValue(rowData.get(1)[i]);
+			cell = excRowList.get(i + 1).createCell(2);
+			cell.setCellValue(rowData.get(2)[i]);
+			cell = excRowList.get(i + 1).createCell(3);
+			cell.setCellValue(rowData.get(3)[i]);
+			cell = excRowList.get(i + 1).createCell(4);
+			cell.setCellValue(rowData.get(4)[i]);
+			cell = excRowList.get(i + 1).createCell(5);
+			cell.setCellValue(rowData.get(5)[i]);
+			cell = excRowList.get(i + 1).createCell(6);
+			cell.setCellValue(rowData.get(6)[i]);
+			cell = excRowList.get(i + 1).createCell(7);
+			cell.setCellValue(rowData.get(7)[i]);
+			cell = excRowList.get(i + 1).createCell(8);
+			cell.setCellValue(rowData.get(8)[i]);
+			cell = excRowList.get(i + 1).createCell(9);
+			cell.setCellValue(rowData.get(9)[i]);
+			cell = excRowList.get(i + 1).createCell(10);
+			cell.setCellValue(rowData.get(10)[i]);
+			cell = excRowList.get(i + 1).createCell(11);
+			cell.setCellValue(rowData.get(11)[i]);
+			cell = excRowList.get(i + 1).createCell(12);
+			cell.setCellValue(rowData.get(12)[i]);
+			cell = excRowList.get(i + 1).createCell(13);
+			cell.setCellValue(rowData.get(13)[i]);
+			cell = excRowList.get(i + 1).createCell(14);
+			cell.setCellValue(rowData.get(14)[i]);
+		}
+
+		// Style Set
+		ExcelUtil.setStyleBorder(sheet, wb, excRowList, 0, event_type_name.length, 0, 2);
+		ExcelUtil.setStyleTitleSummary(wb, excRowList, 0, 2);
+		ExcelUtil.setStyleNum(sheet, wb, excRowList, 0, event_type_name.length, 0, 2);
+
+		Date now = new Date();
+
+		DateFormat formatDate = DateFormat.getDateInstance(DateFormat.FULL);
+		String fileName = formatDate.format(now) + " 버스 운행 목록";
+
+		ExcelUtil.excelFileDownload(wb, request, response, fileName);
+		} catch(Exception e){
+			logger.error(e.getMessage());
+		}
+	}
+
+	/**
+	 * 버스 돌발 이력/통계
+	 * 
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/selectBusIncidentHisList.do")
+	public ModelAndView selectBusIncidentHisList(Model model, HttpServletRequest request,
+			@RequestParam(value = "text_search", required = false, defaultValue="") String searchWord,
+			@RequestParam(value = "start_date_time", required = true) String start_date_time,
+			@RequestParam(value = "end_date_time", required = true) String end_date_time) {
+
+		ModelAndView mv = new ModelAndView();
+		Map<String, List<TbBmhRunevtcollVO>> resultMap = new HashMap<String, List<TbBmhRunevtcollVO>>();
+		TbBmhRunevtcollVO vo = new TbBmhRunevtcollVO();
+
+		vo.setSearchWord(searchWord);
+		vo.setStart_date_time(start_date_time);
+		vo.setEnd_date_time(end_date_time);
+
+		try {
+			List<TbBmhRunevtcollVO> resultList = busService.selectBusIncidentHisList(vo);
+			resultMap.put("resultList", resultList);
+			logger.debug("##selectBusIncidentHisList resultList " + resultList.size());
+		} catch (Exception e) {
+			logger.error("##selectBusIncidentHisList Exception " + e.toString());
+		}
+
+		mv.addAllObjects(resultMap);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+
+	/**
+	 * 버스 돌발 이력/통계 - 조회결과 Excel 다운로드
+	 * 
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/downloadBusIncidentExcel.do")
+	public void downloadBusIncidentExcel(HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "dt", required = true) String[] dt,
+			@RequestParam(value = "busid", required = true) String[] busid,
+			@RequestParam(value = "carregno", required = true) String[] carregno,
+			@RequestParam(value = "compnm", required = true) String[] compnm,
+			@RequestParam(value = "code_explain", required = true) String[] code_explain,
+			@RequestParam(value = "routeno", required = true) String[] routeno,
+			@RequestParam(value = "nodenm", required = true) String[] nodenm,
+			@RequestParam(value = "runspd", required = true) String[] runspd,
+			@RequestParam(value = "nodeid", required = true) String[] nodeid,
+			@RequestParam(value = "routeid", required = true) String[] routeid,
+			@RequestParam(value = "lat", required = true) String[] lat,
+			@RequestParam(value = "lng", required = true) String[] lng) {
+		
+		try{
+		ArrayList<String[]> rowData = new ArrayList<>();
+
+		rowData.add(dt);
+		rowData.add(busid);
+		rowData.add(carregno);
+		rowData.add(compnm);
+		rowData.add(code_explain);
+		rowData.add(routeno);
+		rowData.add(nodenm);
+		rowData.add(runspd);
+		rowData.add(nodeid);
+		rowData.add(routeid);
+		rowData.add(lat);
+		rowData.add(lng);
+
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet("버스 돌발 목록");
+
+		sheet.setGridsPrinted(false);
+		sheet.setFitToPage(true);
+		sheet.setDisplayGuts(true);
+
+		ArrayList<HSSFRow> excRowList = new ArrayList<HSSFRow>();
+
+		for (int i = 0; i < (dt.length + 1); i++) {
+			excRowList.add(sheet.createRow(i));
+			sheet.setColumnWidth(i, 4000);
+			excRowList.get(i).setHeight((short) 400);
+		}
+
+		HSSFCell cell = null;
+
+		cell = excRowList.get(0).createCell(0);
+		cell.setCellValue("발생 시간");
+		cell = excRowList.get(0).createCell(1);
+		cell.setCellValue("차량ID");
+		cell = excRowList.get(0).createCell(2);
+		cell.setCellValue("차량번호");
+		cell = excRowList.get(0).createCell(3);
+		cell.setCellValue("회사명");
+		cell = excRowList.get(0).createCell(4);
+		cell.setCellValue("돌발유형");
+		cell = excRowList.get(0).createCell(5);
+		cell.setCellValue("돌발 발생 지점");
+		cell = excRowList.get(0).createCell(6);
+		cell.setCellValue("운행노선");
+		cell = excRowList.get(0).createCell(7);
+		cell.setCellValue("속도(km/h)");
+		cell = excRowList.get(0).createCell(8);
+		cell.setCellValue("노선ID");
+		cell = excRowList.get(0).createCell(9);
+		cell.setCellValue("지점ID");
+		cell = excRowList.get(0).createCell(10);
+		cell.setCellValue("LAT");
+		cell = excRowList.get(0).createCell(11);
+		cell.setCellValue("LNG");
+
+		for (int i = 0; i < dt.length; i++) {
+			cell = excRowList.get(i + 1).createCell(0);
+			cell.setCellValue(rowData.get(0)[i]);
+			cell = excRowList.get(i + 1).createCell(1);
+			cell.setCellValue(rowData.get(1)[i]);
+			cell = excRowList.get(i + 1).createCell(2);
+			cell.setCellValue(rowData.get(2)[i]);
+			cell = excRowList.get(i + 1).createCell(3);
+			cell.setCellValue(rowData.get(3)[i]);
+			cell = excRowList.get(i + 1).createCell(4);
+			cell.setCellValue(rowData.get(4)[i]);
+			cell = excRowList.get(i + 1).createCell(5);
+			cell.setCellValue(rowData.get(5)[i]);
+			cell = excRowList.get(i + 1).createCell(6);
+			cell.setCellValue(rowData.get(6)[i]);
+			cell = excRowList.get(i + 1).createCell(7);
+			cell.setCellValue(rowData.get(7)[i]);
+			cell = excRowList.get(i + 1).createCell(8);
+			cell.setCellValue(rowData.get(8)[i]);
+			cell = excRowList.get(i + 1).createCell(9);
+			cell.setCellValue(rowData.get(9)[i]);
+			cell = excRowList.get(i + 1).createCell(10);
+			cell.setCellValue(rowData.get(10)[i]);
+			cell = excRowList.get(i + 1).createCell(11);
+			cell.setCellValue(rowData.get(11)[i]);
+		}
+
+		// Style Set
+		ExcelUtil.setStyleBorder(sheet, wb, excRowList, 0, dt.length, 0, 2);
+		ExcelUtil.setStyleTitleSummary(wb, excRowList, 0, 2);
+		ExcelUtil.setStyleNum(sheet, wb, excRowList, 0, dt.length, 0, 2);
+
+		Date now = new Date();
+
+		DateFormat formatDate = DateFormat.getDateInstance(DateFormat.FULL);
+		String fileName = formatDate.format(now) + " 버스 돌발 목록";
+
+		ExcelUtil.excelFileDownload(wb, request, response, fileName);
+		}catch(Exception e){
+			logger.error(e.getMessage());
+		}
+	}
+
+	/**
+	 * 버스 위반 이력/통계
+	 * 
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/selectBusViolationHisList.do")
+	public ModelAndView selectBusViolationHisList(Model model, HttpServletRequest request,
+			@RequestParam(value = "veh_id", required = false, defaultValue = "") String searchWord,
+			@RequestParam(value = "start_date_time", required = true) String start_date_time,
+			@RequestParam(value = "end_date_time", required = true) String end_date_time) {
+
+		ModelAndView mv = new ModelAndView();
+		Map<String, List<TbBmhRunevtcollVO>> resultMap = new HashMap<String, List<TbBmhRunevtcollVO>>();
+		TbBmhRunevtcollVO vo = new TbBmhRunevtcollVO();
+
+		vo.setSearchWord(searchWord);
+		vo.setStart_date_time(start_date_time);
+		vo.setEnd_date_time(end_date_time);
+
+		try {
+			List<TbBmhRunevtcollVO> resultList = busService.selectBusViolationHisList(vo);
+			resultMap.put("resultList", resultList);
+			logger.debug("##selectBusViolationHisList resultList " + resultList.size());
+		} catch (Exception e) {
+			logger.error("##selectBusViolationHisList Exception " + e.toString());
+		}
+
+		mv.addAllObjects(resultMap);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+	
+	/**
+	 * 버스 위반 이력/통계 - 조회결과 Excel 다운로드
+	 * 
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "downloadBusViolationExcel")
+	public void downloadBusViolationExcel(HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "center_colldt") String[] center_colldt,
+			@RequestParam(value = "carregno") String[] carregno,
+			@RequestParam(value = "code_explain") String[] code_explain,
+			@RequestParam(value = "routeno") String[] routeno,
+			@RequestParam(value = "runspd") String[] runspd,
+			@RequestParam(value = "nodenm") String[] nodenm,
+			@RequestParam(value = "compnm") String[] compnm, 
+			@RequestParam(value = "lat") String[] lat,
+			@RequestParam(value = "lng") String[] lng, 
+			@RequestParam(value = "routeid") String[] routeid,
+			@RequestParam(value = "busid") String[] busid) {
+		
+		try{
+			ArrayList<String[]> rowData = new ArrayList<>();
+			
+			rowData.add(center_colldt);
+			rowData.add(carregno);
+			rowData.add(code_explain);
+			rowData.add(routeno);
+			rowData.add(runspd);
+			rowData.add(nodenm);
+			rowData.add(compnm);
+			rowData.add(lat);
+			rowData.add(lng);
+			rowData.add(routeid);
+			rowData.add(busid);
+			
+			HSSFWorkbook wb = new HSSFWorkbook();
+			HSSFSheet sheet = wb.createSheet("버스 위반 목록");
+			
+			sheet.setGridsPrinted(false);
+			sheet.setFitToPage(true);
+			sheet.setDisplayGuts(true);
+			
+			ArrayList<HSSFRow> excRowList = new ArrayList<HSSFRow>();
+			
+			for (int i = 0; i < (center_colldt.length + 1); i++) {
+				excRowList.add(sheet.createRow(i));
+				sheet.setColumnWidth(i, 4000);
+				excRowList.get(i).setHeight((short) 400);
+			}
+			
+			HSSFCell cell = null;
+			
+			cell = excRowList.get(0).createCell(0);
+			cell.setCellValue("시간");
+			cell = excRowList.get(0).createCell(1);
+			cell.setCellValue("차량번호");
+			cell = excRowList.get(0).createCell(2);
+			cell.setCellValue("위반내용");
+			cell = excRowList.get(0).createCell(3);
+			cell.setCellValue("노선명");
+			cell = excRowList.get(0).createCell(4);
+			cell.setCellValue("속도");
+			cell = excRowList.get(0).createCell(5);
+			cell.setCellValue("통과지점명");
+			cell = excRowList.get(0).createCell(6);
+			cell.setCellValue("운수사");
+			cell = excRowList.get(0).createCell(7);
+			cell.setCellValue("위도");
+			cell = excRowList.get(0).createCell(8);
+			cell.setCellValue("경도");
+			cell = excRowList.get(0).createCell(9);
+			cell.setCellValue("노선 ID");
+			cell = excRowList.get(0).createCell(10);
+			cell.setCellValue("차량 ID");
+			
+			for (int i = 0; i < center_colldt.length; i++) {
+				cell = excRowList.get(i + 1).createCell(0);
+				cell.setCellValue(rowData.get(0)[i]);
+				cell = excRowList.get(i + 1).createCell(1);
+				cell.setCellValue(rowData.get(1)[i]);
+				cell = excRowList.get(i + 1).createCell(2);
+				cell.setCellValue(rowData.get(2)[i]);
+				cell = excRowList.get(i + 1).createCell(3);
+				cell.setCellValue(rowData.get(3)[i]);
+				cell = excRowList.get(i + 1).createCell(4);
+				cell.setCellValue(rowData.get(4)[i]);
+				cell = excRowList.get(i + 1).createCell(5);
+				cell.setCellValue(rowData.get(5)[i]);
+				cell = excRowList.get(i + 1).createCell(6);
+				cell.setCellValue(rowData.get(6)[i]);
+				cell = excRowList.get(i + 1).createCell(7);
+				cell.setCellValue(rowData.get(7)[i]);
+				cell = excRowList.get(i + 1).createCell(8);
+				cell.setCellValue(rowData.get(8)[i]);
+				cell = excRowList.get(i + 1).createCell(9);
+				cell.setCellValue(rowData.get(9)[i]);
+				cell = excRowList.get(i + 1).createCell(10);
+				cell.setCellValue(rowData.get(10)[i]);
+			}
+			
+			// Style Set
+			ExcelUtil.setStyleBorder(sheet, wb, excRowList, 0, center_colldt.length, 0, 2);
+			ExcelUtil.setStyleTitleSummary(wb, excRowList, 0, 2);
+			ExcelUtil.setStyleNum(sheet, wb, excRowList, 0, center_colldt.length, 0, 2);
+			
+			Date now = new Date();
+			
+			DateFormat formatDate = DateFormat.getDateInstance(DateFormat.FULL);
+			String fileName = formatDate.format(now) + " 버스 위반 목록";
+			
+			ExcelUtil.excelFileDownload(wb, request, response, fileName);
+		}catch(Exception e){
+			logger.error(e.getMessage());
+		}
+	}
+
+	
+
+	/** 
+	 * 차량기초정보
+	 * 
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/selectBusBasicInfoList.do")
+	public ModelAndView selectBusBasicInfoList(Model model, HttpServletRequest request, TbAdmBusrouteVO vo) {
+		ModelAndView mv = new ModelAndView();
+
+		Map<String, List<TbAdmBusrouteVO>> resultMap = new HashMap<String, List<TbAdmBusrouteVO>>();		
+		try {
+			List<TbAdmBusrouteVO> resultList = busService.selectBusBasicInfoList(vo);
+			
+			resultMap.put("resultList", resultList);
+			
+			logger.debug("##selectBusBasicInfoList resultList " + resultList.size());
+		} catch (Exception e) {
+			logger.error("##selectBusBasicInfoList exception " +  e.toString());
+		}
+
+		mv.addAllObjects(resultMap);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+
+	
+	/** 
+	 * 처리여부 변경
+	 * 
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/updateBusTreatyn.do")
+	public ModelAndView updateBusTreatyn(Model model, HttpServletRequest request, TbAdmBusrouteVO vo,
+			HttpSession session) {
+		ModelAndView mv = new ModelAndView();
+		String upd_userid = (String)session.getAttribute("userId");
+		vo.setUpd_userid(upd_userid);
+		
+		Map<String, Integer> resultMap = new HashMap<String, Integer>();		
+		try {
+			busService.updateBusTreatyn(vo);
+			
+			resultMap.put("result", Const.SQL_SUCCESS);
+		} catch (Exception e) {
+			logger.debug("##updateBusTreatyn exception " + e.toString());
+			resultMap.put("result", Const.SQL_ERROR);
+		}
+
+		mv.addAllObjects(resultMap);
+		mv.setViewName("jsonView");
+		return mv;
+	}
+	
+	/***************************** 이하 DB 변경 전 *****************************/
+	
+	/**
+	 * 실시간 버스 돌발 목록 조회
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/selectBusInciList.do")
+    public ModelAndView selectBusInciList(Model model, HttpServletRequest request) {
+       
+        ModelAndView mv = new ModelAndView();
+        
+        Map<String, List<TbBmhRunevtcollVO>> resultMap = new HashMap<String, List<TbBmhRunevtcollVO>>();
+        try {
+        	List<TbBmhRunevtcollVO> resultList = busService.selectBusInciList();
+        	resultMap.put("resultList", resultList);
+		} catch (Exception e) {
+			logger.error("##selectBusInciList exception " + e.toString());
+		}
+        mv.addAllObjects(resultMap);
+        mv.setViewName("jsonView");
+        return mv;
+    }
+}
+
+

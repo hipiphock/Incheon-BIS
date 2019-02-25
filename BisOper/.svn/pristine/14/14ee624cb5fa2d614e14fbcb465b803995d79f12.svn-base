@@ -1,0 +1,1075 @@
+/*181120 공통*/
+.wrap1{width: 1366px; overflow: hidden;}
+.pop_title{height:32px; background:#515151; border: 1px solid #000; box-sizing:border-box;}
+.wrapS{width: 600px; overflow: hidden; position: absolute;}
+.wrapS .contenWrap{height:300px}
+
+.contenWrap{width: 100%; height: 760px; position: relative; background-color:#fff; border:1px solid #7e7e7e; border-top:none; font-size:12px; box-sizing:border-box;}
+.sub_title{width: 100%; background: url(../images/h3_bg.jpg); height: 30px; border-bottom: 1px solid #788c9f;}
+.sub_title h3{text-align: center; font-size: 12px; line-height:29px; width: 100%; color: #fff; box-sizing:border-box;}
+
+h4{height: 25px; line-height:24px; border-bottom: 1px solid #b1b1b1; color: #8a8a8a; font-size: 12px; width: 100%; text-align: center; background: #fff;}
+
+select, input{font-size: 12px; border: 1px solid #c2c2c2;}
+select{height: 27px; box-sizing:border-box; vertical-align: middle;}
+input{height: 27px; padding: 0 5px; box-sizing:border-box; vertical-align: middle;}
+/*버튼*/
+.btn{ color: #000; height: 25px; line-height: 25px; border:1px solid #b6b6b6; font-size: 12px; background:#fff; display: block; text-align: center;}
+.btn img{vertical-align: middle; margin: -2px 3px 0 0}
+.btn:hover, .btnR:hover{background:#f5f5f5}
+
+.topBtn_map{color: #fff; background: #5985b2; border-left: 1px solid #586a7c; display: block; width: 82px; text-align: center; height: 30px; position: absolute; right: 0; top:0; line-height: 30px}
+.topBtn_map:hover{background: #4e8ac6;}
+.topBtn_map img, .popTopBtn_map img{vertical-align: middle; margin: -2px 3px 0 0 }
+
+.popTopBtn_map{font-size:12px; color: #fff; background: #4b4b4b; border-left: 1px solid #000; display: block; width: 82px; text-align: center; height: 30px; position: absolute; right: 0; top:1px; line-height: 30px;}
+.popTopBtn_map:hover{background: #252525;}
+
+.btnR{width: 87px; float: right; margin-right:5px; text-align: center; display: block; height: 27px; line-height: 27px; color: #000; border: 1px solid #acacac;  box-sizing: border-box;}
+
+.bodytBox .btn_graph{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.bodytBox .btn_graph:hover{background: #6292c4;}
+
+/*검색박스*/
+.serchBox{width: 100%; height: 50px; border-bottom:1px solid #aaa; position:relative; }
+.top1{width:1251px; height: 50px; border-collapse: collapse; padding-right:112px;  box-sizing: border-box; }
+.top1 th{background: #f5f5f5; color: #505050; border-right:1px solid #e2e2e2; text-align: center; box-sizing:border-box;}
+.top1 td{padding: 0 10px; text-align: left; border-right:1px solid #e2e2e2; box-sizing:border-box;}
+.top1 td:last-child{ border-right:none;}
+.checkBox{vertical-align: middle; cursor: pointer; margin:-1px 3px 0 0; width: 14px!important; background: none!important;}
+.serchBox label{margin-right: 5px; cursor: pointer;}
+.serchBox label input{width: 14px; vertical-align: middle;}
+
+.serchBox #btn_search{position: absolute; right: 0; top: 0; width: 112px; height: 50px; border-left:1px solid #aaa; border-right:none; border-top:none; border-bottom:none; background: #ddd; color: #000; display: block; line-height: 50px; text-align: center; cursor: pointer;  font-size: 13px; font-weight: bold;}
+.serchBox #btn_search:hover{background: #e7e7e7}
+.serchBox #btn_search img{vertical-align: middle; margin: -2px 3px 0 0}
+.serchBox select, .serchBox input{background:#f5f5f5;}
+
+/*검색인풋박스*/
+.serchInputBox{height: 27px; border:1px solid #b6b6b6; background: #f5f5f5; float: left;}
+.serchInputBox input{border: none; float: left;}
+.sub_serch_btn{float:right; cursor: pointer; display: block; width: 27px; height: 27px; padding-top:3px; text-align:center;box-sizing: border-box;  }
+.serch_clear2{float: left; background: #fff; border: 1px solid #b6b6b6; font-size: 12px; color: #000; line-height: 27px; height: 27px; padding: 0 5px; margin-left: 5px}
+.serch_clear2:hover{background:#f5f5f5}
+
+/*상단저장,새로고침버튼*/
+.sub_top_btn{width: 100%; border-bottom: 1px solid #c8c8c8; height: 64px;}
+.sub_top_btn li{float: left; font-size: 12px; padding-top: 6px; height: 64px; width: 65px; box-sizing:border-box;}
+.sub_top_btn li:last-child a{ border-right:none;}
+.sub_top_btn li:hover{background: url('../images/btn_big_hover.png')center no-repeat;}
+.sub_top_btn li a{ text-align: center; display: block; color: #000; border-right: 1px solid #e5e5e5; width:100%}
+
+.contenBox{box-shadow:2px 2px 3px 0 rgba(0,0,0,0.3); position: absolute; background: #fff; border: 1px solid #7e7e7e; bottom: 8px; top:8px;}
+.allBody{left: 8px; right: 8px}
+.contenBoxLeft{left: 8px;}
+.contenBoxRight{right: 8px;}
+.bodytBox{background: #f5f5f5; position: absolute; bottom: 0; width: 100%;}
+.serch_number{font-size: 12px; line-height: 30px; font-weight: bold; padding-left: 8px; box-sizing:border-box; }
+.btn_map{position: absolute; right:0; top:0; border-left:1px solid #bcbcbc; line-height:30px; color: #000; font-size: 12px; width:80px; display: block; text-align:center;}
+.btn_map img{vertical-align: middle; margin: -2px 2px 0 0}
+.btn_map:hover{background:#f5f5f5}
+
+.conleft{position: absolute; left:0; top:0; bottom: 0;}
+.conright{position: absolute; right:0; top:0; bottom: 0;}
+.conbottom{position: absolute; left: 0; right: 0; bottom: 0;}
+.contop{position: absolute; left: 0; right: 0; top:0;}
+
+/*오른쪽 표*/
+.chart{width: 100%; border-collapse: collapse;}
+.chart tr{border-bottom:1px solid #cecece; }
+.chart th{text-align: left; padding-left:8px; background: #f7f7f7;border-right: 1px solid #cecece; height: 37px; width:130px; box-sizing:border-box;}
+.chart td{text-align: left; padding-left:8px; height: 37px; box-sizing:border-box; }
+.chart select, .chart input, .chart textarea{width: 95%; background: #f5f5f5}
+
+/*검색,내용 위치 설정*/
+.zerodep{top:0}
+.onedep{top: 51px;}/*검색있음, 저장버튼없음*/
+.onedep2{top:65px;}/*검색없음, 저장버튼 있음*/
+.contenWrap .tabDep{top:38px}
+.onedep .conleft .conten, .onedep .conright .conten, .onedep .contenBoxLeft .conten{height: 659px;}
+.contenWrap .tabDep .conleft .conten, .contenWrap .tabDep .conright .conten, .contenWrap .tabDep .contenBoxLeft .conten{height: 672px;}
+
+.onedep2 .conleft .conten, .onedep2 .conright .conten{height: 645px;}
+
+.towdep{top:116px;}/*검색있음, 저장버튼있음*/
+.towdep .conleft .conten, .towdep .conright .conten{height: 594px;}
+.conten{width: 100%;}
+.con1{border-bottom:1px solid #788c9f;}
+
+/*탭*/
+.tab{width: 100%; border-bottom: 1px solid #7e7e7e; overflow: hidden;}
+.tab li{float: left; color: #434343; border-right: 1px solid #a5a5a5; height: 37px; line-height: 36px; padding: 0 20px; background: #efefef; font-size: 14px; font-weight: bold; cursor: pointer; margin-right:1px}
+.tab li.click{background:#3c8cde; color: #fff; }
+
+
+
+/*인풋사이즈*/
+.in40{width:40px!important;}
+.in50{width:50px!important;}
+.in60{width:60px!important;}
+.in70{width:70px!important;}
+.in90{width:90px!important;}
+.in100{width:100px!important;}
+.in118{width:118px!important;}
+.in120{width:120px!important;}
+.in145{width:145px!important;}
+.in180{width:180px!important;}
+.in200{width:200px!important;}
+.in248{width:248px!important;}
+.in260{width:260px!important;}
+.in288{width:288px!important;}
+.in305{width:305px!important;}
+.in317{width:317px!important;}
+.in499{width:499px!important;}
+.in803{width:803px!important;}
+
+.inYellow{background: #fbfba3!important;}
+
+
+/*아래버튼*/
+.bottom_btn{position: absolute; bottom: 0; width: 100%; height: 38px;border-top: 1px solid #aeaeae; background: #f2f4f7;}
+.bottom_btn li{box-sizing:border-box; float: left; border-right:1px solid #c8c8c8;}
+.bottom_btn li:last-child{border-right:none;}
+.bottom_btn li a{display: block; width: 100%; color: #4c4c4c; height:38px; line-height: 38px; text-align: center; font-weight: bold;}
+.bottom_btn li a:hover{background: #e7eaee}
+.bottom_btn li a img{vertical-align: middle; margin: -2px 3px 0 0}
+
+.bottomRight .bottomBtn2 li, .bottomLeft .bottomBtn2 li{width:50%;}
+.bottomRight .bottomBtn4 li, .bottomLeft .bottomBtn4 li{width: 25%;}
+.bottomRight .bottomBtn3 li, .bottomLeft .bottomBtn3 li{width: 33.3%;}
+.bottomRight .bottomBtn5 li, .bottomLeft .bottomBtn5 li{width: 20%;}
+
+/*버스공지사항전송*/
+.v0103 th{width: 167px;}
+.v0103 select{width:240px;}
+.v0103 .serchInputBox{width:280px;}/*검색어입력박스크기*/
+.v0103 .serchInputBox input{width:89%; }
+
+.contenWrap .v0103Left{width: 645px;}
+.contenWrap .v0103Right{width: 645px;}
+.v0103Right .con1{height: 550px;}
+.v0103Right .con2{background: #e4e7ea; height: 77px; padding:25px 20px; box-sizing:border-box;}
+.btn_send{width:97px; float: left; }
+.message{width: 500px; float: left; margin-right: 2px}
+
+.movBtn{position: absolute; left: 50%; margin:280px 0 0 -20px}
+.movBtn li{width: 40px;}
+.movBtn li button{width: 100%; height: 80px; padding-top: 17px; border: 1px solid #7e7e7e; margin-top:5px;}
+.movBtn li button span{font-size: 12px; color: #000;}
+.movBtn .btn_movRight{background: url(../images/arow_right.png)15px 25px #fcfcfc no-repeat;}
+.movBtn .btn_movRight:hover{background: url(../images/arow_right.png)15px 25px #e2e6eb no-repeat;}
+.movBtn .btn_movLeft{background: url(../images/arow_left.png)14px 25px #fcfcfc no-repeat;}
+.movBtn .btn_movLeft:hover{background: url(../images/arow_left.png)14px 25px #e2e6eb no-repeat;}
+
+/*정류소 제공정보조회*/
+.v0104 th{width:82px;}
+.v0104 select{width:140px;}
+.v0104 .serchInputBox{width:170px;}/*검색어입력박스크기*/
+.v0104 .serchInputBox input{width: 100%}
+
+.v0104Left{width: 400px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0104Left .sub_title h3{text-align: left; padding-left: 8px;}
+.v0104Right{width: 946px;}
+.v0104Left .serch_number{width: 100%; border-bottom: 1px solid #788c9f;}
+
+
+/*돌발상황대응이력관리*/
+.v0105 th{width:100px;}
+.v0105 select{width:200px;}
+.v0105top .sub_title h3 {text-align: left; padding-left: 8px;}
+
+
+/*돌발상황대응시나리오*/
+.v0106 th{width:120px;}
+.v0106 select{width:250px;}
+
+.v0106Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0106Right{width: 400px;  background: #f7f7f7}
+
+.v0106Right .v0106Chart th{height:50px; width: 100px}
+.v0106Right .v0106Chart td{ background: #fff}
+.v0106Right .v0106Chart tr:last-child th, .v0106Right .v0106Chart tr:last-child td{height: 200px}
+.v0106Right .v0106Chart textarea{height: 170px}
+
+/*돌발상황발생대응관리*/
+.v0107 th{width:200px;}
+.v0107 select{width:400px;}
+
+.v0107Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0107Right{width: 400px; background: #f7f7f7}
+.v0107Left .sub_title h3 {text-align: left; padding-left: 8px;}
+
+.v0107Right .v0107Chart th{width: 130px; height: 45px;}
+.v0107Right .v0107Chart td{ background: #fff}
+.v0107Chart input{margin-right: 3px}
+
+/*부당운행조회*/
+.v0108 th{width:104px;}
+.v0108 select, .v0108 input{width:180px;}
+
+.v0108Left{width:400px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0108Right{width: 946px;}
+
+.v0108Right .sub_title h3 {text-align: left; padding-left: 8px;}
+
+/*운행종합상황조회*/
+.v0109 th{width:150px;}
+.v0109 select{width:400px;}
+
+.v0109Left{width:700px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0109Right{width: 646px;}
+
+.v0109Left .sub_title h3 {text-align: left; padding-left: 8px;}
+
+.contenWrap .v0109Right .con1{height: 314px;}
+.contenWrap .v0109Right .con2{height: 313px;}
+
+/*도착예정시간조회*/
+.v0110 th{width:120px;}
+.v0110 select{width:270px;}
+
+
+/*배차계획입력현황조회*/
+.v0201 th{width:130px;}
+.v0201 select, .v0201 input{width:240px;}
+
+.v0201Left{width:596px; border-right: 1px solid #7e7e7e; box-sizing:border-box; bottom: auto; overflow: hidden;}
+.v0201Right{width:750px; bottom: auto; overflow: hidden;}
+.v0201bottom{height: 178px;}
+.contenWrap .v0201Left .conten{height: 415px;}
+.contenWrap .v0201Right .conten{height: 415px;}
+.v0201bottom .conten{height: 147px}
+
+/*배차준황조회*/
+.v0202 th{width:150px;}
+.v0202 select, .v0202 input{width:400px;}
+
+.v0202Left{width:250px; border-right: 1px solid #7e7e7e; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0202Right{width:1096px; bottom: auto; overflow: hidden;}
+.v0202bottom{height: 138px;}
+.contenWrap .v0202Left .conten{height: 455px;}
+.contenWrap .v0202Right .conten{height: 455px;}
+.v0202bottom .conten{height: 107px}
+
+/*운행정시성현황조회*/
+.v0203 th{width:150px;}
+.v0203 select, .v0203 input{width:400px;}
+
+.v0203Left{width:250px; border-right: 1px solid #7e7e7e; box-sizing:border-box;}
+.v0203Right{width:1096px;}
+
+/*안내기통신메시지현황*/
+.v0302top{height:491px; }
+.v0302bottom{height:212px}
+
+.v0302top .conten{height:394px}
+.v0302bottom .conten{height: 181px}
+
+.contenWrap .v0302tabDep{top:103px}
+
+.tabCon2, .tabCon3, .tabCon4, .tabCon5{display: none;}
+
+/*제공시나리오관리*/
+.v0304 th{width:120px;}
+.v0304 select{width:250px;}
+
+.v0304Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0304Right{width: 400px; background: #f7f7f7}
+
+.v0304Right .v0304Chart th{height:39px; width:113px}
+.v0304Right .v0304Chart td{ border-right: 1px solid #cecece; background: #fff}
+.v0304Right .v0304Chart td input{width: 90%; margin-right: 2px}
+.v0304Right .v0304Chart td select{width: 90%;}
+.v0304Right .v0304Chart tr:last-child{border-bottom:1px solid #b1b1b1}
+
+/*제공정보표출현황조회*/
+.v0305 th{width:120px;}
+.v0305 select{width:250px;}
+
+.v0305Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0305Right{width: 400px; background: #f0f0f0}
+.v0305Right .conten{height: 651px; padding: 10px; box-sizing:border-box;}
+.v0305Right .conten li{float: left; width: 178px; height: 110px; margin:5px; border: 1px solid #c6c6c6; background: #f5f5f5;}
+
+.v0305Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*파라미터전송*/
+.v0306 th{width:83px;}
+.v0306 select{width:120px;}
+
+.v0306Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0306Right{width: 400px; background: #f7f7f7}
+
+.v0306Right .v0306Chart th{height:39px; width:113px}
+.v0306Right .v0306Chart td{ border-right: 1px solid #cecece; background: #fff}
+.v0306Right .v0306Chart td input{width: 90%; margin-right: 2px}
+.v0306Right .v0306Chart td select{width: 90%;}
+.v0306Right .v0306Chart tr:last-child{border-bottom:1px solid #b1b1b1}
+
+/*안내기부가정보조회*/
+.v0307Left{width:400px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0307Right{width: 946px;}
+.contenWrap .tabDep .v0307Left .conten{height:568px; border-bottom: 1px solid #b1b1b1}
+.contenWrap .tabDep .v0307Left .conten2{height:544px; border-bottom: 1px solid #b1b1b1}
+.v0307Left .conbottom{bottom: 39px; height: 64px; text-align: center; line-height: 60px; background: #f9f9f9}
+.v0307Left .conbottom2{bottom: 39px; height: 88px; text-align: center; background: #f9f9f9}
+
+.v0307Left .chart th{width: 80px; height:44px}
+.v0307Left .chart td{height:44px; border-right: 1px solid #cecece;}
+.v0307Left .chart td:last-child{border-right: none}
+.v0307Left .chart td label{margin-right: 5px; cursor: pointer;}
+.v0307Left .chart td label input{width: auto; vertical-align: middle;}
+.v0307Left .chart td input{background: #fff}
+
+/*운행위반정보조회*/
+.v0401 th{width:92px;}
+.v0401 select, .v0401 input{width:134px;}
+
+.v0401Left{width:400px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0401Right{width: 946px;}
+
+.v0401Right .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*운행위반정보분석*/
+.v0402 th{width:105px;}
+.v0402 select, .v0402 input{width:195px; margin-right: 2px}
+
+.v0402Left{width:250px; border-right: 1px solid #7e7e7e; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0402Right{width:1096px; bottom: auto; overflow: hidden;}
+.v0402bottom{height: 138px;}
+.contenWrap .v0402Left .conten{height: 455px;}
+.contenWrap .v0402Right .conten{height: 455px;}
+.v0402bottom .conten{height: 107px}
+
+.v0402Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+.v0402Left .btn_all, .v0402Right .btn_graph{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.v0402Right .btn_graph:hover, .v0402Left .btn_all:hover{background: #6292c4;}
+
+/*통과시간대비제공정보비교*/
+.v0403 th{width:90px;}
+.v0403 select, .v0403 input{width:200px;}
+
+.v0403Left{width:340px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0403Right{width:1006px;}
+
+.v0403Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+.contenWrap .v0403Left .con1{height: 267px;}
+.contenWrap .v0403Left .con2{height: 295px;}
+
+.v0403Chart th{width: 150px; height: 34px; padding-left: 3px; font-size: 11px}
+.v0403Chart th .chekBox{margin:-1px 3px 0 0}
+.v0403Chart td{height: 34px; padding:1px;}
+.v0403Chart tr:last-child{border-bottom: none;}
+.v0403Chart input{height: 25px; margin: 1px}
+
+/*통과시간대비제공정보비교 조회*/
+.v0404 th{width:145px;}
+.v0404 select, .v0404 input{width:200px;}
+
+.v0404Left{width:340px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0404Right{width:1006px;}
+
+/*운행위반사항통보*/
+.v0405 th{width:89px;}
+.v0405 select, .v0405 input{width:125px;}
+
+.v0405Left{width:300px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0405Right{width: 1046px;}
+
+.v0405Right .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+.contenWrap .v0405Right .con1{height: 280px;}
+.contenWrap .v0405Right .con2{height:74px; border-bottom:1px solid #788c9f}
+.contenWrap .v0405Right .con3{height:176px;}
+
+.v0405Chart{width: 945px; float: left;}
+.v0405Chart th{width: 97px;}
+.v0405Chart td{border-right:1px solid #cecece}
+.v0405Chart tr:last-child{border-bottom: none;}
+.btn_regi{width:99px; float: right; height: 72px; border: none; border: 1px solid #788c9f; margin: 1px; background:#d1d7de; font-weight: bold;}
+.btn_regi:hover{background: #dee3e9}
+
+/*운행위반패널티조회*/
+.v0406 th{width:77px;}
+.v0406 select, .v0406 input{width:123px;}
+
+/*운행정시성통계조회*/
+.v0407 th{width:105px;}
+.v0407 select, .v0407 input{width:220px;}
+
+.v0407top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0407bottom{height: 158px;}
+.contenWrap .v0407top .conten{height: 435px;}
+.v0407bottom .conten{height: 127px}
+
+.v0407top .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*운행정시성통계조회*/
+.v0408 th{width:75px;}
+.v0408 select, .v0408 input{width:176px;}
+
+.v0408top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0408bottom{height: 158px;}
+.contenWrap .v0408top .conten{height: 435px;}
+.v0408bottom .conten{height: 127px}
+
+.v0408top .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*운행정시성통계조회*/
+.v0409 th{width:105px;}
+.v0409 select, .v0407 input{width:220px;}
+
+.v0409top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0409bottom{height: 158px;}
+.contenWrap .v0409top .conten{height: 435px;}
+.v0409bottom .conten{height: 127px}
+
+.v0409top .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*운행위반정보분석*/
+.v0410 th{width:105px;}
+.v0410 select, .v0410 input{width:220px;}
+
+.v0410Left{width:210px; border-right: 1px solid #7e7e7e; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0410Right{width:1136px; bottom: auto; overflow: hidden;}
+.v0410bottom{height: 158px;}
+.contenWrap .v0410Left .conten{height: 435px;}
+.contenWrap .v0410Right .conten{height: 435px;}
+.v0410bottom .conten{height: 127px}
+
+.v0410Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+.v0410Left .btn_all{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.v0410Left .btn_all:hover{background: #6292c4;}
+
+/*운전자운행실적통계조회*/
+.v0411 th{width:68px;}
+.v0411 select, .v0407 input{width:129px;}
+
+.v0411top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0411bottom{height: 158px;}
+.contenWrap .v0411top .conten{height: 435px;}
+.v0411bottom .conten{height: 127px}
+
+.v0411top .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*버스회사/차고지정보조회*/
+.v0501 th{width:120px;}
+.v0501 select{width:400px;}
+
+.v0501top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0501bottom{height:205px;}
+.contenWrap .v0501top .conten{height:388px;}
+.v0501bottom .conten{height:174px}
+
+.v0501bottom .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*차량정보조회*/
+.v0502 th{width:68px;}
+.v0502 select, .v0502 input{width:157px;}
+
+.v0502top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.contenWrap .v0502top .conten{height:581px;}
+.v0502bottom{height:43px; background:#f0f0f0;}
+.v0502bottom .conten{width: auto; float: right; margin-right: 3px}
+.v0502bottom table{width: 520px; float: left;}
+.v0502bottom table th{height: 39px; width: 120px; text-align: right; padding-right: 8px; box-sizing:border-box}
+.v0502bottom table td{width: 140px; height: 39px;}
+.v0502bottom .btn{width: 100px; height:36px; margin-top:3px; float: left;}
+
+/*노선기초정보관리*/
+.v0503 th{width:115px;}
+.v0503 select, .v0503 input{width:215px;}
+
+.v0503Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0503Right{width: 400px; background: #f7f7f7 }
+
+.contenWrap .v0503Left .con1{height: 423px}
+.v0503Left .v0503bottom1{height: 170px; right:auto; width: 315px; border-right: 1px solid #7e7e7e; }
+.v0503Left .v0503bottom2{height: 170px; right:auto; left:316px; width: 318px;  border-right: 1px solid #7e7e7e;}
+.v0503Left .v0503bottom3{height: 170px; width: 310px; left:635px; }
+.v0503Left .v0503bottom1 .conten, .v0503Left .v0503bottom2 .conten,.v0503Left .v0503bottom3 .conten{height:139px}
+
+.v0503Right .chart th{width:70px; padding-left: 6px; height: 48px}
+.v0503Right .chart td{border-right: 1px solid #cecece; width:130px; padding-left: 5px; height: 47px; background: #fff}
+.v0503Right .chart td input, .v0503Right .chart td select{width: 117px;}
+.v0503Right .chart td:last-child{border-right: none;}
+
+/*노선굴곡도/경합율조회*/
+.v0505 th{width:105px;}
+.v0505 select{width:400px;}
+
+.v0505top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.contenWrap .v0505top .conten{height:581px;}
+.v0505bottom{height:43px; background:#f0f0f0;}
+.v0505bottom table{width:100%;}
+.v0505bottom table th{height: 39px; width:8%; text-align: right; padding-right: 8px; box-sizing:border-box}
+.v0505bottom table td{width: 8.6%; height: 39px;}
+.v0505bottom table td span{font-weight: bold; color: #0024ff}
+
+/*노선별경유노드조회*/
+.v0506 th{width:105px;}
+.v0506 select, .v0506 input{width:400px;}
+
+.v0506Left{width:550px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0506Right{width: 796px;}
+
+/*노선/정류장 인허가 관리*/
+.v0507 th{width:110px;}
+.v0507 select, .v0507 input{width:204px;}
+
+.v0507Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0507Right{width: 400px; background: #f7f7f7}
+
+.v0507Right .v0507Chart th{width:115px; height: 37px;}
+.v0507Right .v0507Chart td{padding: 5px 0 5px 8px; background: #fff}
+.v0507Chart input{margin-right: 3px}
+
+.v0507Right .v0507Chart textarea{height:148px}
+
+/*노선버전관리*/
+.v0508 th{width:140px;}
+.v0508 select, .v0508 input{width:204px;}
+
+.v0508Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0508Right{width: 400px; background: #f7f7f7}
+
+.v0508Right .v0508Chart th{width: 120px; height:50px;}
+.v0508Right .v0508Chart td{padding: 5px 0 5px 8px; background: #fff}
+.v0508Chart input{margin-right: 3px}
+
+/*정류소기초정보관리*/
+.v0510 th{width:97px;}
+.v0510 select, .v0510 input{width:130px;}
+
+.v0510Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0510Right{width: 400px; background: #f7f7f7}
+.v0510Right select, .v0510Right input{width: 106px}
+
+.v0510Right .v0510Chart th{width:82px; padding-left: 5px; height: 47px}
+.v0510Right .v0510Chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff}
+.v0510Right .v0510Chart td:last-child{border-right: none;}
+
+.v0510Left .sub_title h3{text-align: left; padding-left: 8px;}
+
+/*정류소기초인허가정보*/
+.v0512 th{width:112px;}
+.v0512 select, .v0512 input{width:173px;}
+
+.v0512Left{width:996px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0512Right{width: 350px; background: #f7f7f7}
+
+.v0512Right .v0512Chart th{width:100px; padding-left: 5px; height: 50px}
+.v0512Right .v0512Chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff}
+.v0512Right .v0512Chart td:last-child{border-right: none;}
+
+.v0512Right .v0512Chart td input, .v0512Right .v0512Chart td select{width: 146px}
+
+/*정류소정차노선조회*/
+.v0513 th{width:97px;}
+.v0513 select, .v0513 input{width:190px;}
+
+.v0513Left{width:866px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0513Right{width: 480px;}
+
+.v0513Left .sub_title h3{text-align: left; padding-left: 8px;}
+
+/*정류소환승정보관리*/
+.v0514Left{width:366px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0514Right{width:980px;}
+
+.v0514Left .sub_title h3, .v0514Right .sub_title h3{text-align: left; padding-left: 8px;}
+.contenWrap .v0514Right .con1{height: 400px}
+.contenWrap .v0514Right .con2{height: 174px}
+
+/*운행횟수/페널티내역조회*/
+.v0515 th{width:132px;}
+.v0515 select, .v0515 input{width:260px;}
+
+.v0515Left{width:770px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0515Right{width: 576px;}
+
+/*이의신청내역조회*/
+.v0516 th{width:110px;}
+.v0516 select, .v0516 input{width:204px;}
+
+.v0516Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0516Right{width: 400px; background: #f7f7f7}
+
+.v0516Right .v0516Chart th{width:97px; height:53px;}
+.v0516Right .v0516Chart td{padding: 5px 0 5px 8px; background: #fff}
+.v0516Chart input{margin-right: 3px; background: #fff; border: 1px solid #fff}
+
+.v0516Right .v0516Chart textarea{height:148px; background: #fff; border: 1px solid #fff}
+
+/*인허가관리*/
+.v0517 th{width:100px;}
+.v0517 select, .v0517 input{width:175px;}
+
+.v0517top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.contenWrap .v0517top .conten{height:581px;}
+.v0517bottom{height:43px; background:#f0f0f0;}
+.v0517bottom table{width:1165px; float: left;}
+.v0517bottom table th{height: 39px; width: 140px; text-align: right; padding-right: 8px; box-sizing:border-box}
+.v0517bottom table td{height: 39px;}
+.v0517bottom table td select, .v0517bottom table td input{width: 95%}
+.v0517bottom .btn{width: 150px; height:36px; margin:3px; float:right;}
+
+/*정류소통과노선조회*/
+.v0520 th{width:100px;}
+.v0520 select, .v0520 input{width:180px;}
+
+.v0520Left{width:900px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0520Right{width: 446px;}
+
+/*차량단말기 기초정보관리*/
+.v0601 th{width:90px;}
+.v0601 select, .v0601 input{width:135px;}
+
+.v0601Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0601Right{width: 400px; background: #f7f7f7}
+.v0601Right select, .v0601Right input{width: 105px}
+
+.v0601Right .v0601Chart th{width:82px; padding-left: 5px; height: 60px}
+.v0601Right .v0601Chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff}
+.v0601Right .v0601Chart td:last-child{border-right: none;}
+
+/*정류소안내기 기초정보관리*/
+.v0602 th{width:105px;}
+.v0602 select, .v0602 input{width:178px;}
+
+.v0602Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0602Right{width: 400px; background: #f7f7f7}
+.v0602Right select, .v0602Right input{width: 105px;  height: 20px}
+.v0602Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+.v0602Right .v0602Chart th{width:82px; padding-left: 5px; height:34px}
+.v0602Right .v0602Chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff;height:34px}
+.v0602Right .v0602Chart td:last-child{border-right: none;}
+
+/*전산장비 기초정보관리*/
+.v0603 th{width:125px;}
+.v0603 select, .v0603 input{width:260px;}
+
+.v0603Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0603Right{width: 400px; background: #f7f7f7}
+.v0603Right select, .v0603Right input{width: 105px;}
+
+.v0603Right .v0603Chart th{width:82px; padding-left: 5px; height:50px}
+.v0603Right .v0603Chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff;height:50px}
+.v0603Right .v0603Chart td:last-child{border-right: none;}
+
+/*차량단말기 상태정보조회/제어*/
+.v0604 th{width:67px;}
+.v0604 select, .v0604 input{width:130px;}
+
+.v0604Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0604Right{width: 400px; background: #f7f7f7}
+.v0604Right select, .v0604Right input{width: 105px;}
+
+.v0604Right .v0604Chart th{width:82px; padding-left: 5px; height: 40px}
+.v0604Right .v0604Chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff;}
+.v0604Right .v0604Chart td:last-child{border-right: none;}
+
+.v0604Right h4{color: #000}
+.v0604Right .v0604Chart tr:last-child{border-bottom:1px solid #b1b1b1}
+
+/*정류소안내기 상태정보 조회/제어*/
+.v0605 th{width:79px;}
+.v0605 select{width:160px;}
+.v0605top .sub_title h3 {text-align: left; padding-left: 8px;}
+
+/*BIT*/
+.v0606 th{width:67px;}
+.v0606 select, .v0606 input{width:146px;}
+
+.v0606Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0606Right{width: 400px; background: #f7f7f7}
+.v0606Right select, .v0606Right input{width: 105px;}
+
+.v0606Right .v0606Chart th{width:82px; padding-left: 5px; height: 54px}
+.v0606Right .v0606Chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff;}
+.v0606Right .v0606Chart td:last-child{border-right: none;}
+
+.v0606Right h4{color: #000}
+.v0606Right .v0606Chart tr:last-child{border-bottom:1px solid #b1b1b1}
+
+/*BMT*/
+.v0607 th{width:103px;}
+.v0607 select, .v0607 input{width:178px;}
+
+.v0607Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0607Right{width: 400px; background: #f7f7f7}
+
+.v0607Right .v0607Chart th{width:82px; padding-left: 5px; height: 42px;}
+.v0607Right .v0607Chart td{border-right: 1px solid #cecece; padding: 5px; background: #fff;}
+.v0607Right .v0607Chart td:last-child{border-right: none;}
+
+.v0607Chart .btn{width: 40px; float:right;}
+.v0607Chart textarea {height:60px; width:258px; margin-top: 3px; border: 1px solid #c2c2c2}
+
+.v0607Right .v0607Chart tr:last-child{border-bottom:1px solid #b1b1b1}
+
+/*무선 AP*/
+.v0608 th{width:113px;}
+.v0608 select, .v0608 input{width:204px;}
+
+.v0608Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0608Right{width: 400px; background: #f7f7f7}
+.v0608Right select, .v0608Right input{width: 105px;}
+
+.v0608Right .v0608Chart th{width:82px; padding-left: 5px; height: 53px}
+.v0608Right .v0608Chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff;}
+.v0608Right .v0608Chart td:last-child{border-right: none;}
+
+.v0608Right .v0608Chart tr:last-child{border-bottom:1px solid #b1b1b1}
+
+/*유지보수업체정보관리*/
+.v0609 th{width:163px;}
+.v0609 select, .v0609 input{width:400px;}
+
+.v0609Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0609Right{width: 400px;}
+
+.contenWrap .v0609Left .con1, .contenWrap .v0609Right .con1{height: 375px}
+.v0609Left .v0609bottom, .v0609Right .v0609bottom{height: 218px; right:auto; width:100%; background: #f7f7f7 }
+
+.v0609Left .chart th, .v0609Right .chart th{width:99px; padding-left: 6px;}
+.v0609Left  .chart td, .v0609Right .chart td{border-right: 1px solid #cecece; padding-left: 5px; background: #fff}
+.v0609Left select, .v0609Left input{width: 180px;}
+.v0609Right select, .v0609Right input{width:89px;}
+
+.v0609Left .chart td:last-child, .v0609Right .chart td:last-child{border-right: none;}
+
+.v0609Left .bottomBtn4 li{width:100px}
+.v0609Left .bottomBtn4 li:last-child{border-right: 1px solid #c8c8c8}
+
+/*장애통계조회*/
+.v0610 th{width:145px;}
+.v0610 select, .v0610 input{width:270px;}
+
+.v0610top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0610bottom{height: 138px;}
+.contenWrap .v0610top .conten{height: 455px;}
+.v0610bottom .conten{height: 107px}
+
+.v0610top .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+.v0610top .btn_graph{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.v0610top .btn_graph:hover{background: #6292c4;}
+
+
+/*BIT외부충격이력*/
+.v0611 th{width:80px;}
+.v0611 select, .v0611 input{width:138px;}
+
+.v0611Left{width:946px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0611Right{width: 400px;}
+
+.contenWrap .v0611Left .con1, .contenWrap .v0611Right .con1{height: 440px}
+.v0611Left .v0611bottom{height: 153px; right:auto; width:100%; }
+.v0611Right .v0611bottom{height: 153px; right:auto; width:100%; background: #f7f7f7 }
+
+.contenWrap .v0611bottom .conten{height: 122px}
+
+.v0611Right .v0611bottom .inTr{width: 97%; height:70px; margin: 5px;}
+
+/*무선업그레이드관리*/
+.v0701 th{width:100px;}
+.v0701 select, .v0701 input{width:210px;}
+
+.v0701top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0701bottom{height:293px;}
+.contenWrap .v0701top .con1{height:256px;}
+.contenWrap .v0701top .con2{height:43px; background: #f0f0f0; border-bottom:1px solid #788c9f}
+.contenWrap .v0701top .con2 .btn{width: 100px; height:36px; margin:3px; float:right;}
+.contenWrap .v0701top .con2 table{width: 1230px; float: left;}
+.contenWrap .v0701top .con2 table th{height: 40px; width:100px; text-align: right; padding-right: 8px; box-sizing:border-box;}
+.contenWrap .v0701top .con2 table td{height: 40px}
+.contenWrap .v0701top .con2 table td input{width: 95%; margin-right: 3px}
+
+.v0701bottom1 .conten, .v0701bottom2 .conten{height:223px}
+.v0701bottom1{width:50%; border-right: 1px solid #7e7e7e; box-sizing:border-box; height: 293px}
+.v0701bottom2{width:50%;left: auto; height: 293px}
+
+.v0701bottom1 .sub_title h3, .v0701bottom2 .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+.btn_polder{background: #5985b2; border: none; width: 40px; position: absolute; right: 0; top:0; border-left:1px solid #586a7c; line-height: 30px;}
+.btn_polder img{vertical-align: middle; margin-top: -3px}
+.btn_polder:hover{background: #4e8ac6}
+
+.v0701bottom1 .bottomLeft ul, .v0701bottom2 .bottomRight ul{float: right; }
+.v0701bottom1 .bottomLeft li, .v0701bottom2 .bottomRight li{width:90px;}
+.v0701bottom1 .bottomLeft li:first-child, .v0701bottom2 .bottomRight li:first-child{border-left:1px solid #c8c8c8}
+
+.v0701Left_table{position: absolute; z-index: 9; width: 399px;}
+.v0701Left_table th{height:37px; width:54px}
+.v0701Left_table label{line-height: 37px; margin-left:5px}
+
+.v07serchBox .v0701{width: 1150px;}
+.contenWrap .v07serchBox #btn_search{right: 100px; width: 100px;}
+.contenWrap .v07serchBox .btn_ftp{position: absolute; right: 0; top: 0; width: 100px; border-left:1px solid #c1c1c1; background:#ddd; color: #000; line-height: 50px; display: block; font-weight: bold; font-size: 13px; text-align: center;}
+.contenWrap .v07serchBox .btn_ftp:hover{background:#e7e7e7}
+
+/*유선업그레이드관리*/
+.v0703 th{width:120px;}
+.v0703 select, .v0703 input{width:266px;}
+
+.v0703top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.contenWrap .v0703top .conten{height:581px;}
+.v0703bottom{height:43px; background:#f0f0f0;}
+.v0703bottom .conten{width: auto; float: right; margin-right: 3px}
+.v0703bottom table{width: 600px; float: left;}
+.v0703bottom table th{height: 39px; width:90px; text-align: right; padding-right: 8px; box-sizing:border-box}
+.v0703bottom table td{width:210px; height: 39px;}
+.v0703bottom .btn{width: 100px; height:36px; margin-top:3px; float: left;}
+
+/*업그레이드현황조회*/
+.v0704 th{width:67px;}
+.v0704 select, .v0704 input{width:95px;}
+
+.v0704top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0704bottom{height:265px;}
+.contenWrap .v0704top .conten{height:328px;}
+.v0704bottom .conten{height:234px}
+
+
+
+/*노선별일자별 평균수집율 조회*/
+.v0805 th{width:150px;}
+.v0805 select, .v0805 input{width:250px;}
+
+.v0805Left{width:1110px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0805Right{width:236px;}
+
+
+
+/*부당운행 이력조회*/
+.v0903 th{width:90px;}
+.v0903 select, .v0903 input{width:138px;}
+.v0903Left{width:673px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0903Right{width:673px;}
+.v0903Right .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*운전자메시지 이력 조회*/
+.v0904 th{width:83px;}
+.v0904 select, .v0904 input{width:144px;}
+
+/*시공간 운행이력 조회*/
+.v0905 th{width:60px;}
+.v0905 select, .v0905 input{width:125px;}
+
+.v0905Left{width:210px; border-right: 1px solid #7e7e7e; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0905Right{width:1136px; bottom: auto; overflow: hidden;}
+.v0905bottom{height: 158px;}
+.contenWrap .v0905Left .conten{height: 435px;}
+.contenWrap .v0905Right .conten{height: 435px;}
+.v0905bottom .conten{height: 127px}
+
+.v0905Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+.v0905Left .btn_all{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.v0905Left .btn_all:hover{background: #6292c4;}
+
+/*노선별 소통통계*/
+.v0909 th{width:80px;}
+.v0909 select, .v0909 input{width:140px;}
+
+.v0909top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0909bottom{height: 158px;}
+.contenWrap .v0909top .conten{height: 435px;}
+.v0909bottom .conten{height: 127px}
+
+.v0909top .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*도로별 소통통계*/
+.v0910 th{width:98px;}
+.v0910 select, .v0910 input{width:180px;}
+
+.v0910top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0910bottom{height: 158px;}
+.contenWrap .v0910top .conten{height: 435px;}
+.v0910bottom .conten{height: 127px}
+
+.v0910top .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+/*부당운행 통계조회*/
+.v0911 th{width:80px;}
+.v0911 select, .v0911 input{width:138px;}
+
+.v0911Left{width:210px; border-right: 1px solid #7e7e7e; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0911Right{width:1136px; bottom: auto; overflow: hidden;}
+.v0911bottom{height: 158px;}
+.contenWrap .v0911Left .conten{height: 435px;}
+.contenWrap .v0911Right .conten{height: 435px;}
+.v0905bottom .conten{height: 127px}
+
+.v0911Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+.v0911Left .btn_all{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.v0911Left .btn_all:hover{background: #6292c4;}
+
+/*돌발상황 통계조회*/
+.v0912 th{width:60px;}
+.v0912 select, .v0912 input{width:120px;}
+
+.v0912Left{width:210px; border-right: 1px solid #7e7e7e; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0912Right{width:1136px; bottom: auto; overflow: hidden;}
+.v0912bottom{height: 158px;}
+.contenWrap .v0912Left .conten{height: 435px;}
+.contenWrap .v0912Right .conten{height: 435px;}
+.v0905bottom .conten{height: 127px}
+
+.v0912Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+.v0912Left .btn_all{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.v0912Left .btn_all:hover{background: #6292c4;}
+
+/*운행이력 통계조회*/
+.v0913 th{width:109px;}
+.v0913 select, .v0913 input{width:206px;}
+
+.v0913Left{width:210px; border-right: 1px solid #7e7e7e; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v0913Right{width:1136px; bottom: auto; overflow: hidden;}
+.v0913bottom{height: 158px;}
+.contenWrap .v0913Left .conten{height: 435px;}
+.contenWrap .v0913Right .conten{height: 435px;}
+.v0905bottom .conten{height: 127px}
+
+.v0913Left .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+.v0913Left .btn_all{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.v0913Left .btn_all:hover{background: #6292c4;}
+
+/*서비스이용 통계조회*/
+.v0914 th{width:160px;}
+.v0914 select, .v0914 input{width:400px;}
+
+.v0914Left{width:1000px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v0914Right{width: 346px;}
+
+.v0914Right .sub_title h3{text-align: left; padding-left: 8px; box-sizing:border-box}
+
+.contenWrap .v0914Right .con1{height: 250px;}
+.contenWrap .v0914Right .con2{height:163px; border-bottom:1px solid #788c9f}
+.contenWrap .v0914Right .con3{height:117px;}
+
+/*정류소별 SMS 건수 조회*/
+.v0915 th{width:160px;}
+.v0915 select, .v0915 input{width:400px;}
+
+
+/*코드관리*/
+.v1003Left{width:300px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v1003Right{width:1046px;}
+
+.contenWrap .v1003Right .con1{height: 522px}
+.contenWrap .v1003Right .con2{height: 83px; background:#f0f0f0}
+.contenWrap .v1003Right .con2 table{width: 97%;}
+.contenWrap .v1003Right .con2 table th{width:100px; height: 37px ; text-align: right; padding-right: 5px; box-sizing:border-box}
+.contenWrap .v1003Right .con2 table td input{width: 95%}
+.contenWrap .v1003Right .con2 table td span{line-height: 37px; margin-left: 5px;}
+
+/*행정구역 정보조회*/
+.v1004 th{width:120px;}
+.v1004 select, .v1004 input{width:250px;}
+
+/*운영파라미터관리*/
+.v1005 th{width:140px;}
+.v1005 select, .v1005 input{width:350px;}
+
+.v1005Left{width:1046px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v1005Right{width:300px; background: #f7f7f7}
+
+.v1005Right .v1005Chart th{width:90px; height:59px}
+.v1005Right .v1005Chart td{border-right: 1px solid #cecece; background: #fff;}
+.v1005Right .v1005Chart td:last-child{border-right: none;}
+
+/*운행위반기준정보관리*/
+.v1006 th{width:140px;}
+.v1006 select, .v1006 input{width:400px;}
+
+.v1006Left{width:952px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v1006Right{width:394px; background: #f7f7f7}
+
+.v1006Right .v1006Chart th{width:133px; height:59px; padding-left: 5px}
+.v1006Right .v1006Chart td{border-right: 1px solid #cecece; background: #fff; padding-left: 5px }
+.v1006Right .v1006Chart td input{width: 50px;}
+.v1006Right .v1006Chart td:last-child{border-right: none;}
+
+/*교통상황 연계정보조회*/
+.v1101 th{width:150px;}
+.v1101 select, .v1101 input{width:250px;}
+
+.v1101Left{width:700px; border-right: 1px solid #7e7e7e; box-sizing:border-box}
+.v1101Right{width: 646px;}
+
+.contenWrap .v1101Right .con1{height: 314px;}
+.contenWrap .v1101Right .con2{height: 248px;}
+
+/*교통카드 연계정보관리*/
+.v1102 th{width:140px;}
+.v1102 select, .v1102 input{width:400px;}
+.v11serchBox .v1102{width: 1150px;}
+.contenWrap .v11serchBox #btn_search{right: 100px; width: 100px;}
+.contenWrap .v11serchBox .btn_del{position: absolute; right: 0; top: 0; width: 100px; border-left:1px solid #c1c1c1; background:#ddd; color: #000; line-height: 50px; display: block; font-weight: bold; font-size: 13px; text-align: center;}
+.contenWrap .v11serchBox .btn_del:hover{background:#e7e7e7}
+
+
+.v1102top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v1102bottom{height:81px; background: #f0f0f0}
+.contenWrap .v1102top .conten{height: 512px;}
+.v1102bottom .conten{height:50px; float: right; width: auto;}
+
+.v1102bottom .conten table {width:720px; float: left;}
+.v1102bottom .conten table th{height:45px; width:92px; text-align: right; padding-right: 8px; box-sizing:border-box}
+.v1102bottom .btn{width: 100px; height:36px; margin:7px; float: left;}
+
+.v1102bottom .conten table td .btn_fileOpen{ border: 1px solid #b6b6b6; padding:5px 10px; background: #fff; color: #000; vertical-align: middle; line-height: 27px; margin-left: 5px}
+.v1102bottom .conten table td .btn_fileOpen:hover{background: #f5f5f5}
+
+/*연계정보 송수신이력조회*/
+.v1103 th{width:103px;}
+.v1103 select, .v1103 input{width:207px;}
+
+/*뉴스정보 수집이력조회*/
+.v1104 th{width:140px;}
+.v1104 select, .v1104 input{width:250px;}
+
+.v1104top{width:100%; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.contenWrap .v1104top .conten{height:581px;}
+.v1104bottom{height:43px; background:#21364a; }
+.v1104bottom .conten{width:100%; text-align: center; padding: 5px; color: #f6ff00; line-height:32px; font-size:15px; box-sizing:border-box}
+
+/*기상정보 수집이력조회*/
+.v1105 th{width:140px;}
+.v1105 select, .v1105 input{width:250px;}
+
+/*시설물상태현황*/
+.v1201 th{width:140px;}
+.v1201 select, .v1201 input{width:250px;}
+
+.v1201Left{width:400px; border-right: 1px solid #7e7e7e; box-sizing:border-box;  bottom: auto; overflow: hidden;}
+.v1201Right{width:946px; bottom: auto; overflow: hidden;}
+.v1201bottom{height: 358px;}
+.contenWrap .v1201Left .conten{height:235px;}
+.contenWrap .v1201Right .conten{height:235px;}
+.v1201bottom .conten{height: 327px}
+
+.v1201Left .btn_all{color: #fff; background:#5985b2; border-left:1px solid #586a7c}
+.v1201Left .btn_all:hover{background: #6292c4;}
+
+
+/*노선현황,배차계획서,일일버스운행정보*/
+.v1202 th{width:140px;}
+.v1202 select, .v1202 input{width:250px;}
+
+.v1203 th{width:140px;}
+.v1203 select, .v1203 input{width:250px;}
+
+.v1204 th{width:86px;}
+.v1204 select, .v1204 input{width:200px;}
+
+
+
+
+
+
+
+
+
+

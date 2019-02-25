@@ -1,0 +1,137 @@
+$(document).ready(function() {
+	appendLoader("조회중..");
+	
+	//TODO chart 옵션  추가
+	Highcharts.setOptions({
+		plotOptions: {
+			column: {
+				dataLabels: {
+					enabled: true
+				}
+			}
+		}
+	});
+	
+	initGrid();
+	initEvent();
+	$("#startdt").val(new Date().toISOString().substring(0, 10));
+	$("#enddt").val(new Date().toISOString().substring(0, 10));
+});
+
+var models =[
+             {label:"시설물구분", 		name:"facilnm", 	index:"facilnm",		 	width: "70", 	align:"center", sorttype:"text", classes:"color"},
+             {label:"전원장애", 		name:"val1", 		index:"val1",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"GPS장애", 		name:"val2", 		index:"val2",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"모뎀장애", 		name:"val3", 		index:"val3",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"LAN장애", 		name:"val4", 		index:"val4",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"전광판장애", 		name:"val5", 		index:"val5",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"거치대장애", 		name:"val6", 		index:"val6",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"키패드장애", 		name:"val7", 		index:"val7",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"업데이트장애", 		name:"val8", 		index:"val8",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"회선장애", 		name:"val9", 		index:"val9",		 	width: "70", 	align:"center", sorttype:"text"},
+             {label:"기타장애", 		name:"val10", 		index:"val10",		 	width: "70", 	align:"center", sorttype:"text"},
+             ];
+
+function initGrid(){
+	makeGrid("#main_table", models, 300, "resultList", null, onComplete, null);
+
+	function onComplete(data){
+		var rowData = $("#main_table").getRowData(); 
+		var chartOpt={
+				xAxis:{categories:['전원장애',
+				                   'GPS장애',
+				                   '모뎀장애',
+				                   'LAN장애',
+				                   '전광판장애',
+				                   '거치대장애',
+				                   '키패드장애',
+				                   '업데이트장애',
+				                   '회선장애',
+				                   '기타장애']},
+				yAxis:{min:0, title:{text:""}, allowDecimals: false},
+				series:[] 
+				
+		};
+		$.each(rowData, function(index, value){
+			var dataObject={}; 
+			dataObject.name = value.facilnm;
+			dataObject.data = [];
+			dataObject.data.push(parseInt(value.val1));
+			dataObject.data.push(parseInt(value.val2));
+			dataObject.data.push(parseInt(value.val3));
+			dataObject.data.push(parseInt(value.val4));
+			dataObject.data.push(parseInt(value.val5));
+			dataObject.data.push(parseInt(value.val6));
+			dataObject.data.push(parseInt(value.val7));
+			dataObject.data.push(parseInt(value.val8));
+			dataObject.data.push(parseInt(value.val9));
+			dataObject.data.push(parseInt(value.val10));
+			chartOpt.series.push(dataObject)
+		});		
+		
+		var chart = setChart2d("main_chart", "column", chartOpt);
+		hideLoader(); 
+	}
+	
+	$(window).bind('resize',function() {
+		$("#main_table").jqGrid('setGridHeight', $(".main_chart").height()-23);
+		$("#main_table").jqGrid('setGridWidth', $(".main_chart").width());
+	}).trigger('resize');
+}
+
+function initEvent(){
+	//파일저장
+	$("#btn_excel").click(function () {
+		if( 0 < $("#main_table").getGridParam("reccount") )
+			excelDownload($(".pop_title h2").text(), "#main_table");
+		else
+			showAlert("조회된 내용이 없습니다.");
+	}); 
+	
+	//새로고침
+	$("#btn_refresh").click(function () {
+		location.reload();
+	});
+	
+	//검색
+	$("#btn_search").click(function(){
+		var params ={
+			startdt:$("#startdt").val().replace(/-/g,"")+"000000",
+			enddt:$("#enddt").val().replace(/-/g,"")+"235959"
+		};
+		showLoader();
+		reloadGrid("#main_table", "./bit/selectFailStatList.do", params, "resultList");
+	});
+}
+
+function excelDownload(title, grid_id) {
+	$("#excelDown").remove();
+	var grid = $(grid_id);
+	var form = document.createElement("FORM");
+	form.setAttribute("id", "excelDown");
+	form.action = "./stop/downloadExcelFile.do";
+	form.method = "POST"; 
+	
+	var fileName = JSON.stringify(title);
+	var param = document.createElement('INPUT');
+	var rowData = grid.jqGrid("getRowData");
+	var columnData = JSON.stringify(rowData);
+	
+	var columnLabel = JSON.stringify(grid.jqGrid('getGridParam','colNames'));
+	
+	var idData = grid.jqGrid('getGridParam', 'colModel');
+	var columnName = []; 
+	$.each(idData, function (index,value){
+		columnName.push(value.name);
+	})
+	columnName = JSON.stringify(columnName);
+	
+	param.type = 'HIDDEN'; 
+	param.name = 'json';
+	param.value = fileName + columnLabel + columnName + columnData; 
+	
+	form.appendChild(param);
+	
+	document.body.appendChild(form);
+	inquiryFileDownload("excelDown", true); 
+}

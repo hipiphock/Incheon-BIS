@@ -1,0 +1,74 @@
+package com.bis.service.impl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.bis.dao.EvaluationDAO;
+import com.bis.service.EvaluationService;
+import com.bis.vo.re.TbDmhTmspaceVO;
+import com.bis.vo.re.TbDmsRunonschedVO;
+
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS / 운행서비스평가
+ * Business Name  : 
+ * Class Name 	  : EvaluationService.java
+ * Description 	  : 
+ * Modification History 
+ * 수정일			수정자		수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.18	박주언		created new file
+ * </PRE>
+ * 
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Service("evaluationService")
+public class EvaluationServiceImpl extends EgovAbstractServiceImpl implements EvaluationService{
+	
+	@Resource(name = "evaluationDAO")
+	private EvaluationDAO evaluationDAO;
+
+	public List<TbDmhTmspaceVO> selectViolentOperHistList(TbDmhTmspaceVO vo) throws SQLException {
+		return evaluationDAO.selectViolentOperHistList(vo);
+	}
+
+	public List<TbDmsRunonschedVO> selectOperTiming_Date(TbDmsRunonschedVO vo) throws SQLException {
+		return evaluationDAO.selectOperTiming_Date(vo);
+	}
+	
+	public List<TbDmsRunonschedVO> selectOperTiming_Month(TbDmsRunonschedVO vo) throws SQLException {
+		return evaluationDAO.selectOperTiming_Month(vo);
+	}
+	
+	public List<TbDmsRunonschedVO> selectOperTiming_Route(TbDmsRunonschedVO vo) throws SQLException {
+		return evaluationDAO.selectOperTiming_Route(vo);
+	}
+	
+	public List<TbDmsRunonschedVO> selectOperTiming_RoutebyDate(TbDmsRunonschedVO vo) throws SQLException {
+		return evaluationDAO.selectOperTiming_RoutebyDate(vo);
+	}
+
+	public List<TbDmsRunonschedVO> selectOperTiming_RoutebyMonth(TbDmsRunonschedVO vo) throws SQLException {
+		return evaluationDAO.selectOperTiming_RoutebyMonth(vo);
+	}
+	
+	public List<TbDmsRunonschedVO> selectOperTiming_Comp(TbDmsRunonschedVO vo) throws SQLException {
+		return evaluationDAO.selectOperTiming_Comp(vo);
+	}
+
+	public List<TbDmsRunonschedVO> selectOperTiming_CompbyDate(TbDmsRunonschedVO vo) throws SQLException {
+		return evaluationDAO.selectOperTiming_CompbyDate(vo);
+	}
+
+	public List<TbDmsRunonschedVO> selectOperTiming_CompbyMonth(TbDmsRunonschedVO vo) throws SQLException {
+		return evaluationDAO.selectOperTiming_CompbyMonth(vo);
+	}
+}

@@ -1,0 +1,90 @@
+.nav {padding-left: 0; margin-bottom: 0; list-style: none;}
+.nav > li {position: relative; display: block;}
+.nav > li > a {
+  position: relative;
+  display: block;
+ width: 120px; padding: 9px 0; box-sizing:border-box;}
+ 
+.nav > li > a:hover,
+.nav > li > a:focus {
+  text-decoration: none;
+  background-color: #f5f5f5;
+  border-top: 1px solid #e2e2e2; width: 120px; box-sizing:border-box; padding: 8px 0 9px 0;
+}
+
+/*검색결과 탭*/
+.nav_serch {padding-left: 0; margin-bottom: 0; list-style: none; }
+.nav_serch > li {position: relative; display: block;}
+.nav_serch > li > a {
+  position: relative;
+  display: block;
+  width:118.5px; }
+
+.nav_serch > li > a:hover,
+.nav_serch > li > a:focus {
+  text-decoration: none;
+  background-color: #f5f5f5;
+  border-top: 1px solid #e2e2e2;
+}
+.nav-pills_serch > li:last-child{border-right: none;}
+.nav-pills_serch{width:100%;}
+.nav-pills_serch > li {float:left; border-right:1px solid #e2e2e2; font-size:12px; text-align:center;border-bottom: 1px solid #7e7e7e;}
+
+.nav-pills_serch a{color:#797979;}
+
+.nav-pills_serch > li.active > a,
+.nav-pills_serch > li.active > a:hover,
+.nav-pills_serch > li.active > a:focus {
+  color: #000; font-weight: bold; border-top: 1px solid #7e7e7e; border-left: 1px solid #7e7e7e; border-right: 1px solid #7e7e7e; 
+  background-color: #ebecee; border-bottom: 1px solid #ebecee}
+
+
+.mainserch_tab_con{position: absolute; top:33px; width:336px; padding:6px 12px 12px 12px; background: #ebecee; bottom:0; overflow: hidden;}
+
+
+
+
+
+
+
+.nav-pills > li:last-child{border-right: none;}
+.nav-pills{width:100%;}
+.nav-pills > li {float:left; border-right:1px solid #e2e2e2; font-size:12px; text-align:center; border-bottom: 1px solid #7e7e7e;}
+
+.nav-pills a{color:#797979;}
+
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover,
+.nav-pills > li.active > a:focus {
+  color: #000; font-weight: bold; padding: 9px 11px 9px 10px; border-top: 1px solid #7e7e7e; border-left: 1px solid #7e7e7e; border-right: 1px solid #7e7e7e; 
+  background-color: #ebecee;}
+
+
+.tab-content > .tab-pane {
+  display: none;
+}
+.tab-content > .active {
+  display: block; z-index: 999;
+}
+
+
+.panel-body{position: absolute; top:25px; bottom: 22%;}
+
+.nav:before,
+.nav:after,
+.nav_serch:before,
+.nav_serch:after,
+.panel-body:before,
+.panel-body:after,
+.modal-footer:before,
+.modal-footer:after {
+  display: table;
+  content: " ";
+}
+
+.nav:after,
+.nav_serch:after,
+.panel-body:after,
+.modal-footer:after {
+  clear: both;
+}

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="DISPATCH">
+
+	<!-- 배차관리 / 배차입력현황조회 -->
+	<select id="selectDispatchPlanList" parameterType="TbIchDayAllocPlanVO" resultType="TbIchDayAllocPlanVO">
+	SELECT  
+		FC_BUSCOMP_COMPNM(COMPID) COMPNM, 
+    	FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO, 
+    	MAX(RUNORD) MAX_RUN,
+    	MAX(ALLOCORD) ORG,
+    	COUNT(ROUTEID) TOT,
+    	ROUTEID
+	FROM
+		TB_ICH_DAYALLOCPLAN 
+	<where>
+		<if test="searchDate != null and !searchDate.equalsIgnoreCase('')">
+		#{searchDate} = TO_CHAR(RUNYMD, 'YYMMDD')
+		</if>
+		<if test="compid != null and !compid.equalsIgnoreCase('')"> 
+		AND COMPID = #{compid} 
+		</if>
+		<if test="routeid != null and !routeid.equalsIgnoreCase('')">
+		AND ROUTEID = #{routeid}
+		</if>
+	</where>
+	GROUP BY 
+    	COMPID, 
+    	ROUTEID 
+	ORDER BY
+		COMPNM, ROUTENO
+	</select>
+	
+	<!-- 배차관리 / 배차준수현황조회 and 운행정시성현황조회 -->
+	<select id="selectCompRouteList" parameterType="TbAdmRouteToComVO" resultType="TbAdmRouteToComVO">
+	--좌측 회사별노선리스트
+	SELECT 
+	    aa.ROUTEID, 
+	    aa.COMPID,                          
+	    FC_BUSROUTE_ROUTENO(aa.ROUTEID) ROUTENO,         
+	    FC_BUSCOMP_COMPNM(aa.COMPID) COMPNM               
+	FROM ADM_ROUTETOCOMP aa, 
+	     ADM_BUSCOMP bb     
+	WHERE
+		aa.COMPID = bb.COMPID
+		AND bb.USEYN = '1'
+		<if test="compid != null and !compid.equalsIgnoreCase('')">
+		AND aa.COMPID = #{compid}
+		</if>
+	ORDER BY COMPNM, ROUTENO
+	</select>
+	
+	<!-- 배차관리 / 배차준수현황조회 / 배차준수현황 -->
+	<select id="selectComplianceStatusList" parameterType="TbIchDayAllocPlanVO" resultType="TbIchDayAllocPlanVO">
+	SELECT
+    	FC_BUSROUTE_ROUTENO(165000079) ROUTENO, 
+    	FC_BUSCOMP_COMPNM(161003) COMPNM, 
+    	ALLOCORD AORD, 
+    	RUNORD RORD, 
+    	DEPHM HM  , 
+    	RUNSTDT DT , 
+    	CARNO , 
+    	DRVNM , 
+    	PGAP PG , 
+    	RGAP RG , 
+    	SGAP SG  
+	FROM TABLE( FC_ALLOCOBS_CUR(161003, 165000079,'181204')) 
+	</select>
+	
+	<!-- 배차관리 / 운행정시성현황조회 / 주요정류소출력 -->
+	<select id="selectMainStopList" parameterType="TbIcmRoutemjbstopVO" resultType="TbIcmRoutemjbstopVO">
+	SELECT 
+    	ROWSEQ, 
+    	BSTOPID,                                                                               
+    	FC_BUSSTOP_BSTOPNM(BSTOPID)||'('|| SUBSTR(FC_CODE_CDNM('DIRCD', DIRCD), 1, 1)||')' STNM   
+	FROM TB_ICM_ROUTEMJBSTOP                                                                      
+	WHERE BSTOPID = BSTOPID
+		<if test="routeid != null and !routeid.equalsIgnoreCase('')">
+		AND	ROUTEID = #{routeid}
+  		AND APP_STARTDT=(
+			SELECT MAX(APP_STARTDT)
+			FROM TB_ICM_ALLOCTMPLAN
+			WHERE ROUTEID = #{routeid}
+			<if test="app_startdt != null and !app_startdt.equalsIgnoreCase('')">
+			<![CDATA[
+			AND APP_STARTDT <= TO_DATE(app_startdt, 'YYYYMMDD')
+			]]>
+			</if>
+		)
+		</if>
+	</select>
+	
+	<!-- 배차관리 / 운행정시성현황조회 / 운행정시성현황 -->
+	<select id="selectOperRegularityList" parameterType="TbIchDayAllocPlanVO" resultType="TbIchDayAllocPlanVO">
+	SELECT 
+    	ALLOCORD,
+    	RUNORD,
+    	BUSID, 
+    	FC_BUS_CARREGNO(BUSID) CARNO,         
+    	ROUTEID, 
+    	FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO, 
+    	MAX(DECODE(ROWSEQ, 1, DEPHM, NULL)) COL1, 
+    	MAX(DECODE(ROWSEQ, 2, DEPHM, NULL)) COL2, 
+    	MAX(DECODE(ROWSEQ, 3, DEPHM, NULL)) COL3 
+	FROM ( 
+    	SELECT B.ROUTEID, 
+            B.ROWSEQ ROWSEQ, 
+            B.APP_STARTDT APP_STARTDT, 
+            B.ALLOCORD ALLOCORD, 
+            B.RUNORD RUNORD, 
+            C.BUSID BUSID, 
+            C.DRIVERID DRIVERID, 
+            CASE
+            <![CDATA[
+                WHEN B.BSTOP_DEPHMS < '0300' 
+                THEN TO_CHAR(TO_DATE(B.BSTOP_DEPHMS, 'HH24MI')+1, 'HH24:MI') 
+                ELSE TO_CHAR(TO_DATE(B.BSTOP_DEPHMS, 'HH24MI'), 'HH24:MI')
+			]]>
+            END DEPHM 
+        FROM TB_ICM_ALLOCTMPLAN B, 
+             TB_ICH_DAYALLOCPLAN C 
+        WHERE B.ROUTEID = C.ROUTEID 
+          AND B.ALLOCORD = C.ALLOCORD 
+          AND B.RUNORD = C.RUNORD 
+          AND B.ROUTEID = 165000153 
+          AND B.DOWTPCD = FC_HDAY_DOWTPCD(C.RUNYMD)
+          <![CDATA[
+          AND B.APP_STARTDT = ( 
+                                  SELECT MAX(APP_STARTDT) 
+                                  FROM TB_ICM_ALLOCTMPLAN 
+                                  WHERE ROUTEID = 165000153 
+                                    AND APP_STARTDT <= TO_DATE('20141218', 'YYYYMMDD')
+                                )
+			]]>
+          AND C.RUNYMD = TO_DATE('20141218', 'YYYYMMDD') 
+    ) 
+	GROUP BY ALLOCORD, 
+         RUNORD, 
+         ROUTEID, 
+         BUSID 
+	ORDER BY ALLOCORD, 
+         RUNORD, 
+         ROUTEID, 
+         BUSID
+	</select>
+</mapper>

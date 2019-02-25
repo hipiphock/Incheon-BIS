@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %-5p: %c - %m%n"/>
+        </Console>
+	
+		<!-- tcp 소켓 로그 -->        
+        <RollingFile name="socket" fileName="D:/logs/socket.log" filePattern="D:/logs/socket.log.%d{yyyy-MM-dd}" append="false">
+   			<PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %-5p: %c - %m%n"/><!-- 크기 미지정시 저장되지 않는 문제 확인 / 10MB 임시 적용 -->
+   			<Policies>		   
+		   		<SizeBasedTriggeringPolicy size="10MB" />
+		  	</Policies>
+  		</RollingFile>
+  		
+  		<!-- 컨트롤러 로그 -->
+        <RollingFile name="controller" fileName="D:/logs/controller.log" filePattern="D:/logs/controller.log.%d{yyyy-MM-dd}" append="false">
+   			<PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %-5p: %c - %m%n"/>
+   			<Policies>		   
+		   		<SizeBasedTriggeringPolicy size="10MB" />
+		  	</Policies>
+  		</RollingFile>
+  		
+  		<!-- 서비스 로그 -->
+  		<RollingFile name="service" fileName="D:/logs/service.log" filePattern="D:/logs/service.log.%d{yyyy-MM-dd}" append="false">
+   			<PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %-5p: %c - %m%n"/>
+   			<Policies>		   
+		   		<SizeBasedTriggeringPolicy size="10MB" />
+		  	</Policies>
+  		</RollingFile>
+  		
+  		<!-- 스케줄러 로그 -->
+  		<RollingFile name="job" fileName="D:/logs/job.log" filePattern="D:/logs/job.log.%d{yyyy-MM-dd}" append="false">
+   			<PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %-5p: %c - %m%n"/>
+   			<Policies>		   
+		   		<SizeBasedTriggeringPolicy size="10MB" />
+		  	</Policies>
+  		</RollingFile>
+  		
+  		<!-- mybatis sql 로그 -->
+  		<RollingFile name="mybatis" fileName="D:/logs/sql.log" filePattern="D:/logs/sql.log.%d{yyyy-MM-dd}" append="false">
+   			<PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] %-5p: %c - %m%n"/>
+   			<Policies>		   
+		   		<SizeBasedTriggeringPolicy size="10MB" />
+		  	</Policies>
+  		</RollingFile>
+    </Appenders>
+    <Loggers>
+    	<Root level="DEBUG">
+            <AppenderRef ref="console" />
+        </Root>
+
+        <Logger name="com.bis.controller" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="controller" />
+        </Logger>
+    	<Logger name="com.bis.job" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="job" />
+        </Logger>    
+    	<Logger name="com.bis.service" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="service" />
+        </Logger>
+    
+    	<!-- mybatis namespace 설정 -->
+    	<Logger name="BIT" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="mybatis" />
+        </Logger>
+    	<Logger name="STOP" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="mybatis" />
+        </Logger>
+    	<Logger name="BUS" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="mybatis" />
+        </Logger>
+    	<Logger name="OBE" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="mybatis" />
+        </Logger>
+    	<Logger name="ROUTE" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="mybatis" />
+        </Logger>
+    	<Logger name="SYSTEM" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="mybatis" />
+        </Logger>
+    	<Logger name="USER" level="WARN" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="mybatis" />
+        </Logger>
+    	
+        <!-- <Logger name="java.sql" level="[SQL_INFO]" additivity="false">
+            <AppenderRef ref="console" />
+            <AppenderRef ref="sql" />
+        </Logger>
+        <Logger name="egovframework" level="INFO" additivity="false">
+            <AppenderRef ref="console" />
+        </Logger>
+   		<Logger name="" level="INFO" additivity="false">
+   			<AppenderRef ref="console" />
+   		</Logger>
+   
+          log SQL with timing information, post execution
+        <Logger name="jdbc.sqltiming" level="[SQL_INFO]" additivity="false">
+            <AppenderRef ref="console" />
+        </Logger>
+        <Logger name="org.springframework" level="INFO" additivity="false">
+            <AppenderRef ref="console" />
+        </Logger> -->
+        
+    </Loggers>
+</Configuration>

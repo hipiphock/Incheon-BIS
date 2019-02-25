@@ -1,0 +1,50 @@
+####################################
+# FTP_SERVER - \uc2e0\uaddc \ube44\uce20\ub85c
+FTP_HOST1=10.1.11.161
+FTP_PORT1=21
+FTP_ID1=bit
+FTP_PW1=bit123
+
+# WIDE 
+FTP_HOST2=10.1.11.70
+FTP_PORT2=21
+FTP_ID2=BIT
+FTP_PW2=BIT1234
+
+# INCHEON
+FTP_HOST3=10.1.11.21
+FTP_PORT3=21
+FTP_ID3=administrator
+FTP_PW3=ibmsadmin
+
+# INCHEON ENLARGE
+FTP_HOST4=10.1.11.22
+FTP_PORT4=21
+FTP_ID4=administrator
+FTP_PW4=ibmsadmin
+
+# WIDE 2
+FTP_HOST5=10.1.11.60
+FTP_PORT5=21
+FTP_ID5=BIT
+FTP_PW5=BIT1234
+
+# \uc2e0\uaddc 2
+FTP_HOST6=10.1.11.163
+FTP_PORT6=21
+FTP_ID6=bit
+FTP_PW6=bit123
+
+####################################
+# RELAY_SERVER
+RELAY_HOST=10.1.11.72
+RELAY_PORT=5060
+####################################
+BIT_DIR=D:/BIT_IMG/BIT/
+CAM_DIR=D:/BIT_IMG/WEB_CAM/
+
+SCEN_IMG_DIR=D:/SCEN_DATA/IMG/
+SCEN_VIDEO_DIR=D:/SCEN_DATA/VIDEO/
+SCEN_PROMO_DIR=D:/SCEN_DATA/PROMO/
+####################################
+TEMP_FILE=D:/config.dat

@@ -1,0 +1,146 @@
+$(document).ready(function() {
+	appendLoader("조회중..");
+	initGrid();
+	initEvent();
+	ajaxCall("./comp/selectCompCateList.do",null,null,load_comp_list,null);
+	ajaxCall("./route/selectRouteCateList.do",null,null,load_route_list,null);
+});
+
+function load_comp_list(data){
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.compnm; 
+		temp.value = value.compid; 
+		$("#comp_option").append(temp);
+	});
+}
+
+function load_route_list(data) {
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.routeno;
+		temp.value = value.routeid; 
+		$("#route_option").append(temp);
+	})
+}
+
+var models = [
+              {label:"차량단말기ID", 	name:"mdtid", 		index:"mdtid",		 	width: "85", 	align:"center", sorttype:"text"},
+              {label:"노선번호", 		name:"rno", 		index:"rno",		 	width: "60", 	align:"center", sorttype:"text"},             
+              {label:"차량번호", 		name:"carregno", 	index:"carregno",	 	width: "85", 	align:"center", sorttype:"text"},
+              {label:"노선버전", 		name:"rver", 		index:"rver",		 	width: "65", 	align:"center", sorttype:"text"},
+              {label:"노선파일위치", 		name:"rloc", 		index:"rloc",		 	width: "100", 	align:"center", sorttype:"text"},
+              {label:"운영버전", 		name:"over", 		index:"over",		 	width: "65", 	align:"center", sorttype:"text"},
+              {label:"운영파일위치", 		name:"oloc", 		index:"oloc",		 	width: "100", 	align:"center", sorttype:"text"},
+              {label:"GIS버전", 		name:"nver", 		index:"nver",		 	width: "65", 	align:"center", sorttype:"text"},
+              {label:"GIS파일위치", 	name:"nloc", 		index:"nloc",		 	width: "100", 	align:"center", sorttype:"text"}        
+              ];
+function initGrid(){
+	makeMultiGrid("#main_table", models, 300, "resultList", null, onComplete, null);
+	
+	function onComplete(data) {
+		$(".sub_title").eq(0).find("h3").remove();
+		$(".sub_title").eq(0).append("<h3>차량단말기업그레이드 등록현황 <span>"+data.records+"<span>건</h3>");
+		hideLoader(); 
+	}
+	
+	$(window).bind('resize',function() {
+		$("#main_table").jqGrid('setGridHeight', $(".main_chart").height()-75);
+		$("#main_table").jqGrid('setGridWidth', $(".main_chart").width());
+	}).trigger('resize');
+	
+	$("#main_table").jqGrid('setGroupHeaders', {
+		useColSpanStyle: false,
+		groupHeaders: [
+		               {startColumnName:'mdtid', numberOfColumns:3, titleText: '기본정보'},
+		               {startColumnName:'rver', numberOfColumns:2 , titleText: '노선'},
+		               {startColumnName:'over', numberOfColumns:2 , titleText: '운영'},
+		               {startColumnName:'nver', numberOfColumns:2, titleText: 'GIS'}
+		               ]
+	});
+	
+	
+	$("#main_table").jqGrid('filterToolbar',
+    {
+					autosearch: true,
+					stringResult: true,
+					searchOnEnter: true,
+					defaultSearch: "cn"
+    });
+	setFilter("main_table", true); 
+}
+
+
+function initEvent(){
+	//파일저장
+	$("#btn_excel").click(function () {
+		if( 0 < $("#main_table").getGridParam("reccount") )
+			excelDownload($(".pop_title h2").text(), "#main_table");
+		else
+			showAlert("조회된 내용이 없습니다.");
+	}); 
+	
+	//새로고침
+	$("#btn_refresh").click(function () {
+		location.reload();
+	});
+
+	//버스회사 변경시 버스노선 변경
+	$("#comp_option").change(function(){
+		cid = $("#comp_option option:selected").val(); 
+		$("#route_option").find("option").remove(); 
+		if(cid == "") {
+			$("#route_option").append("<option value=\"\">전체</option>");
+			ajaxCall("./route/selectRouteCateList.do.do",null,null,load_route_list,null);
+		}
+		else{
+			$("#route_option").append("<option value=\"\">전체</option>");
+			ajaxCall("./route/selectRouteCateList.do",{compid:cid},null,load_route_list,null);
+		}
+	});
+	
+	//검색
+	$("#btn_search").click(function(){
+		var params = {
+				compid:$("#comp_option").val(),
+				routeid:$("#route_option").val(),
+				carregno:$("#carregno").val()
+		};
+		showLoader();
+		alert(params.routeid);
+		reloadGrid("#main_table", "./bus/selectBusTerminalUpgrade.do", params, "resultList");
+	});
+
+}
+
+function excelDownload(title, grid_id) {
+	$("#excelDown").remove();
+	var grid = $(grid_id);
+	var form = document.createElement("FORM");
+	form.setAttribute("id", "excelDown");
+	form.action = "./stop/downloadExcelFile.do";
+	form.method = "POST"; 
+	
+	var fileName = JSON.stringify(title);
+	var param = document.createElement('INPUT');
+	var rowData = grid.jqGrid("getRowData");
+	var columnData = JSON.stringify(rowData);
+	
+	var columnLabel = JSON.stringify(grid.jqGrid('getGridParam','colNames'));
+	
+	var idData = grid.jqGrid('getGridParam', 'colModel');
+	var columnName = []; 
+	$.each(idData, function (index,value){
+		columnName.push(value.name);
+	})
+	columnName = JSON.stringify(columnName);
+	
+	param.type = 'HIDDEN'; 
+	param.name = 'json';
+	param.value = fileName + columnLabel + columnName + columnData; 
+	
+	form.appendChild(param);
+	
+	document.body.appendChild(form);
+	inquiryFileDownload("excelDown", true); 
+}

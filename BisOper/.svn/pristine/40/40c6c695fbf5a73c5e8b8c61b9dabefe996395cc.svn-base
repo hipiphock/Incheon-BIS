@@ -1,0 +1,748 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BUS">
+    
+    <!-- v108 부당운행조회 - 우측 부당운행검색 테이블 -->
+   	<select id="selectViolRunList" parameterType="TbBmhRunevtcollVO" resultType="TbBmhRunevtcollVO">
+	    SELECT 
+	 	    SPC.EVT_OCCURDT DT, 
+		    BUS.CARREGNO CNO, 
+		   	POSX, POSY, 
+		    LINKID, 
+		    FC_BUSROUTE_ROUTENO(SPC.ROUTEID) RNO, 
+		    FC_BUS_COMPNM(SPC.BUSID) COMPNM, 
+		    FC_CODE_CDNM('RUNVIOLTPCD', 
+		    SPC.RUNVIOLTPCD) RT, 
+		    DECODE( 
+		             SPC.RUNVIOLTPCD,           
+		             '11',   FC_NODE_NODENM(SPC.NODEID), 
+		             '13',   FC_NODE_NODENM(SPC.NODEID),
+		                     DECODE( 
+		                             SUBSTR(LINKNM, 1, INSTR(LINKNM, '~')-1),  
+		                             '........',       TO_CHAR(START_NODEID), 
+		                             '....',           TO_CHAR(START_NODEID),   
+		                             '',               TO_CHAR(START_NODEID),  
+		                                               SUBSTR(LINKNM, 1, INSTR(LINKNM, '~')-1) 
+		                           ) ||'~'
+		                             || DECODE( 
+		                                       SUBSTR(LINKNM, INSTR(LINKNM, '~')+1,LENGTH(LINKNM)),  
+		                                       '........',        TO_CHAR(END_NODEID),              
+		                                       '....',            TO_CHAR(END_NODEID),     
+		                                       '',                TO_CHAR(END_NODEID),
+		                                                          SUBSTR(LINKNM, INSTR(LINKNM, '~')+1, LENGTH(LINKNM)) 
+		                                      ) 
+		         ) LNM 
+		FROM 
+			TB_BMC_TMSPACE SPC, 
+		    TB_ADM_BUS BUS, 
+		    TB_ADM_LINK LNK 
+		WHERE 
+			SPC.BUSID = BUS.BUSID 
+		    AND SPC.LLINKID = LNK.LINKID 
+			AND SPC.EVTTPCD='25'
+			AND BUS.CARREGNO LIKE '%${carregno}%'
+			<if test="runvioltpcd != null and !runvioltpcd.equalsIgnoreCase('')">
+			AND SPC.RUNVIOLTPCD = #{runvioltpcd}
+			</if>
+   	</select>
+    
+    <!-- v108 부당운행조회 - 좌측 버스목록 테이블 -->
+   	<select id="selectBusList" parameterType="TbAdmBusVO" resultType="TbAdmBusVO">
+   	    SELECT 
+		    A.BUSID, 
+		    A.CARREGNO, 
+		    FC_CODE_CDNM('BUSSTATCD', BUSSTATCD) BUSSTATCD,       
+		    FC_CODE_CDNM('LOWPLATEYN', LOWPLATEYN) LOWPLATEYN               
+		FROM 
+			ADM_BUS A
+			<if test="routeid != null and !routeid.equalsIgnoreCase('')">  
+			,BMC_BUSRUN B
+			</if>                            
+		WHERE 
+			COMPID = #{compid} 
+			AND USEYN = '1'
+			<if test="routeid != null and !routeid.equalsIgnoreCase('')">
+			AND A.BUSID = B.BUSID
+			AND B.ROUTEID = #{routeid}
+			</if>
+			ORDER BY BUSSTATCD
+   	</select>
+    
+     <!-- v109 운행종합상황조회 - 왼쪽 테이블에서 한 row를 더블클릭시 나타나는 오른쪽 아래 테이블 -->
+   	<select id="selectBusViolList" parameterType="TbBmhRunevtcollVO" resultType="TbBmhRunevtcollVO">
+   	     SELECT 
+		    FC_CODE_CDNM('RUNVIOLTPCD', RUNVIOLTPCD) RT, 
+		    TO_CHAR(EVT_OCCURDT, 'YY/MM/DD HH24:MI:SS') DT,    
+		    DECODE( SUBSTR(LINKNM, 1, INSTR(LINKNM, '~')-1),    
+		            '........',         TO_CHAR(START_NODEID),  
+		            '....',             TO_CHAR(START_NODEID),            
+		            '',                 TO_CHAR(START_NODEID),              
+		                                SUBSTR(LINKNM, 1, INSTR(LINKNM, '~')-1) 
+		        ) ||'~'
+		          || DECODE( SUBSTR(LINKNM, INSTR(LINKNM, '~')+1, LENGTH(LINKNM)),   
+		                     '........',         TO_CHAR(END_NODEID),                 
+		                     '....',             TO_CHAR(END_NODEID),
+		                     '',                 TO_CHAR(END_NODEID),               
+		                                         SUBSTR(LINKNM, INSTR(LINKNM, '~')+1, LENGTH(LINKNM)) 
+		
+		                   )  LNM,    
+		    FC_NODE_NODENM(NODEID) NNM, 
+		    POSX, 
+		    POSY 
+		FROM 
+			TB_BMC_TMSPACE A, 
+		    TB_ADM_LINK B 
+		WHERE 
+			A.LLINKID = B.LINKID 
+		    AND EVTTPCD = 25
+		    AND BUSID = #{busid}
+   	</select>
+	
+   	<!-- 전산장비 기초정보관리 - 차고지명 카테고리 정보  (v0603) -->
+	<select id="selectGarageCateList" resultType="TbAdmGarageVO">
+		SELECT 
+			GARAGEID, 
+			GARAGENM 
+		From 
+			TB_ADM_GARAGE 
+			ORDER BY GARAGENM ASC
+	</select>
+	
+		<!-- 전산장비 기초정보관리 - 신규등록 시  쓸  garageapid  (v0603) -->
+	<select id="selectMaxGarageapid" resultType="TbAdmGarageVO">
+		Select 
+			LPAD(TO_CHAR(NVL(MAX(GARAGEAPID),0)+1),5,'0') maxseq 
+		From 
+			TB_OMM_GARAGEAP
+	</select>
+	
+	<!-- 차량단말기 상태정보조회/제어 - 차량단말기상태검색 (v0604)  -->
+   	<select id="selectMdtStat" parameterType="TbBmcMdtstatVO" resultType="TbBmcMdtstatVO">
+   	     SELECT 
+			    LPAD(C.MDTID, 5, '0') MDTID, 
+			    DECODE(A.STATREQYN, '0', '미요청', '1', '요청', '') STATREQYN, 
+			    TO_CHAR(A.EVT_OCCURDT, 'YYYY/MM/DD HH24:MI:SS') EVT_OCCURDT,
+			    A.BUSID BUSID, 
+			    FC_BUS_COMPNM(A.BUSID) COMPNM, 
+			    FC_BUS_CARREGNO(A.BUSID) CARREGNO,
+			    A.ROUTEID ROUTEID,
+			    FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO, 
+			    DECODE(A.GPS_STATYN,      '0', '비정상', '1', '정상', '') GPS_STATYN, 
+			    DECODE(A.SUB_TERM_STATYN, '0', '비정상', '1', '정상', '') SUB_TERM_STATYN,
+			    DECODE(A.MEM_STATYN,      '0', '비정상', '1', '정상', '') MEM_STATYN, 
+			    DECODE(A.WMODEM_STATYN,   '0', '비정상', '1', '정상', '') WMODEM_STATYN,
+			    DECODE(A.GPS_DATA_STATYN, '0', '비정상', '1', '정상', '') GPS_DATA_STATYN, 
+			    DECODE(A.BSTART_STATYN, '0', 'Off', '1', 'On', '') BSTART_STATYN, 
+			    DECODE(A.WLAN_STATYN,   '0', 'Off', '1', 'On', '') WLAN_STATYN, 
+			    DECODE(A.AP_CONN_ONOFF, '0', 'Off', '1', 'On', '') AP_CONN_ONOFF, 
+			    A.FIXINT_CYCL FIXINT_CYCL,
+			    A.WLAN_CONNDT, 
+			    DECODE(A.GPS_FIXQUALITYCD, '0', 'Invalid', '1', 'GPS fix', '2', 'DGPS fix') GPS_FIXQUALITY, 
+			    A.POSX POSX,
+			    A.POSY POSY,
+			    A.HEADING HEADING, 
+			    A.RUNSPD RUNSPD,
+			    A.HDOP HDOP, 
+			    A.ALTITUDE ALTITUDE,
+			    A.GPS_SATELCNT GPS_SATELCNT, 
+			    A.FLASH_USAGE FLASH_USAGE, 
+			    A.SDRAM_USAGE SDRAM_USAGE,
+			    DECODE(A.FDOOR_CLOSEYN, '0', '....', '1', '....', '') FDOOR_CLOSEYN, -- -- '....' 한글깨짐 확인필요(열림 닫힘?)  
+			    DECODE(A.BDOOR_CLOSEYN, '0', '....', '1', '....', '') BDOOR_CLOSEYN,
+			    A.WMODEM_SENSTVTY WMODEM_SENSTVTY, 
+			    C.MODEM_SERIALNO MODEM_SERIALNO 
+			FROM 
+				 TB_BMC_MDTSTAT A, 
+			     TB_ADM_BUS B, 
+			     TB_OMM_MDT C, 
+			     TB_OMM_FACIL D 
+			WHERE 
+				A.BUSID = B.BUSID
+			  AND A.MDTID = C.MDTID 
+			  AND C.FACILID = D.FACILID
+			  AND C.BUSID IS NOT NULL 
+			  AND D.USEYN = '1'
+			  <if test="carregno != null and !carregno.equalsIgnoreCase('')">
+			  AND b.carregno LIKE '%${carregno}%'
+			  </if>
+			  <if test="mdtid != null and !mdtid.equalsIgnoreCase('')">
+			  AND a.mdtid LIKE '%${mdtid}%'
+			  </if>
+			  <if test="compid != null and !compid.equalsIgnoreCase('')"> 
+			  AND b.compid = #{compid}
+			  </if>
+			  <if test="routeid != null and !routeid.equalsIgnoreCase('')">
+			  AND a.routeid = #{routeid}
+			  </if>
+			  <if test="statyn != null and !statyn.equalsIgnoreCase('')">
+			  AND (
+			             a.gps_statyn = #{statyn}
+			         AND a.sub_term_statyn = #{statyn}
+			         AND a.mem_statyn = #{statyn}
+			       )
+			  </if>
+			ORDER BY ROUTENO, MDTID
+   	</select>
+   	
+   	<!-- 무선업그레이드관리(lg) - 무선 업그레이드 차량 검색 (v0701, v0702)  -->
+   	<select id="selectWirelessUpgradeBusList" parameterType="TbAdmBusVO" resultType="TbAdmBusVO">
+   	     SELECT
+		    B.BUSID BUSID, 
+		    C.REGDT REGIST_DT,
+		    D.COMPID COMPID,
+		    FC_BUSCOMP_COMPNM(D.COMPID) COMPNM, 
+		    F.ROUTEID ROUTEID,
+		    FC_BUSROUTE_ROUTENO(F.ROUTEID) RNO,
+		    D.CARREGNO CARREGNO,
+		    LPAD(B.MDTID, 5, '0')  MDTID,
+		    RUN_ROUTE_FILEVER RVER,
+		    RUN_ROUTE_FILELOC RLOC,
+		    OPER_PGM_FILEVER OVER, 
+		    OPER_PGM_FILELOC OLOC,
+		    GIS_NODE_FILEVER NVER,
+		    GIS_NODE_FILELOC NLOC
+		FROM TB_OMM_MDT B, 
+		     TB_OMC_MDTFILEREG C,
+		     TB_ADM_BUS D, 
+		     TB_OMM_FACIL E, 
+		     (
+		        SELECT ROUTEID,BUSID
+		        FROM 
+		           (  
+		             SELECT 
+		                ROW_NUMBER()OVER(PARTITION BY BUSID ORDER BY BUSID, 
+		                MAX(APP_STARTDT) DESC) CNT,
+		                ROUTEID, 
+		                BUSID , 
+		                MAX(APP_STARTDT) DT
+		             FROM TB_ICM_BUSTOROUTE  
+		             GROUP BY ROUTEID,BUSID 
+		           ) WHERE CNT = 1 
+		     ) F 
+		WHERE B.MDTID = C.MDTID(+)
+		  <choose>
+		  	<when test="detail != null and detail.equalsIgnoreCase('1')">
+		 	AND B.MDTID NOT IN ( SELECT MDTID FROM TB_OMM_MDT WHERE DETAIL LIKE '로드%' )
+		 	</when>
+		 	<when test="detail != null and detail.equalsIgnoreCase('2')">
+		 	AND B.DETAIL LIKE '로드%'
+		 	</when> 
+		  </choose>
+		  AND B.BUSID = D.BUSID(+) 
+		  AND B.FACILID = E.FACILID 
+		  AND E.USEYN = '1' 
+		  <if test="carregno != null and !carregno.equalsIgnoreCase('')">
+		  AND D.CARREGNO LIKE '%${carregno}%'
+		  </if>
+		  <if test="routeid != null and !routeid.equalsIgnoreCase('')">
+	      AND F.ROUTEID = #{routeid} 
+	      </if>
+		  <if test="compid != null and !compid.equalsIgnoreCase('')">
+		  AND D.COMPID = #{compid} 
+		  </if>
+		  AND D.BUSID = F.BUSID ORDER BY COMPID, ROUTEID, BUSID, MDTID
+   	</select>
+   	
+   	<!-- 유선업그레이드관리 - 차량단말기업그레이드 등록현황 리스트 (v0703)  -->
+   	<select id="selectBusTerminalUpgrade" parameterType="TbAdmBusVO" resultType="TbAdmBusVO">
+   	     SELECT 
+		    C.REGDT DT,
+		    FC_BUS_COMPID(B.BUSID) COMPID,
+		    FC_BUS_COMPNM(B.BUSID) COMPNM,
+		    C.ROUTEID ROUTEID, 
+		    FC_BUSROUTE_ROUTENO(C.ROUTEID) RNO,
+		    B.BUSID BUSID,
+		    FC_BUS_CARREGNO(B.BUSID) CARREGNO,
+		    LPAD(B.MDTID, 5, '0') MDTID, 
+		    FC_MDT_FACILID(B.MDTID) FID,
+		    RUN_ROUTE_FILEVER RVER,
+		    RUN_ROUTE_FILELOC RLOC, 
+		    OPER_PGM_FILEVER OVER, 
+		    OPER_PGM_FILELOC OLOC,
+		    GIS_NODE_FILEVER NVER, 
+		    GIS_NODE_FILELOC NLOC
+		FROM TB_OMM_MDT B,
+		     TB_OMC_MDTFILEREG C, 
+		     TB_OMM_FACIL E, 
+		     TB_ADM_BUS F, 
+		     (
+		        SELECT
+		            ROUTEID,
+		            BUSID
+		        FROM 
+		            ( 
+		                SELECT 
+		                    ROW_NUMBER()OVER(PARTITION BY BUSID ORDER BY BUSID, 
+		                    MAX(APP_STARTDT) DESC) CNT, 
+		                    ROUTEID, 
+		                    BUSID ,
+		                    MAX(APP_STARTDT) DT  
+		                    FROM TB_ICM_BUSTOROUTE 
+		                    GROUP BY ROUTEID,BUSID  
+		            ) WHERE CNT = 1
+		    ) G 
+		WHERE B.MDTID=C.MDTID(+)
+		  AND B.BUSID = F.BUSID
+		  AND B.FACILID = E.FACILID 
+		  AND F.BUSID = G.BUSID 
+		  AND E.USEYN = '1' 
+		  AND F.USEYN = '1'  
+		  <if test="compid != null and !compid.equalsIgnoreCase('')">
+		  AND FC_BUS_COMPID(F.BUSID) = #{compid} 
+		  </if>
+		  <if test="routeid != null and !routeid.equalsIgnoreCase('')">
+		  AND G.ROUTEID = #{routeid}
+		  </if>
+		  <if test="carregno != null and !carregno.equalsIgnoreCase('')">
+		  AND FC_BUS_CARREGNO(F.BUSID) LIKE '%${carregno}%'
+		  </if>
+		ORDER BY CARREGNO
+   	</select>
+   	
+   	<!-- 업그레이드현황조회 - 무선업그레이드 차량검색 (v0704)  -->
+   	<select id="selectWirelessUpgrade" parameterType="TbAdmBusVO" resultType="TbAdmBusVO">
+   	      SELECT 
+			    B.MDTID MDTID,
+			    B.BUSID BUSID,
+			    FC_BUS_CARREGNO(B.BUSID) CARREGNO,    
+			    FC_BUS_COMPNM(B.BUSID) COMPNM,  
+			    C.REGDT,
+			    D.KERNEL_VER KERNEL_VER,
+			    D.MODEM_FW_VER MODEM_FW_VER,
+			    LPAD(C.RUN_ROUTE_FILEVER, 10, '0')||Chr(13)||LPAD(D.RUN_ROUTE_FILEVER, 10, '0') RVER,
+			    LPAD(C.OPER_PGM_FILEVER, 10, '0')||Chr(13)||LPAD(D.OPER_PGM_FILEVER, 10, '0') OVER,			 
+			    LPAD(C.GIS_LINK_FILEVER, 10, '0')||Chr(13)||LPAD(D.GIS_LINK_FILEVER, 10, '0') LVER,
+			    LPAD(C.GIS_NODE_FILEVER, 10, '0')||Chr(13)||LPAD(D.GIS_NODE_FILEVER, 10, '0') NVER,  
+			    LPAD(C.GIS_BSTOP_FILEVER, 10, '0')||Chr(13)||LPAD(D.GIS_BSTOP_FILEVER, 10, '0') SVER,
+			    TO_CHAR(C.REGDT,'YYYY/MM/DD HH24:MI:SS') DT1, 
+			    TO_CHAR(D.UPD_OCCURDT,'YYYY/MM/DD HH24:MI:SS') DT2, 
+			    D.UPD_OCCURDT,      
+			    D.UPDOPERCD, 
+			    E.ROUTEID ROUTEID,  
+			    FC_BUSROUTE_ROUTENO(E.ROUTEID) ROUTENO 
+		  FROM TB_OMM_FACIL A, 
+			     TB_OMM_MDT B, 
+			     TB_OMC_MDTFILEREG C, 
+			     TB_OMC_MDTUPD D, 
+			     (
+			        SELECT 
+			            ROUTEID,
+			            BUSID 
+			        FROM 
+			            ( 
+			                SELECT
+			                    ROW_NUMBER()OVER(PARTITION BY BUSID ORDER BY BUSID, MAX(APP_STARTDT) DESC) CNT, 
+			                    ROUTEID, 
+			                    BUSID , 
+			                    MAX(APP_STARTDT) DT  
+			                FROM TB_ICM_BUSTOROUTE
+			                GROUP BY ROUTEID,BUSID  
+			            ) WHERE CNT = 1 
+			    ) E , 
+			    TB_ADM_BUS F 
+			WHERE A.FACILID = B.FACILID  
+			  AND B.MDTID = C.MDTID 
+			  AND C.MDTID = D.MDTID
+			  AND B.BUSID = E.BUSID
+			  AND B.BUSID = F.BUSID 
+			  AND A.USEYN = '1' 
+			  AND D.UPDOPERCD = '1'
+
+			  <if test="compid != null and !compid.equalsIgnoreCase('')">
+			  AND F.COMPID = #{compid} 
+			  </if>
+			  <if test="routeid != null and !routeid.equalsIgnoreCase('')">
+			  AND E.ROUTEID = #{routeid}
+			  </if>
+			  <if test="carregno != null and !carregno.equalsIgnoreCase('')">
+			  AND F.CARREGNO LIKE '%${carregno}%' 
+			  </if>
+			  <choose>
+			    <when test="searchWord != null and searchWord.equalsIgnoreCase('1')">
+		 		AND C.RUN_ROUTE_FILEVER >= #{ver}  
+		 		</when>
+		  		<when test="searchWord != null and searchWord.equalsIgnoreCase('2')">
+		 		AND C.OPER_PGM_FILEVER >= #{ver}  
+		 		</when>
+		 		<when test="searchWord != null and searchWord.equalsIgnoreCase('3')">
+		 		AND C.GIS_LINK_FILEVER >= #{ver}
+		 		</when>
+		 		<when test="searchWord != null and searchWord.equalsIgnoreCase('4')">
+		 		AND C.GIS_NODE_FILEVER >= #{ver}
+		 		</when> 
+		 		<when test="searchWord != null and searchWord.equalsIgnoreCase('5')">
+		 		AND C.GIS_BSTOP_FILEVER >= #{ver}
+		 		</when>  
+		 		<when test="searchWord != null and searchWord.equalsIgnoreCase('10')">
+		 		AND D.RUN_ROUTE_FILEVER >= #{ver}
+		 		</when>  
+		 		<when test="searchWord != null and searchWord.equalsIgnoreCase('20')">
+		 		AND D.OPER_PGM_FILEVER >= #{ver}
+		 		</when>  
+		 		<when test="searchWord != null and searchWord.equalsIgnoreCase('30')">
+		 		AND D.GIS_LINK_FILEVER >= #{ver}
+		 		</when>  
+		 		<when test="searchWord != null and searchWord.equalsIgnoreCase('40')">
+		 		AND D.GIS_NODE_FILEVER  >= #{ver}
+		 		</when>  
+		 		<when test="searchWord != null and searchWord.equalsIgnoreCase('50')">
+		 		AND D.GIS_BSTOP_FILEVER >= #{ver}
+		 		</when>  
+		 	  </choose>
+			  <choose>
+		  		<when test="detail != null and detail.equalsIgnoreCase('10')">
+		 		AND B.FACILID NOT IN (SELECT FACILID FROM TB_OMM_MDT WHERE DETAIL LIKE '로드%' )
+		 		</when>
+		 		<when test="detail != null and detail.equalsIgnoreCase('20')">
+		 		AND B.DETAIL LIKE '로드%'
+		 		</when> 
+		 	  </choose>
+			  
+   	</select>
+   	
+	<!-- 버스 운행이력 조회 - 검색 -->
+	<select id="selectOperationHisList" parameterType="TbBmhRunevtcollVO" resultType="TbBmhRunevtcollVO">
+		<!-- TB_BMH_RUNEVTCOLL 기준 작업 / 유사 테이블 TB_BMC_TMSPACE 존재
+				기존 쿼리는 cycle(정기운행기록), event(특정사건기록)  테이블을 Union All 하여 적용하던 방식 / 현재는 한 테이블만 이용 중
+				TODO 추후 테이블 역할 파악하여 쿼리 수정 필요할 수 있음 -->
+		SELECT
+		    BUSID,
+		    EVT_OCCURDT, 
+		    COLLECT_TYPE,
+		    POSX LAT, 
+		    POSY LNG, 
+		    HEADING, 
+		    RUNSPD, 
+		    NODEID,
+		    ROUTEID, 
+		    PATHSEQ,
+		    CARREGNO,
+		    NODENM,
+		    ROUTENO,
+		    EVENT_TYPE_NAME,
+		    CENTER_COLLDT
+		FROM
+		    (SELECT 
+		        BUSID,
+		        TO_CHAR(CENTER_COLLDT, 'YYYY-MM-DD HH24:MI:SS') CENTER_COLLDT,
+		        'E' AS COLLECT_TYPE,
+		        POSX, POSY, HEADING, 
+		        NVL(CODETAB.CDNM, '-') AS EVENT_TYPE_NAME,
+		        RUNSPD, NODEID, ROUTEID, PATHSEQ,
+		        (SELECT NODENM FROM TB_ADM_NODE WHERE NODEID = EH.NODEID) NODENM, 
+		        (SELECT ROUTENO FROM TB_ADM_BUSROUTE WHERE ROUTEID = EH.ROUTEID) ROUTENO, 
+		        (SELECT CARREGNO FROM TB_ADM_BUS WHERE BUSID = EH.BUSID) CARREGNO,
+		        TO_CHAR(EVT_OCCURDT, 'YYYY-MM-DD HH24:MI:SS') EVT_OCCURDT 
+		    FROM
+		        TB_BMH_RUNEVTCOLL EH,
+		        (SELECT
+		            TRIM(CD) CD, CDNM
+		        FROM
+		            TB_OMM_CODE
+		        WHERE
+		            CDCATEGID = 'EVTTPCD') CODETAB
+		    WHERE
+		        1=1
+		        AND EH.EVTTPCD = CODETAB.CD(+)		       
+				<if test="routeid != null and !routeid.equalsIgnoreCase('')"><!-- 지정 노선이 있을경우 --> 
+		  		AND EH.ROUTEID = #{routeid}
+		   		</if>
+		    	<if test="busid != null and !busid.equalsIgnoreCase('')"><!-- 지정 버스가 잇을경우 -->                                
+				AND EH.BUSID = #{busid}
+		    	</if>    	
+		    	AND EH.EVTTPCD != 24
+		    	AND EH.EVTTPCD != 25
+		        AND CENTER_COLLDT BETWEEN TO_TIMESTAMP(#{start_date_time}, 'YYYYMMDDHH24MISSFF') AND TO_TIMESTAMP(#{end_date_time}, 'YYYYMMDDHH24MISSFF'))
+		<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		WHERE
+	    	(CARREGNO LIKE '%'||#{searchWord}||'%'
+	    	OR ROUTENO LIKE '%'||#{searchWord}||'%')
+    	</if>
+	</select>	
+	
+
+		
+	<!-- 버스 돌발 이력/통계 -->	
+	<select id="selectBusIncidentHisList" parameterType="TbBmhRunevtcollVO" resultType="TbBmhRunevtcollVO">
+		SELECT
+		    BH.*,
+		    BUS.CARREGNO,
+		    CODETAB.CDNM CODE_EXPLAIN,
+		    CP.COMPNM,
+		    BR.ROUTENO,
+		    BN.NODENM,
+		    TO_CHAR(BH.CENTER_COLLDT,'YYYY-MM-DD HH24:MI:SS') DT
+		FROM
+		    TB_BMH_RUNEVTCOLL BH,
+		    TB_ADM_BUS BUS,
+		    (SELECT  
+		        CDCATEGID, 
+		        TRIM (CD) CD, 
+		        CDNM
+		    FROM   
+		        TB_OMM_CODE
+		    WHERE
+		        CDCATEGID = 'INCIDTPCD') CODETAB,
+	        TB_ADM_BUSCOMP CP,
+	        TB_ADM_BUSROUTE BR, TB_ADM_NODE BN
+		WHERE       
+		    BH.BUSID = BUS.BUSID(+)
+		    AND BH.CENTER_COLLDT <![CDATA[>=]]> TO_DATE(#{start_date_time}, 'YYYYMMDDHH24MISS')
+		    AND BH.CENTER_COLLDT <![CDATA[<=]]> TO_DATE(#{end_date_time}, 'YYYYMMDDHH24MISS')
+		    AND EVTTPCD = 24 <!-- 돌발 이벤트 -->
+		    AND BH.INCIDTPCD = CODETAB.CD(+)
+		    AND BUS.COMPID = CP.COMPID(+)
+		    AND BR.ROUTEID = BH.ROUTEID
+		    AND BN.NODEID = BH.NODEID(+)
+		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		    AND (BUS.CARREGNO LIKE '%'||#{searchWord}||'%' OR BH.ROUTEID LIKE '%'||#{searchWord}||'%')
+		    </if>
+		    ORDER BY CENTER_COLLDT
+	</select>	
+	
+	<!-- 버스 위반 이력/통계 -->
+	<select id="selectBusViolationHisList" parameterType="TbBmhRunevtcollVO" resultType="TbBmhRunevtcollVO">
+     	SELECT
+	     	BH.*,
+	     	BUS.CARREGNO,
+	     	CODETAB1.CDNM CODE_EXPLAIN,
+	     	CP.COMPNM,
+		    BR.ROUTENO,
+		    BN.NODENM,
+            CODETAB2.CDNM NODE_TYPE_NAME
+     	FROM
+     		TB_BMH_RUNEVTCOLL BH,
+     		TB_ADM_BUS BUS, 
+            (SELECT CDCATEGID, TRIM (CD) CD, CDNM
+		    FROM TB_OMM_CODE
+		    WHERE CDCATEGID = 'RUNVIOLTPCD') CODETAB1,
+            (SELECT CDCATEGID, TRIM (CD) CD, CDNM
+		    FROM TB_OMM_CODE
+		    WHERE CDCATEGID = 'NODEGBCD') CODETAB2,
+         	TB_ADM_BUSCOMP CP,
+         	TB_ADM_BUSROUTE BR, 
+            TB_ADM_NODE BN
+     	WHERE 
+        	BH.BUSID = BUS.BUSID(+)    
+    		<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+        	AND BH.BUSID = #{searchWord}
+    		</if>
+    		AND BH.CENTER_COLLDT BETWEEN TO_DATE(#{start_date_time}, 'YYYYMMDDHH24MISS') AND TO_DATE(#{end_date_time}, 'YYYYMMDDHH24MISS')
+            AND EVTTPCD = 25 <!-- 위반 이벤트 -->
+       		AND BH.RUNVIOLTPCD = CODETAB1.CD(+)
+            AND BN.NODEGBCD = CODETAB2.CD(+)
+     		AND BUS.COMPID = CP.COMPID(+)
+      		AND BR.ROUTEID = BH.ROUTEID 
+    	  	AND BN.NODEID = BH.NODEID(+) 
+    		ORDER BY CENTER_COLLDT
+	</select>	
+	
+	<!-- 실시간 버스 돌발 조회 -->
+	<select id="selectBusInciList" resultType="TbBmhRunevtcollVO">
+	<!-- 	SELECT 
+			BH.*, 
+			TO_CHAR(BH.CENTER_COLLDT,'YYYY-MM-DD HH24:MI:SS') AS REG_DT, 
+			CODETAB.CDNM AS BIC_TYPE_NAME, 
+			RT.ROUTENO, 
+			BN.NODENM, 
+			BUS.CARREGNO
+		FROM 
+    		TB_BMH_RUNEVTCOLL BH,
+    		TB_ADM_BUSROUTE RT, TB_ADM_NODE BN, TB_ADM_BUS BUS,
+    		(SELECT * FROM TB_OMM_CODE WHERE CDCATEGID = 'INCIDTPCD' ORDER BY CD) CODETAB
+		WHERE
+	   		BH.CENTER_COLLDT >= TO_CHAR(SYSDATE - 3/24, 'YYYYMMDDHH24MISS') 8시간 이내의 돌발만 조회 -->
+	<!--	AND EVTTPCD = 24  돌발 이벤트 -->    <!-- 
+    		AND BH.INCIDTPCD = CODETAB.CD(+)
+    		AND BH.ROUTEID = RT.ROUTEID
+    		AND BH.NODEID = BN.NODEID(+) 기존 / AND BI.ST_NODE_ID = BN.NODE_ID(+) / 시작 노드 정보 없음 -->
+    <!-- 	AND BH.BUSID = BUS.BUSID(+) -->
+    
+    	SELECT 
+		    TO_CHAR(EVT_OCCURDT,'YYYY-MM-DD HH24:MI:SS') DT,            
+		    FC_CODE_CDNM('INCIDTPCD', INCIDTPCD) INCIDTY,               
+		    INCIDTPCD, FC_BUS_CARREGNO(BUSID) CARNO, 
+		    BUSID,             
+		    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO, 
+		    ROUTEID, 
+		    MDTID,   
+		    POSX, 
+		    POSY
+		FROM TB_BMC_BUSRUN                                         
+		WHERE  INCID_ALARMYN = 1
+				AND INCIDTPCD > 0
+			ORDER BY DT
+			
+			
+	</select>
+	
+	<!-- 버스 카테고리 정보 조회 -->
+	<select id="selectBuscompCateList" resultType="TbAdmBuscompVO">
+		SELECT COMPID, COMPNM From TB_ADM_BUSCOMP Where USEYN='1' ORDER BY COMPNM ASC
+	</select>
+	
+	
+	<!-- 버스회사 검색 정보 -->
+	<select id="selectCompInfoList" parameterType="TbAdmBuscompVO" resultType="TbAdmBuscompVO">
+		SELECT 
+		    COMPID, 
+		    COMPNM, 
+		    GOVERNORNM, 
+		    CORPREGNO, 
+		    ADDR, 
+		    TELNO, 
+		    FAXNO,         
+		    RUN_ROUTECNT, 
+		    LIC_BUSCNT, 
+		    RSV_BUSCNT, 
+		    DESCR, 
+		    RESPON_USERID,        
+		    TO_CHAR(APP_STARTDT, 'YYYY/MM/DD HH24:MI:SS') SDT,                 
+		    TO_CHAR(APP_ENDDT, 'YYYY/MM/DD HH24:MI:SS') EDT,                   
+		    FC_CODE_CDNM('USEYN', USEYN) USEYN,                               
+		    FC_COMPBUS_COUNT(COMPID, '1') RUN_BUS,                               
+		    FC_COMPBUS_COUNT(COMPID, '2') RES_BUS,                              
+		    TO_CHAR(UPDDT, 'YYYY/MM/DD HH24:MI:SS') CDT, 
+		    UPD_USERID,           
+		    NVL(ADMIN_CNT, 0) ADMIN_CNT, 
+		    NVL(EQUIP_CNT, 0) EQUIP_CNT,          
+		    NVL(FC_BUSDRIVER_COUNT(COMPID), 0) DRIVER_CNT                
+		FROM TB_ADM_BUSCOMP                                                
+		WHERE USEYN ='1'
+		<if test="compid != null and !compid.equalsIgnoreCase('')">                                         
+		  AND COMPID = #{compid} 
+		</if> 
+		ORDER By COMPNM
+	</select>
+	
+	<!-- 버스 차고지 검색 정보 -->
+	<select id="selectGarageInfoList" parameterType="TbAdmGarageVO" resultType="TbAdmGarageVO">
+		SELECT 
+		    GARAGENM, 
+		    ADDR, 
+		    TELNO, 
+		    LEGAL_DIM, 
+		    OWN_DIM,                     
+		    FC_CODE_CDNM('GARAGETPCD', GARAGETPCD) GARAGETPCD,             
+		    FC_CODE_CDNM('OWNTPCD', OWNTPCD) OWNTPCD,                  
+		    TO_CHAR(APP_STARTDT, 'YYYY/MM/DD HH24:MI:SS') SDT,         
+		    TO_CHAR(APP_ENDDT, 'YYYY/MM/DD HH24:MI:SS') EDT,            
+		    FC_CODE_CDNM('USEYN', USEYN) USEYN, NVL(POSX,0) POSX,     
+		    NVL(POSY, 0) POSY,                                      
+		    TO_CHAR(UPDDT, 'YYYY/MM/DD HH24:MI:SS') CDT, UPD_USERID,      
+		    DECODE(CSTATIONYN, '1', '있음', '없음') CSTATIONYN,         
+		    DECODE(FSTATIONYN, '1', '없음', '있음') FSTATIONYN,           
+		    DECODE(SSTATIONYN, '1', '있음', '없음') SSTATIONYN      
+		FROM TB_ADM_GARAGE                                         
+		<if test="compid != null and !compid.equalsIgnoreCase('')">                                         
+		WHERE COMPID = #{compid} 
+		</if>          
+		ORDER By GARAGENM          
+	</select>
+	
+
+	<!-- 차량 기초정보 검색 리스트 -->
+	<select id="selectBusBasicInfoList" parameterType="TbAdmBusrouteVO" resultType="TbAdmBusrouteVO">
+		SELECT 
+		    A.BUSID BUSID, 
+		    FC_BUSCOMP_COMPNM(COMPID) COMPNM, 
+		    CARREGNO,           
+		    FC_CODE_CDNM('BUSTPCD', BUSTPCD) BUSTPCD,             
+		    FC_CODE_CDNM('SCRAPTPCD', SCRAPTPCD) SCRAPTPCD,      
+		    FC_CODE_CDNM('TREATYN', TREATYN) TREATYN,         
+		    FC_CODE_CDNM('LOWPLATEYN', LOWPLATEYN) LOWPLATEYN,      
+		    FC_BUSROUTE_ROUTENO(B.ROUTEID) ROUTENO,                    
+		    VEHCAPA,
+		    ADMINNM,
+		    DESCR, 
+		    FC_CODE_CDNM('BUSSTATCD', BUSSTATCD) BUSSTATCD,  
+		    FC_CODE_CDNM('FUELTPCD', FUELTPCD) FUELTPCD,        
+		    MANUFNM, 
+		    MANUFYY,
+		    BODYNO, 
+		    FRMNM, 
+		    ROWSEQ,              
+		    TO_CHAR(REGYMD, 'YYYY-MM-DD') REGYMD, 
+		    TO_CHAR(A.APP_STARTDT, 'YYYY-MM-DD HH24:MI:SS') APP_STARTDT,      
+		    TO_CHAR(A.APP_ENDDT, 'YYYY-MM-DD HH24:MI:SS') APP_ENDDT,     
+		    FC_CODE_CDNM('USEYN', USEYN) USEYN,                
+		    TO_CHAR(UPDDT, 'YYYY-MM-DD HH24:MI:SS') UPDDT,
+		    A.UPD_USERID UPD_USERID      
+		FROM TB_ADM_BUS A,             
+		    (
+		        SELECT 
+		            ROUTEID,
+		            BUSID 
+		        FROM 
+		            (  
+		                SELECT 
+		                    ROW_NUMBER()OVER(PARTITION BY BUSID ORDER BY BUSID, MAX(APP_STARTDT) DESC) CNT, 
+		                    ROUTEID, BUSID ,
+		                    MAX(APP_STARTDT) DT                                           
+		                FROM TB_ICM_BUSTOROUTE  
+		                GROUP BY ROUTEID,BUSID 
+		            ) 
+		        WHERE CNT = 1 
+		    ) B                      
+		WHERE A.BUSID = B.BUSID(+)                                                      
+		  AND A.USEYN = '1'
+		<if test="compid != null and !compid.equalsIgnoreCase('')">
+		  AND A.COMPID = #{compid} 
+		</if>                                                         
+		<if test="routeid != null and !routeid.equalsIgnoreCase('')">
+		  AND B.ROUTEID = #{routeid} 
+		</if>
+		<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		  AND CARREGNO LIKE '%'||#{searchWord}||'%' 
+		</if>
+		<if test="scraptpcd != null and !scraptpcd.equalsIgnoreCase('')">
+		  AND A.SCRAPTPCD = #{scraptpcd} 
+		</if>
+		<if test="treatyn != null and !treatyn.equalsIgnoreCase('')">
+		  AND A.TREATYN = #{treatyn} 
+		</if>  
+		ORDER BY COMPNM, A.BUSID
+	</select>
+	
+	<!-- 처리여부 변경 -->
+	<update id="updateBusTreatyn" parameterType="TbAdmBusrouteVO">
+		UPDATE 
+		    TB_ADM_BUS 
+		SET TREATYN  = #{treatyn},                           
+		    UPDDT = SYSDATE,                       
+		    UPD_USERID = #{upd_userid}     
+		WHERE BUSID = #{busid}
+	</update>
+	
+	<!-- 운행횟수관리-운행횟수/패널티내역조회 - 버스회사별운행횟수 -->
+	<select id="selectCompRunCount" parameterType="TbDmhBusrunrecVO" resultType="TbDmhBusrunrecVO">
+		SELECT 
+		    COMPID, 
+		    FC_BUSCOMP_COMPNM(COMPID) COMPNM, 
+		    COUNT(*) CNT,
+		    ROUND(SUM(RUNDIST)/1000,2) RUNDIST,
+		    ROUND(SUM(RUNTM)/60) RUNTM,
+		    SUM(OVERSPDCNT) OVERSPDCNT, 
+		    SUM(OPENRUNCNT) OPENRUNCNT, 
+		    SUM(ACCELCNT) ACCELCNT, 
+		    SUM(DECELCNT) DECELCNT, 
+		    SUM(OUTROUTECNT) OUTROUTECNT,
+		    SUM(STOPSKIPCNT) STOPSKIPCNT,
+		    SUM(VOLDELAYCNT) VOLDELAYCNT,
+		    SUM(TRBLCNT) TRBLCNT,
+		    SUM(ACCIDCNT) ACCIDCNT, 
+		    SUM(EMGCYCNT) EMGCYCNT, 
+		    SUM(OVERSPDCNT+OPENRUNCNT+ACCELCNT+DECELCNT+ OUTROUTECNT+STOPSKIPCNT+VOLDELAYCNT+TRBLCNT+ACCIDCNT+EMGCYCNT) TOT 
+		FROM TB_DMH_BUSRUNREC 
+		WHERE RUN_STARTDT BETWEEN TO_DATE(#{search_startdt}, 'YYYY/MM/DD HH24:MI:SS') + 3/24 
+		                      AND TO_DATE(#{search_enddt}, 'YYYY/MM/DD HH24:MI:SS') + 3/24 
+		<if test="compid != null and !compid.equalsIgnoreCase('')">
+		AND COMPID = #{compid} 
+		</if>
+		GROUP BY COMPID
+		ORDER BY COMPNM
+	</select>
+	
+
+</mapper>

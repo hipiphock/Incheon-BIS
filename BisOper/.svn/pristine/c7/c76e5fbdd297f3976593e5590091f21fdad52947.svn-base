@@ -1,0 +1,513 @@
+$(document).ready(function () {
+	appendLoader("조회중..");
+	initAPGrid();
+	initEvent(); 
+	$("#btn_modify").attr("class", "disabled");
+	$("#btn_modify").css({ 'pointer-events': 'none' });
+	$("#btn_new").attr("class", "disabled");
+	$("#btn_new").css({ 'pointer-events': 'none' });
+	ajaxCall("./sys/selectBitManageCodeList.do",null, null, load_orglist, null);
+	ajaxCall("./sys/selectCodeList.do",{cdcategid:'COMMLINKTPCD'}, null, load_commlinklist, null);
+});
+
+function load_orglist(data) {
+	$("#select_orgnm").find("option").remove(); 
+	$.each(data.relatorgid, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.orgnm; 
+		temp.value = value.relatorgid; 
+		$("#select_orgnm").append(temp);
+	});
+	
+	$("#select_orgnm2").find("option").remove(); 
+	$.each(data.relatorgid, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.orgnm; 
+		temp.value = value.relatorgid; 
+		$("#select_orgnm2").append(temp);
+	});
+}
+
+function load_commlinklist(data) {
+	$("#select_commlinktype").find("option").remove(); 
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.cdnm; 
+		temp.value = value.cd; 
+		$("#select_commlinktype").append(temp);
+	});
+	
+	$("#select_commlinktype2").find("option").remove(); 
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.cdnm; 
+		temp.value = value.cd; 
+		$("#select_commlinktype2").append(temp);
+	});
+}
+
+var models = [
+              {label:"차고지AP ID", 	name:"garageapid", 	    index:"garageapid",	 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"AP유형", 		name:"tp", 				index:"tp",		 		width: "50", 	align:"center", sorttype:"text", type:"S"},
+              {label:"차고지ID", 		name:"garageid", 		index:"garageid",		width: "50", 	align:"center", sorttype:"text", type:"I"},
+              {label:"차고지명", 		name:"garagenm", 		index:"garagenm",		width: "60", 	align:"center", sorttype:"text", type:"S"},
+              {label:"모뎀시리얼번호", 	name:"modem_serialno", 	index:"modem_serialno",	width: "80", 	align:"center", sorttype:"text", type:"I"},
+              {label:"모델명", 		name:"modelnm", 		index:"modelnm",		width: "100", 	align:"center", sorttype:"text", type:"I"},
+              {label:"설치일자", 		name:"installdt", 		index:"installdt",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"유지보수기관", 		name:"orgnm", 			index:"orgnm",		 	width: "90", 	align:"center", sorttype:"text", type:"S"},
+              {label:"사용여부", 		name:"useyn", 			index:"useyn",		 	width: "50", 	align:"center", sorttype:"text", type:"S"},
+              {label:"시설물ID", 		name:"facilid", 		index:"facilid",		width: "60", 	align:"center", sorttype:"text", type:"I"},
+              {label:"통신링크유형", 		name:"commlinktype", 	index:"commlinktype",	width: "70", 	align:"center", sorttype:"text", type:"S"},
+              {label:"IP주소", 		name:"ipaddr_1", 		index:"ipaddr_1",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"포트번호", 		name:"portno", 			index:"portno",		 	width: "60", 	align:"center", sorttype:"text", type:"I"},
+              {label:"설치위치", 		name:"installloc", 		index:"installloc",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"비고", 			name:"descr", 			index:"descr",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"제작일자", 		name:"manufymd", 		index:"manufymd",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"구매일자", 		name:"purchdt", 		index:"purchdt",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+              {label:"시작종료일시", 		name:"use_enddt", 		index:"use_enddt",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+              ];
+
+var models2 = [
+               {label:"운영단말기ID", 	name:"optermid", 		index:"optermid",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"단말기용도유형", 	name:"tp", 				index:"tp",		 		width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"매트릭스포트번호", 	name:"matrix_portno", 	index:"matrix_portno",	width: "90", 	align:"center", sorttype:"text", type:"I"},
+               {label:"사용여부", 		name:"useyn", 			index:"useyn",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"모뎀시리얼번호", 	name:"modem_serialno",  index:"modem_serialno",	width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"모델명", 		name:"modelnm", 		index:"modelnm",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"설치일자", 		name:"installdt", 		index:"installdt",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"유지보수기관", 	name:"orgnm", 			index:"orgnm",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"사용여부", 		name:"useyn", 			index:"useyn",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"시설물ID", 		name:"facilid", 		index:"facilid",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"통신링크유형", 	name:"commlinktype", 	index:"commlinktype",	width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"IP주소", 		name:"ipaddr_1", 		index:"ipaddr_1",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"포트번호", 		name:"portno", 			index:"portno",		 	width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"설치위치", 		name:"installloc", 		index:"installloc",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"비고", 		name:"descr", 			index:"descr",		 	width: "100", 	align:"center", sorttype:"text", type:"I"},
+               {label:"제작일자", 		name:"manufymd", 		index:"manufymd",		width: "115", 	align:"center", sorttype:"text", type:"I"},
+               {label:"구매일자", 		name:"purchdt", 		index:"purchdt",		width: "70", 	align:"center", sorttype:"text", type:"I"},
+               {label:"시작종료일시", 	name:"use_enddt", 		index:"use_enddt",		width: "110", 	align:"center", sorttype:"text", type:"I"},
+               ];
+
+function initAPGrid() {
+	makeGrid("#main_table",models,300,"resultList", onSelected,onComplete,null);
+	
+	function onSelected(data) {
+		var rowData = $("#main_table").jqGrid('getRowData', data);
+		$(".chart v0603Chart select option").removeAttr("selected");
+		if(rowData.orgnm) 
+			$("#select_orgnm option:contains('"+rowData.orgnm+"')").attr("selected","selected");
+		else
+			$("#select_orgnm").val("0");
+		if(rowData.useyn) 
+			$("#select_useyn option:contains('"+rowData.useyn+"')").attr("selected","selected");
+		if(rowData.tp) 
+			$("#aptpcd_option2 option:contains('"+rowData.tp+"')").attr("selected","selected");
+		if(rowData.commlinktype) 
+			$("#select_commlinktype option:contains('"+rowData.commlinktype+"')").attr("selected","selected");
+		if(rowData.garagenm) 
+			$("#select_garagenm option:contains('"+rowData.garagenm+"')").attr("selected","selected");
+		else
+			$("#select_garagenm").val("0");
+		$("#btn_new").attr("class", "disabled");
+		$("#btn_new").css({ 'pointer-events': 'none' });
+		$("#btn_modify").attr("class", ""); 
+		$("#btn_modify").css({ 'pointer-events': 'auto' });
+	}
+	
+	$(window).bind('resize',function() {
+		$("#main_table").jqGrid('setGridHeight', $(".main_chart").height()-55);
+		$("#main_table").jqGrid('setGridWidth', $(".main_chart").width());
+	}).trigger('resize')
+
+	
+	$("#main_table").jqGrid('filterToolbar',
+    {
+			autosearch: true,
+			stringResult: true,
+			searchOnEnter: true,
+			defaultSearch: "cn"
+    });
+	setFilter("main_table", true); 
+	
+	$("table:last").prev().removeClass('hidden');
+	$("table:last").addClass('hidden');
+	
+	
+	ajaxCall("./bus/selectGarageCateList.do",null, null, load_garagelist, null);
+	ajaxCall("./sys/selectCodeList.do",{cdcategid:'APTPCD'}, null, load_aplist, null);
+	
+}
+
+
+function load_garagelist(data) {
+	$("#select_garagenm").find("option").remove(); 
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.garagenm; 
+		temp.value = value.garageid; 
+		$("#select_garagenm").append(temp);
+	});
+}
+
+function load_aplist(data) {
+	$("#aptpcd_option").find("option").remove(); 
+	$("#aptpcd_option").append("<option value=\"-1\">전체</option>");
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.cdnm; 
+		temp.value = value.cd; 
+		$("#aptpcd_option").append(temp);
+	});
+	
+	$("#aptpcd_option2").find("option").remove(); 
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.cdnm; 
+		temp.value = value.cd; 
+		$("#aptpcd_option2").append(temp);
+	});
+}
+
+
+function initBitGrid() {
+	makeGrid("#main_table",models2,300,"resultList", onSelected2, onComplete, null);
+
+	function onSelected2(data){
+		var rowData = $("#main_table").jqGrid('getRowData', data);
+		$(".chart v0603Chart select option").removeAttr("selected");
+		if(rowData.orgnm) 
+			$("#select_orgnm2 option:contains('"+rowData.orgnm+"')").attr("selected","selected");
+		else
+			$("#select_orgnm2").val("0");
+		if(rowData.useyn) 
+			$("#select_useyn2 option:contains('"+rowData.useyn+"')").attr("selected","selected");
+		if(rowData.commlinktype) 
+			$("#select_commlinktype2 option:contains('"+rowData.commlinktype+"')").attr("selected","selected");
+		if(rowData.tp) 
+			$("#tp option:contains('"+rowData.tp+"')").attr("selected","selected");
+		$("#facilid").val(rowData.facilid);
+		$("#ipaddr").val(rowData.ipaddr_1);
+		$("#installloc").val(rowData.installloc);
+		$("#modelnm").val(rowData.modelnm);
+		$("#use_enddt").val(rowData.use_enddt);
+		$("#manufymd").val(rowData.manufymd);
+		$("#purchdt").val(rowData.purchdt);
+		$("#installdt").val(rowData.installdt);
+		$("#descr").val(rowData.descr);
+		
+		
+		$("#btn_new").attr("class", "disabled");
+		$("#btn_new").css({ 'pointer-events': 'none' });
+		$("#btn_modify").attr("class", ""); 
+		$("#btn_modify").css({ 'pointer-events': 'auto' });
+	}
+	
+	$(window).bind('resize',function() {
+		$("#main_table").jqGrid('setGridHeight', $(".main_chart").height()-55);
+		$("#main_table").jqGrid('setGridWidth', $(".main_chart").width());
+	}).trigger('resize')
+	
+	$("#main_table").jqGrid('filterToolbar',
+    {
+			autosearch: true,
+			stringResult: true,
+			searchOnEnter: true,
+			defaultSearch: "cn"
+    });
+	setFilter("main_table", true); 
+	
+	ajaxCall("./sys/selectCodeList.do",{cdcategid:'OPTERMUSECD'},null, load_opterlist, null);
+	 
+	$("table:last").prev().addClass('hidden');
+	$("table:last").removeClass('hidden');
+}
+
+function load_opterlist(data) {
+	$("#aptpcd_option").find("option").remove(); 
+	$("#aptpcd_option").append("<option value=\"-1\">전체</option>");
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.cdnm; 
+		temp.value = value.cd; 
+		$("#aptpcd_option").append(temp);
+	});
+	
+	$("#tp").find("option").remove(); 
+	$.each(data.resultList, function(index, value){
+		var temp = document.createElement('option');
+		temp.innerHTML = value.cdnm; 
+		temp.value = value.cd; 
+		$("#tp").append(temp);
+	});
+}
+
+
+function onComplete(data) { 
+	hideLoader();
+	$(".sub_title").eq(0).find("h3").text("전산장비 "+data.records+" 건");
+	$("#main_table").jqGrid("setSelection",1);
+}
+
+function initEvent() { 
+	//파일저장
+	$("#btn_excel").click(function () {
+		if( 0 < $("#main_table").getGridParam("reccount") )
+			excelDownload($(".pop_title h2").text(), "#main_table");
+		else
+			showAlert("조회된 내용이 없습니다.");
+	}); 
+	
+	//새로고침
+	$("#btn_refresh").click(function () {
+		location.reload();
+	});
+	
+	//장비종류 변경
+	$("#equip_option").change(function(){
+		$("#main_table").jqGrid('GridUnload');
+		if($("#equip_option").val() == "1")
+			initAPGrid();
+		else
+			initBitGrid(); 
+	});
+	
+	//검색
+	$("#btn_search").click(function(){
+		showLoader(); 
+		if($("#equip_option").val() == "1") {
+			var garageapid = $("#garageapid_input").val();
+			var aptpcd = $("#aptpcd_option").val(); 
+			if(aptpcd == "-1")
+				aptpcd = ""; 
+			reloadGrid("#main_table","./bit/selectEquip.do",{garageapid:garageapid, aptpcd:aptpcd},"resultList");
+		}
+		else {
+			var optermid = $("#garageapid_input").val(); 
+			var optermusecd = $("#aptpcd_option").val(); 
+			if(optermusecd == "-1")
+				optermusecd = ""; 
+			reloadGrid("#main_table","./bit/selectOptermEquip.do",{optermid:optermid, optermusecd:optermusecd},"resultList");
+		}
+	});
+	
+	//초기화
+	$("#btn_reset").click(function() {
+		$("#input_garageapid").val(""); 
+		$("#input_facilid").val("");
+		$("#input_ipaddr_1").val("");
+		$("#input_modelnm").val("");
+		$("#input_purchdt").val(new Date().toISOString().substring(0, 10));
+		$("#input_installdt").val(new Date().toISOString().substring(0, 10));
+		$("#input_manufymd").val(new Date().toISOString().substring(0, 10));
+		$("#input_portno").val(""); 
+		$("#input_modem_serialno").val("");
+		$("#input_installloc").val("");
+		$("#input_use_enddt").val("");
+		$("#input_descr").val("");
+		$("#select_useyn").val("0");
+		$("#select_orgnm").val("0");
+		$("#select_garagenm").val("0");
+		
+		$("#input_optermid").val("");
+		$("#facilid").val("");
+		$("#input_matrix_portno").val("");
+		$("#ipaddr").val("");
+		$("#installloc").val("");
+		$("#modelnm").val("");
+		$("#use_enddt").val("");
+		$("#descr").val("");
+		$("#purchdt").val(new Date().toISOString().substring(0, 10));
+		$("#installdt").val(new Date().toISOString().substring(0, 10));
+		$("#manufymd").val(new Date().toISOString().substring(0, 10));
+		
+		$("#btn_modify").attr("class", "disabled");
+		$("#btn_modify").css({ 'pointer-events': 'none' });
+		$("#btn_new").attr("class", ""); 
+		$("#btn_new").css({ 'pointer-events': 'auto' });
+		$("#main_table").jqGrid("resetSelection");
+	});
+	
+	//신규등록
+	$("#btn_new").click(function () {
+		showConfirmDlg("신규 등록 하시겠습니까?", new_confirm);
+		function new_confirm() {
+			if($("#equip_option").val() == "1"){
+				if($("#select_useyn").val() == "0"){		
+					showAlert("사용여부를 '사용'으로 하세요");
+					return ;
+				}
+				ajaxCall("./bus/selectMaxGarageapid.do",null, null, create, null);				
+			}
+			else {
+				if($("#select_useyn2").val() == "0"){		
+					showAlert("사용여부를 '사용'으로 하세요");
+					return ;
+				}
+				ajaxCall("./bit/selectMaxOptermid.do",null, null, create, null);				
+			}
+		}
+	});
+	
+	function create(data) {
+		if($("#equip_option").val() == "1"){
+			var garageapid = data.resultList.maxseq; 
+			var params = {
+				garageapid:garageapid,
+				facilid:"13"+garageapid,
+				garageid:$("#select_garagenm option:selected").val(),
+				aptpcd:$("#aptpcd_option2 option:selected").val()
+			};
+			var params2 = {
+				facilid:"13"+garageapid,
+				aptpcd:13,
+				modelnm:$("#input_modelnm").val(),
+				installloc:$("#input_installloc").val(),
+				commlinktpcd:$("#select_commlinktype option:selected").val(),
+				ipaddr_1:$("#input_ipaddr_1").val(),
+				portno:$("#input_portno").val(),
+				modem_serialno:$("#input_modem_serialno").val(),
+				manufymd:$("#input_manufymd").val().replace(/-/g,""),
+				purchdt:$("#input_purchdt").val().replace(/-/g,""),
+				installdt:$("#input_installdt").val().replace(/-/g,""),
+				useyn:$("#select_useyn option:selected").val(),
+				descr:$("#input_descr").val(),
+				orgnm:$("#select_orgnm option:selected").val()
+			};
+			ajaxCall("./bit/insertGarageap.do",params,null,null,null);
+			ajaxCall("./bit/insertFacil.do",params2, null, check_new, null);
+		}
+		else{
+			var optermid = data.resultList.maxseq; 
+			var params = {
+				optermid:optermid,
+				facilid:"14"+optermid,
+				matrix_portno:$("#input_matrix_portno").val(),
+				optermusecd:$("#tp option:selected").val()
+			};
+			var params2 = {
+				facilid:"14"+optermid,
+				aptpcd:14,
+				modelnm:$("#modelnm").val(),
+				installloc:$("#installloc").val(),
+				commlinktpcd:$("#select_commlinktype2 option:selected").val(),
+				ipaddr_1:$("#ipaddr").val(),
+				portno:'',
+				modem_serialno:'',
+				manufymd:$("#manufymd").val().replace(/-/g,""),
+				purchdt:$("#purchdt").val().replace(/-/g,""),
+				installdt:$("#installdt").val().replace(/-/g,""),
+				orgnm:$("#select_orgnm2 option:selected").val(),
+				useyn:$("#select_useyn2 option:selected").val(),
+				descr:$("#descr").val(),
+			};
+			
+			ajaxCall("./bit/insertOpterm.do",params,null,null,null);
+			ajaxCall("./bit/insertFacil.do",params2, null, check_new, null);
+		}
+	}
+	
+	//수정
+	$("#btn_modify").click(function () {
+		if($("#equip_option").val() == "1"){
+			showConfirmDlg("차고지AP를 수정하시겠습니까?", update_confirm);
+			function update_confirm(){
+				var garageid = $("#select_garagenm option:selected").val(); 
+				var aptpcd = $("#aptpcd_option2 option:selected").val(); 
+				var garageapid = $("#input_garageapid").val();
+				var params ={
+						modelnm:$("#input_modelnm").val(),
+						installloc:$("#input_installloc").val(),
+						commlinktpcd:$("#select_commlinktype option:selected").val(),
+						ipaddr_1:$("#input_ipaddr_1").val(),
+						portno:$("#input_portno").val(),
+						modem_serialno:$("#input_modem_serialno").val(),
+						manufymd:$("#input_manufymd").val().replace(/-/g,""),
+						purchdt:$("#input_purchdt").val().replace(/-/g,""),
+						installdt:$("#input_installdt").val().replace(/-/g,""),
+						orgnm:$("#select_orgnm option:selected").val(),
+						useyn:$("#select_useyn option:selected").val(),
+						descr:$("#input_descr").val(),
+						facilid:$("#input_facilid").val(),
+				};
+				if(garageid == "0")
+					garageid = ""; 				
+				
+				ajaxCall("./bit/updateGarageIdType.do",{garageid:garageid, aptpcd:aptpcd, garageapid:garageapid}, null, null, null);
+				ajaxCall("./bit/updateEquipInfo.do",params, null, check_modify, null);
+			}
+		}
+		else{
+			showConfirmDlg("운영단말기를 수정하시겠습니까?", update_confirm);
+			function update_confirm(){
+				var optermid = $("#input_optermid").val(); 
+				var optermusecd = $("#tp option:selected").val(); 
+				var matrix_portno = $("#input_matrix_portno").val();
+				var params ={
+						modelnm:$("#modelnm").val(),
+						installloc:$("#installloc").val(),
+						commlinktpcd:$("#select_commlinktype2 option:selected").val(),
+						ipaddr_1:$("#ipaddr").val(),
+						portno:'',
+						modem_serialno:'',
+						manufymd:$("#manufymd").val().replace(/-/g,""),
+						purchdt:$("#purchdt").val().replace(/-/g,""),
+						installdt:$("#installdt").val().replace(/-/g,""),
+						orgnm:$("#select_orgnm2 option:selected").val(),
+						useyn:$("#select_useyn2 option:selected").val(),
+						descr:$("#descr").val(),
+						facilid:$("#facilid").val(),
+				};
+				ajaxCall("./bit/updateOpterm.do",{optermid:optermid,optermusecd:optermusecd,matrix_portno:matrix_portno}, null, null, null);
+				ajaxCall("./bit/updateEquipInfo.do",params, null, check_modify, null);
+			}
+		}
+	}); 
+}
+
+function check_new(data){
+	if(data.result==1)
+   		showAlert("등록되었습니다.");
+	else
+		showAlert("등록실패하였습니다.");
+	$("#btn_search").trigger("click");
+}
+
+function check_modify(data){
+	if(data.result==1)
+   		showAlert("수정 되었습니다.");
+	else
+		showAlert("수정에 실패하였습니다.");
+	$("#btn_search").trigger("click");
+}
+
+function excelDownload(title, grid_id) {
+	$("#excelDown").remove();
+	var grid = $(grid_id);
+	var form = document.createElement("FORM");
+	form.setAttribute("id", "excelDown");
+	form.action = "./stop/downloadExcelFile.do";
+	form.method = "POST"; 
+	
+	var fileName = JSON.stringify(title);
+	var param = document.createElement('INPUT');
+	var rowData = grid.jqGrid("getRowData");
+	var columnData = JSON.stringify(rowData);
+	
+	var columnLabel = JSON.stringify(grid.jqGrid('getGridParam','colNames'));
+	
+	var idData = grid.jqGrid('getGridParam', 'colModel');
+	var columnName = []; 
+	$.each(idData, function (index,value){
+		columnName.push(value.name);
+	})
+	columnName = JSON.stringify(columnName);
+	
+	param.type = 'HIDDEN'; 
+	param.name = 'json';
+	param.value = fileName + columnLabel + columnName + columnData; 
+	
+	form.appendChild(param);
+	
+	document.body.appendChild(form);
+	inquiryFileDownload("excelDown", true); 
+}

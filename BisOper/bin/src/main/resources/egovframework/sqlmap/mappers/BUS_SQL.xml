@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BUS">
+	
+	<!-- 버스 운행이력 조회 - 검색 -->
+	<select id="selectOperationHisList" parameterType="TbBmhRunevtcollVO" resultType="TbBmhRunevtcollVO">
+		<!-- TB_BMH_RUNEVTCOLL 기준 작업 / 유사 테이블 TB_BMC_TMSPACE 존재
+				기존 쿼리는 cycle(정기운행기록), event(특정사건기록)  테이블을 Union All 하여 적용하던 방식 / 현재는 한 테이블만 이용 중
+				TODO 추후 테이블 역할 파악하여 쿼리 수정 필요할 수 있음 -->
+		SELECT
+		    BUSID,
+		    EVT_OCCURDT, 
+		    COLLECT_TYPE,
+		    POSX LAT, 
+		    POSY LNG, 
+		    HEADING, 
+		    RUNSPD, 
+		    NODEID,
+		    ROUTEID, 
+		    PATHSEQ,
+		    CARREGNO,
+		    NODENM,
+		    ROUTENO,
+		    EVENT_TYPE_NAME,
+		    CENTER_COLLDT
+		FROM
+		    (SELECT 
+		        BUSID,
+		        TO_CHAR(CENTER_COLLDT, 'YYYY-MM-DD HH24:MI:SS') CENTER_COLLDT,
+		        'E' AS COLLECT_TYPE,
+		        POSX, POSY, HEADING, 
+		        NVL(CODETAB.CDNM, '-') AS EVENT_TYPE_NAME,
+		        RUNSPD, NODEID, ROUTEID, PATHSEQ,
+		        (SELECT NODENM FROM TB_ADM_NODE WHERE NODEID = EH.NODEID) NODENM, 
+		        (SELECT ROUTENO FROM TB_ADM_BUSROUTE WHERE ROUTEID = EH.ROUTEID) ROUTENO, 
+		        (SELECT CARREGNO FROM TB_ADM_BUS WHERE BUSID = EH.BUSID) CARREGNO,
+		        TO_CHAR(EVT_OCCURDT, 'YYYY-MM-DD HH24:MI:SS') EVT_OCCURDT 
+		    FROM
+		        TB_BMH_RUNEVTCOLL EH,
+		        (SELECT
+		            TRIM(CD) CD, CDNM
+		        FROM
+		            TB_OMM_CODE
+		        WHERE
+		            CDCATEGID = 'EVTTPCD') CODETAB
+		    WHERE
+		        1=1
+		        AND EH.EVTTPCD = CODETAB.CD(+)		       
+				<if test="routeid != null and !routeid.equalsIgnoreCase('')"><!-- 지정 노선이 있을경우 --> 
+		  		AND EH.ROUTEID = #{routeid}
+		   		</if>
+		    	<if test="busid != null and !busid.equalsIgnoreCase('')"><!-- 지정 버스가 잇을경우 -->                                
+				AND EH.BUSID = #{busid}
+		    	</if>    	
+		    	AND EH.EVTTPCD != 24
+		    	AND EH.EVTTPCD != 25
+		        AND CENTER_COLLDT BETWEEN TO_TIMESTAMP(#{start_date_time}, 'YYYYMMDDHH24MISSFF') AND TO_TIMESTAMP(#{end_date_time}, 'YYYYMMDDHH24MISSFF'))
+		<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		WHERE
+	    	(CARREGNO LIKE '%'||#{searchWord}||'%'
+	    	OR ROUTENO LIKE '%'||#{searchWord}||'%')
+    	</if>
+	</select>	
+		
+	<!-- 버스 돌발 이력/통계 -->	
+	<select id="selectBusIncidentHisList" parameterType="TbBmhRunevtcollVO" resultType="TbBmhRunevtcollVO">
+		SELECT
+		    BH.*,
+		    BUS.CARREGNO,
+		    CODETAB.CDNM CODE_EXPLAIN,
+		    CP.COMPNM,
+		    BR.ROUTENO,
+		    BN.NODENM,
+		    TO_CHAR(BH.CENTER_COLLDT,'YYYY-MM-DD HH24:MI:SS') DT
+		FROM
+		    TB_BMH_RUNEVTCOLL BH,
+		    TB_ADM_BUS BUS,
+		    (SELECT  
+		        CDCATEGID, 
+		        TRIM (CD) CD, 
+		        CDNM
+		    FROM   
+		        TB_OMM_CODE
+		    WHERE
+		        CDCATEGID = 'INCIDTPCD') CODETAB,
+	        TB_ADM_BUSCOMP CP,
+	        TB_ADM_BUSROUTE BR, TB_ADM_NODE BN
+		WHERE       
+		    BH.BUSID = BUS.BUSID(+)
+		    AND BH.CENTER_COLLDT <![CDATA[>=]]> TO_DATE(#{start_date_time}, 'YYYYMMDDHH24MISS')
+		    AND BH.CENTER_COLLDT <![CDATA[<=]]> TO_DATE(#{end_date_time}, 'YYYYMMDDHH24MISS')
+		    AND EVTTPCD = 24 <!-- 돌발 이벤트 -->
+		    AND BH.INCIDTPCD = CODETAB.CD(+)
+		    AND BUS.COMPID = CP.COMPID(+)
+		    AND BR.ROUTEID = BH.ROUTEID
+		    AND BN.NODEID = BH.NODEID(+)
+		    <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		    AND (BUS.CARREGNO LIKE '%'||#{searchWord}||'%' OR BH.ROUTEID LIKE '%'||#{searchWord}||'%')
+		    </if>
+		    ORDER BY CENTER_COLLDT
+	</select>	
+	
+	<!-- 버스 위반 이력/통계 -->
+	<select id="selectBusViolationHisList" parameterType="TbBmhRunevtcollVO" resultType="TbBmhRunevtcollVO">
+     	SELECT
+	     	BH.*,
+	     	BUS.CARREGNO,
+	     	CODETAB1.CDNM CODE_EXPLAIN,
+	     	CP.COMPNM,
+		    BR.ROUTENO,
+		    BN.NODENM,
+            CODETAB2.CDNM NODE_TYPE_NAME
+     	FROM
+     		TB_BMH_RUNEVTCOLL BH,
+     		TB_ADM_BUS BUS, 
+            (SELECT CDCATEGID, TRIM (CD) CD, CDNM
+		    FROM TB_OMM_CODE
+		    WHERE CDCATEGID = 'RUNVIOLTPCD') CODETAB1,
+            (SELECT CDCATEGID, TRIM (CD) CD, CDNM
+		    FROM TB_OMM_CODE
+		    WHERE CDCATEGID = 'NODEGBCD') CODETAB2,
+         	TB_ADM_BUSCOMP CP,
+         	TB_ADM_BUSROUTE BR, 
+            TB_ADM_NODE BN
+     	WHERE 
+        	BH.BUSID = BUS.BUSID(+)    
+    		<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+        	AND BH.BUSID = #{searchWord}
+    		</if>
+    		AND BH.CENTER_COLLDT BETWEEN TO_DATE(#{start_date_time}, 'YYYYMMDDHH24MISS') AND TO_DATE(#{end_date_time}, 'YYYYMMDDHH24MISS')
+            AND EVTTPCD = 25 <!-- 위반 이벤트 -->
+       		AND BH.RUNVIOLTPCD = CODETAB1.CD(+)
+            AND BN.NODEGBCD = CODETAB2.CD(+)
+     		AND BUS.COMPID = CP.COMPID(+)
+      		AND BR.ROUTEID = BH.ROUTEID 
+    	  	AND BN.NODEID = BH.NODEID(+) 
+    		ORDER BY CENTER_COLLDT
+	</select>	
+	
+	<!-- 실시간 버스 돌발 조회 -->
+	<select id="selectBusInciList" resultType="TbBmhRunevtcollVO">
+		SELECT 
+			BH.*, 
+			TO_CHAR(BH.CENTER_COLLDT,'YYYY-MM-DD HH24:MI:SS') AS REG_DT, 
+			CODETAB.CDNM AS BIC_TYPE_NAME, 
+			RT.ROUTENO, 
+			BN.NODENM, 
+			BUS.CARREGNO
+		FROM 
+    		TB_BMH_RUNEVTCOLL BH,
+    		TB_ADM_BUSROUTE RT, TB_ADM_NODE BN, TB_ADM_BUS BUS,
+    		(SELECT * FROM TB_OMM_CODE WHERE CDCATEGID = 'INCIDTPCD' ORDER BY CD) CODETAB
+		WHERE
+	   		BH.CENTER_COLLDT >= TO_CHAR(SYSDATE - 3/24, 'YYYYMMDDHH24MISS')<!-- 8시간 이내의 돌발만 조회 -->
+			AND EVTTPCD = 24 <!-- 돌발 이벤트 -->
+    		AND BH.INCIDTPCD = CODETAB.CD(+)
+    		AND BH.ROUTEID = RT.ROUTEID
+    		AND BH.NODEID = BN.NODEID(+)<!-- 기존 / AND BI.ST_NODE_ID = BN.NODE_ID(+) / 시작 노드 정보 없음 -->
+    		AND BH.BUSID = BUS.BUSID(+)
+	</select>
+	
+	
+	
+</mapper>

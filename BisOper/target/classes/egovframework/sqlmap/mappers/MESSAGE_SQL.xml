@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="MESSAGE">
+
+	<update id="sendNoticeMessage" parameterType="TbBmhMdtmsgVO">
+	MERGE INTO TB_BMC_MDTMSG 
+	USING ( 
+		SELECT 
+			2032 MID, 
+			CASE
+				WHEN nvl(max(SNDDT), sysdate-2) <![CDATA[<]]> trunc(sysdate) + / 24 
+	            THEN 1 else mod(nvl(max(MSGSEQ), 0), 65535) + 1 
+	            END NEXTSEQ,  
+	        SYSDATE SNDDT, 
+	        #{busid} BUSID, 
+	        1 MSGTPCD, 
+	        1 MSGTARGETCD, 
+	        #{routeid} ROUTEID, 
+	        #{msgcontent} MSGCONTENT, 
+	        TO_DATE('181210094700', 'YYMMDDHH24MISS') DISP_STARTDT, 
+	        TO_DATE('181210094700', 'YYMMDDHH24MISS') DISP_ENDDT, 
+	        0 SNDRSLTCD, 
+	        'bmscenter' REG_USERID, 
+	        1 USERTPCD, 
+	        NULL REPLY_COLLDT 
+	    FROM TB_BMC_MDTMSG 
+	    WHERE MDTID = #{mdtid} 
+	) msg 
+	ON(
+		MDTID = msg.MID
+	    AND MSGSEQ = msg.NEXTSEQ
+	) 
+	WHEN MATCHED THEN 
+	UPDATE 
+	SET SNDDT 	     = msg.SNDDT, 
+	    BUSID        = msg.BUSID, 
+	    MSGTPCD      = msg.MSGTPCD, 
+	    MSGTARGETCD  = msg.MSGTARGETCD, 
+	    ROUTEID      = msg.ROUTEID, 
+	    MSGCONTENT   = msg.MSGCONTENT,
+	    DISP_STARTDT = msg.DISP_STARTDT, 
+	    DISP_ENDDT   = msg.DISP_ENDDT, 
+	    SNDRSLTCD    = msg.SNDRSLTCD, 
+	    REG_USERID   = msg.REG_USERID,
+	    USERTPCD  	 = msg.USERTPCD, 
+	    REPLY_COLLDT = msg.REPLY_COLLDT 
+	WHEN NOT MATCHED THEN 
+	INSERT VALUES (
+	    msg.nextseq,
+	    msg.snddt,
+	    msg.busid,
+	    msg.msgtpcd,
+	    msg.msgtargetcd,
+	    msg.routeid,
+	    msg.msgcontent,
+	    msg.disp_startdt,
+	    msg.disp_enddt,
+	    msg.sndrsltcd,
+	    msg.reg_userid,
+	    msg.usertpcd,
+		msg.reply_colldt
+	)
+	</update>
+
+	<!-- 이력통계/분석 - 운행이력조회 - 운전자메시지 이력조회 -->
+	<select id="selectMessageList" parameterType="TbBmhMdtmsgVO" resultType="TbBmhMdtmsgVO">
+	SELECT 
+	    MDTID, 
+	    MSGSEQ, 
+	    SNDDT,
+	    BUSID, 
+	    FC_BUS_CARREGNO(BUSID) CARNO,
+	    FC_CODE_CDNM('MSGTPCD', MSGTPCD) MSGTYPE,
+	    FC_CODE_CDNM('MSGTARGETCD', MSGTARGETCD) MSGTARGET,
+	    A.ROUTEID ROUTEID, 
+	    FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO, 
+	    MSGCONTENT, 
+	    DISP_STARTDT,
+	    DISP_ENDDT,
+	    REG_USERID, 
+	    B.USERNM USERNM, 
+	    A.USERTPCD USERTPCD, 
+	    REPLY_COLLDT, 
+	    SUBSTR(FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD),1, 10) SNDRSLTCD
+	FROM TB_BMH_MDTMSG A,
+		TB_OMM_USER B, 
+		TB_ADM_ROUTETOCOMP C
+	WHERE A.REG_USERID = B.USERID(+) 
+		AND A.ROUTEID = C.ROUTEID
+		<if test="snddt != null and !snddt.equalsIgnoreCase('')">
+		AND trunc(SNDDT) = TO_DATE(#{snddt}, 'YYYY-MM-DD')
+		</if>
+		<choose>
+			<when test="carno != null and !carno.equalsIgnoreCase('')">
+			AND FC_BUS_CARREGNO(BUSID) LIKE '%'||#{carno}||'%'
+			</when>
+			<otherwise>
+				<if test="compid != null and !compid.equalsIgnoreCase('')">
+				AND C.COMPID = #{compid}
+				</if>
+				<if test="routeid != null and !routeid.equalsIgnoreCase('')">
+				AND A.ROUTEID = #{routeid}
+				</if>
+			</otherwise>
+		</choose>
+		<if test="msgtpcd != null and !msgtpcd.equalsIgnoreCase('')">
+		And MSGTPCD = #{msgtpcd}
+		</if>
+	ORDER BY SNDDT, MSGTYPE, CARNO
+	</select>
+	
+</mapper>

@@ -1,0 +1,2206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="STOP">
+
+	<!-- (지도)전체 정류장 보기 -->
+ 	<select id="selectMapStopList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+ 		SELECT 
+ 			B.BSTOPID,
+      		B.SHORT_BSTOPID,
+      		B.BSTOPNM,
+      		B.AREACD,
+      		A.LAT,
+      		A.LNG,
+ 			C.LINKID,
+ 			C.LINKNM 
+     	FROM 
+     		TRANS_POSITION_NODE A, TB_ADM_BUSSTOP B, TB_ADM_LINK C 
+    	WHERE 
+	     	B.LINKID = C.LINKID(+) 
+	     	AND B.USEYN = 1
+	     	AND A.NODE_ID = B.BSTOPID
+	     	AND A.LAT BETWEEN #{minLat} AND #{maxLat}
+	     	AND A.LNG BETWEEN #{minLng} AND #{maxLng}
+	     	AND A.NODE_TYPE = 2	
+ 	</select>
+
+	<!-- 노드 조회 -->
+	<select id="selectMapNodeList" parameterType="TbAdmNodeVO" resultType="TbAdmNodeVO">
+		SELECT 
+    		A.NODEID,
+        	A.NODENM,
+        	A.NODEGBCD,
+        	A.NODETPCD,
+    		B.LAT,
+    		B.LNG
+		FROM 
+			TB_ADM_NODE A, TRANS_POSITION_NODE B
+	 	WHERE 
+	 		A.USEYN = '1'  
+	     	AND A.NODEID = B.NODE_ID
+	     	AND B.NODE_TYPE = 1	
+	     	AND B.LAT <![CDATA[>=]]>  #{minLat}
+	     	AND B.LAT <![CDATA[<=]]>  #{maxLat}	
+		 	AND B.LNG <![CDATA[>=]]>  #{minLng}
+	     	AND B.LNG <![CDATA[<=]]>  #{maxLng}
+	</select>
+
+	<!-- 전체 정류장 조회-->
+ 	<select id="selectStopList" parameterType="TbBusstopVO" resultType="TbBusstopVO">
+ 		WITH TB_BUSSTOP AS (
+   			SELECT * FROM TB_ADM_BUSSTOP A
+   			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+   			WHERE   
+   				A.BSTOPID LIKE '%'||#{searchWord}||'%'
+       			OR A.SHORT_BSTOPID LIKE '%'||#{searchWord}||'%'
+       			OR A.BSTOPNM LIKE '%'||#{searchWord}||'%'
+   			</if>
+		)
+		SELECT
+		   A.*
+		   ,B.BITID
+		   ,N.LAT
+		   ,N.LNG
+  		FROM
+   			TB_BUSSTOP A, TB_OMM_BIT B, TRANS_POSITION_NODE N
+  		WHERE
+   			0 = 0
+   			AND A.BSTOPID = B.BSTOPID(+)
+   			AND A.BSTOPID = N.NODE_ID(+)
+    		AND A.USEYN = '1'
+  		ORDER BY A.BSTOPNM          
+ 	
+		<!-- SELECT 
+			A.*
+			,B.BITID
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			,N.LAT
+			,N.LNG
+  			</if>
+		FROM 
+			TB_ADM_BUSSTOP A, TB_OMM_BIT B
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+			, TRANS_POSITION_NODE N
+  			</if>
+		WHERE 
+			0 = 0
+			AND A.BSTOPID = B.BSTOPID(+)
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+				AND A.BSTOPID = N.NODE_ID(+)
+  				AND (
+  					A.BSTOPID LIKE '%'||#{searchWord}||'%'
+  					OR A.SHORT_BSTOPID LIKE '%'||#{searchWord}||'%'
+  					OR A.BSTOPNM LIKE '%'||#{searchWord}||'%'
+  				)
+  			</if>
+  			AND A.USEYN = '1'
+		ORDER BY A.BSTOPNM -->
+	</select>
+
+	<!-- 경유 노선 조회 -->
+	<select id="selectViaRouteList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+ 		SELECT 
+ 			<choose>
+ 				<when test="yncheck!=null and !yncheck.equalsIgnoreCase('')">
+ 					DISTINCT B.ROUTEID,
+ 					B.ROUTENO
+ 				</when>
+ 				<otherwise>
+ 					C.COMPNM
+ 					,B.ROUTEID
+ 					,B.ROUTENO
+					,FC_CODE_CDNM('ROUTETPCD', B.ROUTETPCD) ROUTETPCD
+					,B.ROUTEDESC
+					,A.BSTOPID
+					,FC_BUSSTOP_BSTOPNM(BSTOPID) BSTOPNM
+		      		,FC_BUSSTOP_SHORT_BSTOPID(BSTOPID) SHORT_BSTOPID
+		      		,FC_BUSSTOP_BSTOPNM(B.ORIGIN_BSTOPID) AS ORIGIN_BSTOPID
+					,FC_BUSSTOP_BSTOPNM(B.DEST_BSTOPID) AS DEST_BSTOPID
+ 				</otherwise>
+ 			</choose>
+		FROM 
+			VW_BUSROUTE_STOP A, TB_ADM_BUSROUTE B,
+			TB_ADM_ROUTETOCOMP RC, TB_ADM_BUSCOMP C
+		WHERE 
+			A.BSTOPID = #{bstopid}
+			AND A.ROUTEID = B.ROUTEID
+			<choose>
+ 				<when test="yncheck!=null and !yncheck.equalsIgnoreCase('')">
+ 				</when>
+ 				<otherwise>
+					AND B.USEYN =1
+ 				</otherwise>
+ 			</choose>
+			AND B.ROUTEID = RC.ROUTEID
+			AND RC.COMPID = C.COMPID
+		ORDER BY B.ROUTEID
+ 	</select>
+ 	<!-- <select id="selectViaRouteList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+ 		SELECT 
+ 			C.COMPNM,
+ 			B.ROUTEID
+			,B.ROUTENO
+			,FC_CODE_CDNM('ROUTETPCD', B.ROUTETPCD) ROUTETPCD
+			,B.ROUTEDESC
+			,A.BSTOPID
+			,FC_BUSSTOP_BSTOPNM(BSTOPID) BSTOPNM
+      		,FC_BUSSTOP_SHORT_BSTOPID(BSTOPID) SHORT_BSTOPID
+      		,FC_BUSSTOP_BSTOPNM(B.ORIGIN_BSTOPID) AS ORIGIN_BSTOPID
+			,FC_BUSSTOP_BSTOPNM(B.DEST_BSTOPID) AS DEST_BSTOPID
+		FROM 
+			VW_BUSROUTE_STOP A, TB_ADM_BUSROUTE B,
+			TB_ADM_ROUTETOCOMP RC, TB_ADM_BUSCOMP C
+		WHERE 
+			A.BSTOPID = #{bstopid}
+			AND A.ROUTEID = B.ROUTEID
+			AND B.USEYN =1
+			AND B.ROUTEID = RC.ROUTEID
+			AND RC.COMPID = C.COMPID
+		ORDER BY B.ROUTEID
+ 	</select> -->
+
+	<!-- 경유노선 도착정보 -->
+ 	<select id="selectArrivalInfoList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+ 		SELECT 
+			A.ROUTEID,
+			FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO,
+			FC_BUS_CARREGNO(A.BUSID) CARREGNO,
+			FC_BUSSTOP_BSTOPNM(A.NODEID) CUR_BSTOPNM,
+			A.REST_BSTOPCNT,
+			A.ARRPLANTM,
+			A.REST_NODECNT,
+			CASE
+ 				WHEN A.DIRCD = 0  THEN 
+   					(SELECT BSTOPNM FROM TB_ADM_BUSSTOP WHERE BSTOPID = B.DEST_BSTOPID) 
+ 				ELSE 
+   					(SELECT BSTOPNM FROM TB_ADM_BUSSTOP WHERE BSTOPID = B.ORIGIN_BSTOPID) 
+			END AS DIRCD
+		FROM 
+			TB_BMC_BSTOPBUSARRIV A, TB_ADM_BUSROUTE B
+		WHERE 
+			A.BSTOPID = #{bstopid}
+			AND A.ROUTEID = B.ROUTEID
+			AND PROCDT <![CDATA[>=]]> (SYSDATE - 3 /(60*24))
+	</select>
+
+	<!-- ################### -->
+	<!-- ####### 구버전 ####### -->
+	<!-- ################### -->
+
+	<!-- 선택 노선의 정류장 조회 -->
+ 	<select id="selectRouteStopList" parameterType="BusstopVO" resultType="BusstopVO">
+ 		SELECT 
+ 			VB.*, 
+ 			BS.STOP_NAME, 
+ 			BS.LAT, 
+ 			BS.LNG, 
+ 			BS.SERVICE_ID, 
+ 			BR.ROUTE_NAME
+		FROM 
+			M_BUSROUTE_STOP VB, BUSROUTE BR, BUSSTOP BS
+		WHERE 
+			BR.ROUTE_ID = #{route_id}
+			AND BR.ROUTESECT_GROUP_ID = VB.ROUTESECT_GROUP_ID
+			AND BS.STOP_ID = VB.STOP_ID
+		ORDER BY ROUTE_ORD
+
+ 	</select>
+	<!--///////////###############v305  -->
+	<!-- 노선도모니터링 버스클릭팝업 -->
+	<select id="selectBusPopup" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    TO_CHAR(AA.EVT_OCCURDT, 'YYYY-MM-DD HH24:MI:SS') EVT_OCCURDT,
+      	TO_CHAR(AA.CENTER_COLLDT, 'YYYY-MM-DD HH24:MI:SS') CENTER_COLLDT,
+	    AA.BUSID,
+	    AA.MDTID,
+	    AA.ROUTEID,
+	    AA.NODEID,
+	    AA.PATHSEQ,
+	    AA.DETECT_NODECNT,
+	    AA.EVTTPCD,
+	    AA.EVTSUBTPCD,
+	    AA.POSX,
+	    AA.POSY,
+	    AA.HEADING,
+	    AA.RUNSPD,
+	    AA.LLINKID,
+	    AA.DIRCD,
+	    AA.RUNDIST,
+	    AA.RUNTM,
+	    TO_CHAR(AA.RUN_STARTDT, 'YYYY-MM-DD HH24:MI:SS') RUN_STARTDT,
+	    AA.REAL_RUNORD,
+	    AA.PLAN_RUNORD,
+	    AA.BSTOP_STOPTM,
+	    AA.MSGSEQ RCVSEQ,
+	    BB.MSGSEQ SNDSEQ,
+	    AA.RUNDISTINCTCD,
+	    AA.LASTBUSYN,
+	    AA.EMPTYBUSYN,
+	    AA.CHGBUSYN,
+	    TO_CHAR(BB.PROCDT,'YYYY-MM-DD HH24:MI:SS') PROCDT,
+	    BB.CONGESTLEV_CD,
+	    BB.FBUS_BUSID,
+	    BB.FBUS_LOCGAP,
+	    BB.FBUS_TMGAP,
+	    BB.NBUS_BUSID,
+	    BB.NBUS_LOCGAP,
+	    BB.NBUS_TMGAP,
+	    BB.FFBUS_BUSID,
+	    BB.FFBUS_LOCGAP,
+	    BB.FFBUS_TMGAP,
+	    BB.NNBUS_BUSID,
+	    BB.NNBUS_LOCGAP,
+	    BB.NNBUS_TMGAP,
+	    BB.BSTOPID_1,
+	    BB.ARRPLANTM_1,
+	    BB.TRVSPD_1,
+	    BB.BSTOPID_2,
+	    BB.ARRPLANTM_2,
+	    BB.TRVSPD_2,
+	    BB.BSTOPID_3,
+	    BB.ARRPLANTM_3,
+	    BB.TRVSPD_3,
+	    BB.DEST_ARRPLANTM,
+	    BB.DEST_RESTDIST,
+	    CC.EVT_OCCURDT,
+	    CC.GPS_STATYN,
+	    CC.WLAN_STATYN,
+	    CC.SUB_TERM_STATYN,
+	    CC.MEM_STATYN,
+	    CC.BSTART_STATYN,
+	    AA.OPENSTATCD
+	FROM
+	    (
+	        SELECT
+	            EVT_OCCURDT,
+	            BUSID,
+	            MDTID,
+	            ROUTEID,
+	            NODEID,
+	            PATHSEQ,
+	            FC_CODE_CDNM('EVTTPCD',EVTTPCD) EVTTPCD,
+	            DECODE(EVTTPCD,'21',FC_CODE_CDNM('EVTSUBTPCD',EVTSUBTPCD),'25',FC_CODE_CDNM('RUNVIOLTPCD',RUNVIOLTPCD),'24',FC_CODE_CDNM('INCIDTPCD',INCIDTPCD),'-') EVTSUBTPCD,
+	            POSX,
+	            POSY,
+	            HEADING,
+	            LLINKID,
+	            DETECT_NODECNT,
+	            FC_CODE_CDNM('DIRCD',DIRCD) DIRCD,
+	            MSGSEQ,
+	            FC_CODE_CDNM('RUNDISTINCTCD',RUNDISTINCTCD) RUNDISTINCTCD,
+	            FC_CODE_CDNM('LASTBUSYN',LASTBUSYN) LASTBUSYN,
+	            FC_CODE_CDNM('EMPTYBUSYN',EMPTYBUSYN) EMPTYBUSYN,
+	            FC_CODE_CDNM('CHGBUSYN',CHGBUSYN) CHGBUSYN,
+	            FC_CODE_CDNM('OPENSTATCD',OPENSTATCD) OPENSTATCD,
+	            FC_CODE_CDNM('INCIDTPCD',INCIDTPCD) INCIDTPCD,
+	            FC_CODE_CDNM('RUNVIOLTPCD',RUNVIOLTPCD) RUNVIOLTPCD,
+	            RUNSPD,
+	            RUNDIST,
+	            RUNTM,
+	            REAL_RUNORD,
+	            PLAN_RUNORD,
+	            RUN_STARTDT,
+	            BSTOP_STOPTM,
+	            CENTER_COLLDT,
+	            NODE_ARRDT,
+	            NODE_DEPDT,
+	            INCID_ALARMYN
+	        FROM
+	            BMC_BUSRUN
+	        WHERE
+	            BUSID = #{busid}
+	    ) AA,
+	    (
+	        SELECT
+	            PROCDT,
+	            FBUS_BUSID,
+	            FBUS_LOCGAP,
+	            FBUS_TMGAP,
+	            NBUS_BUSID,
+	            NBUS_LOCGAP,
+	            NBUS_TMGAP,
+	            FFBUS_BUSID,
+	            FFBUS_LOCGAP,
+	            FFBUS_TMGAP,
+	            NNBUS_BUSID,
+	            NNBUS_LOCGAP,
+	            NNBUS_TMGAP,
+	            CONGESTLEV_CD,
+	            MSGSEQ,
+	            FC_BUSSTOP_BSTOPNM(BSTOPID_1) BSTOPID_1,
+	            ARRPLANTM_1,
+	            TRVSPD_1,
+	            FC_BUSSTOP_BSTOPNM(BSTOPID_2) BSTOPID_2,
+	            ARRPLANTM_2,
+	            TRVSPD_2,
+	            FC_BUSSTOP_BSTOPNM(BSTOPID_3) BSTOPID_3,
+	            ARRPLANTM_3,
+	            TRVSPD_3,
+	            DEST_ARRPLANTM,
+	            DEST_RESTDIST
+	        FROM
+	            BMC_MDTOFFER
+	        WHERE
+	            BUSID = #{busid}
+	    ) BB,
+	    (
+	        SELECT
+	            ROUTEID,
+	            BUSID,
+	            MDTID,
+	            EVT_OCCURDT,
+	            DECODE(GPS_STATYN,'1','정상','불량') GPS_STATYN,
+	            DECODE(WLAN_STATYN,'1','정상','불량') WLAN_STATYN,
+	            DECODE(SUB_TERM_STATYN,'1','정상','불량') SUB_TERM_STATYN,
+	            DECODE(MEM_STATYN,'1','정상','불량') MEM_STATYN,
+	            DECODE(BSTART_STATYN,'1','ON','OFF') BSTART_STATYN
+	        FROM
+	            TB_BMC_MDTSTAT
+	        WHERE
+	            STATREQYN = 0
+	            AND   BUSID = #{busid}
+	    ) CC
+	</select>
+	<!-- 노선도모니터링 정류소클릭팝업 -->
+	<select id="selectStopPopup" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    TO_CHAR(PROCDT,'HH24:MI:SS') PROCDT,
+	    ROUTEID,
+	    PATHSEQ,
+	    BSTOPID,
+	    FC_BUSSTOP_SHORT_BSTOPID(BSTOPID) SHORT_BSTOPID, 
+	    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO,
+	    FC_BUSSTOP_BSTOPNM(BSTOPID) BSTOPNM,
+	    BUSID,
+	    FC_BUS_CARREGNO(BUSID) CARNO,
+	    REST_NODECNT,
+	    REST_BSTOPCNT,
+	    FLOOR(ARRPLANTM / 60)
+	    || '분'
+	    || MOD(ARRPLANTM,60)
+	    || '초' ARRPLANTM,
+	    DECODE(LASTBUSYN,0,'일반','막차') LASTBUSYN,
+	    DECODE(INCIDTPCD,0,'','') INCIDTPCD,
+	    NVL(FC_NODETOBIT(BSTOPID),0) BITID
+	FROM
+	    (
+	        SELECT
+	            A.*,
+	            ROW_NUMBER() OVER(
+	                PARTITION BY ROUTEID
+	                ORDER BY
+	                    ARRPLANTM,
+	                    REST_NODECNT ASC
+	            ) RID
+	        FROM
+	            BMC_BSTOPBUSARRIV A
+	        WHERE
+	            REST_NODECNT != 0
+	            AND   BSTOPID = #{bstopid}
+	            AND   ROUTEID = #{routeid}
+	            AND   BUSID IN (
+	                SELECT
+	                    BUSID
+	                FROM
+	                    BMC_BUSRUN
+	                WHERE
+	                    RUNDISTINCTCD BETWEEN 2 AND 3
+	            )
+	    )
+	WHERE
+	    RID <![CDATA[<]]> 5
+	ORDER BY
+	    ARRPLANTM 
+	</select>
+	<!-- 노선도모니터링 메시지 -->
+	<update id="updateMsg" parameterType="TbAdmBusstopVO">
+	MERGE INTO 
+		TB_BMC_MDTMSG USING 
+			( SELECT
+			    #{mdtid} MID,
+			    CASE
+			        WHEN NVL(MAX(SNDDT),SYSDATE - 2) <![CDATA[<]]> TRUNC(SYSDATE) + 3 / 24 THEN 1
+			    	ELSE MOD(NVL(MAX(MSGSEQ),0),65535) + 1
+			    END
+			    NEXTSEQ,
+			    SYSDATE SNDDT,
+			    #{busid} BUSID,
+			    #{msgtpcd} MSGTPCD,
+			    1 MSGTARGETCD, <!-- 1=특정차량 -->
+			    #{routeid} ROUTEID,
+			    #{message_content} MSGCONTENT,
+			    TO_DATE(TO_CHAR(SYSDATE, 'YYMMDDHH24MI'),'YYMMDDHH24MI') DISP_STARTDT,
+			    TO_DATE(TO_CHAR(SYSDATE, 'YYMMDDHH24MI'),'YYMMDDHH24MI') DISP_ENDDT,
+			    0 SNDRSLTCD, <!-- 0=준비  -->
+			    #{reg_userid} REG_USERID,
+			    #{usertpcd} USERTPCD,
+			    NULL REPLY_COLLDT
+			  FROM
+			    TB_BMC_MDTMSG
+			  WHERE
+			    MDTID = #{mdtid}
+		)
+		MSG ON (
+		    MDTID = MSG.MID
+		    AND MSGSEQ = MSG.NEXTSEQ
+		)
+	WHEN MATCHED THEN UPDATE SET 
+		SNDDT = MSG.SNDDT,
+		BUSID = MSG.BUSID,
+		MSGTPCD = MSG.MSGTPCD,
+		MSGTARGETCD = MSG.MSGTARGETCD,
+		ROUTEID = MSG.ROUTEID,
+		MSGCONTENT = MSG.MSGCONTENT,
+		DISP_STARTDT = MSG.DISP_STARTDT,
+		DISP_ENDDT = MSG.DISP_ENDDT,
+		SNDRSLTCD = MSG.SNDRSLTCD,
+		REG_USERID = MSG.REG_USERID,
+		USERTPCD = MSG.USERTPCD,
+		REPLY_COLLDT = MSG.REPLY_COLLDT
+	WHEN NOT MATCHED THEN INSERT VALUES (
+	    MSG.MID,
+		MSG.NEXTSEQ,
+		MSG.SNDDT,
+		MSG.BUSID,
+		MSG.MSGTPCD,
+		MSG.MSGTARGETCD,
+		MSG.ROUTEID,
+		MSG.MSGCONTENT,
+		MSG.DISP_STARTDT,
+		MSG.DISP_ENDDT,
+		MSG.SNDRSLTCD,
+		MSG.REG_USERID,
+		MSG.USERTPCD,
+		MSG.REPLY_COLLDT
+	)
+	</update>
+	<!--///////////###############v306  -->
+	<!--정류소제공정보조회 왼쪽 그리드  -->
+ 	<select id="selectBstopList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+		SELECT
+			C.BSTOPID,
+			A.BITID,
+			C.SHORT_BSTOPID,
+			B.INSTALLLOC,
+			C.POSX,
+			C.POSY,
+			C.BSTOPNM,
+			FC_CODE_CDNM('BITTPCD',A.BITTPCD) BITTYPE,
+			FC_CODE_CDNM('BSTOPTPCD',C.BSTOPTPCD) BSTOPTYPE,
+			DECODE(A.BITTPCD,'69','1','79','1',NULL,NULL,'0') BITTPCD,
+			DECODE(BSTOPFACILCD,'0','','') WIDEAREA
+		FROM
+			TB_OMM_BIT A,
+			TB_OMM_FACIL B,
+	<choose>
+		<when test="routeid!=null and !routeid.equalsIgnoreCase('')">
+			TB_ADM_BUSSTOP C,
+			TB_ADM_BUSROUTE D,
+			TB_ADM_ROUTEPNODE E
+		WHERE
+			A.FACILID = B.FACILID (+)
+			AND INSTALLLOC != 'null'
+			AND A.BSTOPID (+) = E.NODEID
+			AND E.ROUTEID= D.ROUTEID
+			AND E.NODEID = C.BSTOPID
+			AND E.NODEGBCD = '2'
+			AND D.ROUTEID = #{routeid}
+		--	AND B.USEYN (+) = '1'
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+				AND A.bittpcd = #{bittpcd}
+			</if>
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+				AND C.BSTOPNM LIKE '%'||#{searchWord}||'%'
+			</if>
+		ORDER BY
+			E.PATHSEQ
+		</when>
+		<when test="roadnm!=null and !roadnm.equalsIgnoreCase('')">
+			TB_ADM_BUSSTOP C,
+			TB_ADM_ROADLINK D,
+			TB_ADM_ROAD E
+		WHERE
+			A.FACILID = B.FACILID (+)
+			AND INSTALLLOC != 'null'
+			AND A.BSTOPID (+) = C.BSTOPID
+			AND C.LINKID = D.LINKID
+			AND E.ROADNM = #{roadnm}
+			AND D.ROADNM = E.ROADNM
+		--	AND B.USEYN (+) = '1'
+			AND C.USEYN = '1'
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+				AND A.bittpcd = #{bittpcd}
+			</if>
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+				AND C.BSTOPNM LIKE '%'||#{searchWord}||'%'
+			</if>
+		ORDER BY
+			C.BSTOPID
+		</when>
+		<otherwise>
+			TB_ADM_BUSSTOP C
+		WHERE
+			A.FACILID = B.FACILID (+)
+			AND INSTALLLOC != 'null'
+			AND A.BSTOPID (+) = C.BSTOPID
+		--	AND B.USEYN (+) = '1'
+		--	AND C.USEYN = '1'
+			<if test="bittpcd != null and !bittpcd.equalsIgnoreCase('')">
+				AND A.bittpcd = #{bittpcd}
+			</if>
+			<if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+				AND C.BSTOPNM LIKE '%'||#{searchWord}||'%'
+			</if>
+		ORDER BY 
+			C.BSTOPID
+		</otherwise>
+	</choose>
+ 	</select>
+ 	<!--정류장제공정보조회 오른쪽그리드  -->
+ 	<select id="selectBstopInfo" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+		TO_CHAR(EVT_OCCURDT,'YYYY-MM-DD HH24:MI:SS') EVENTDT,
+		TO_CHAR(PROCDT,'YYYY-MM-DD HH24:MI:SS') PROCDT,
+		ROUTEID,
+		FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO,
+		FC_CODE_CDNM('DIRCD',DIRCD) DIRTYPE,
+		FC_BUS_CARREGNO(BUSID) CAREGNO,
+		REST_NODECNT,
+		REST_BSTOPCNT,
+		LPAD(TRUNC(ARRPLANTM / 60),3,'0')
+		|| ''
+		|| LPAD(MOD(ARRPLANTM,60),2,'0')
+		|| '' ARRPLANTM,
+		FC_CODE_CDNM('LASTBUSYN',LASTBUSYN) LASTBUSYN,
+		FC_CODE_CDNM('INCIDTPCD',INCIDTPCD) INCIDTYPE
+	FROM
+		TB_BMH_BSTOPBUSARRIV
+	WHERE
+		PROCDT BETWEEN SYSDATE - #{time} / ( 24 * 60 ) AND SYSDATE
+		AND BSTOPID = #{bstopid}
+		ORDER BY
+		PROCDT DESC
+	</select>
+	
+	<!--bittpcdList 조회-->
+	<select id="selectBittpcdList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+		CD,
+		CDNM
+	FROM
+		TB_OMM_CODE
+	WHERE
+		CDCATEGID = 'BITTPCD'
+	</select>
+	<!--//////############ v706  -->
+	<!--차량별수집현황조회 그리드 -->
+	<select id="selectBusEvent" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	<if test='search_type=="1"'>
+	SELECT
+		AAA.*,
+		NVL(FC_ROUTETOBUS_BUSS(AAA.BUSID),'-') ROUTENO,
+		NVL(FC_BUS_COMPNM(AAA.BUSID),'-') COMPNM
+	FROM
+		(
+		SELECT
+			Z.CARREGNO,
+			X.*,
+			Y.*
+		FROM
+			(
+			SELECT
+				A.BUSID BUSID
+					<if test="dt01 != null and !dt01.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt01},${event_type},0) ) DT01
+                    </if>
+                    <if test="dt02 != null and !dt02.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt02},${event_type},0) ) DT02
+                    </if>
+                    <if test="dt03 != null and !dt03.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt03},${event_type},0) ) DT03
+                    </if>
+                    <if test="dt04 != null and !dt04.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt04},${event_type},0) ) DT04
+                    </if>
+                    <if test="dt05 != null and !dt05.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt05},${event_type},0) ) DT05
+                    </if>
+                    <if test="dt06 != null and !dt06.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt06},${event_type},0) ) DT06
+                    </if>
+                    <if test="dt07 != null and !dt07.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt07},${event_type},0) ) DT07
+                    </if>
+                    <if test="dt08 != null and !dt08.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt08},${event_type},0) ) DT08
+                    </if>
+                    <if test="dt09 != null and !dt09.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt09},${event_type},0) ) DT09
+                    </if>
+                    <if test="dt10 != null and !dt10.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt10},${event_type},0) ) DT10
+                    </if>
+                    <if test="dt11 != null and !dt11.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt11},${event_type},0) ) DT11
+                    </if>
+                    <if test="dt12 != null and !dt12.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt12},${event_type},0) ) DT12
+                    </if>
+                    <if test="dt13 != null and !dt13.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt13},${event_type},0) ) DT13
+                    </if>
+                    <if test="dt14 != null and !dt14.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt14},${event_type},0) ) DT14
+                    </if>
+                    <if test="dt15 != null and !dt15.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt15},${event_type},0) ) DT15
+                    </if>
+                    <if test="dt16 != null and !dt16.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt16},${event_type},0) ) DT16
+                    </if>
+                    <if test="dt17 != null and !dt17.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt17},${event_type},0) ) DT17
+                    </if>
+                    <if test="dt18 != null and !dt18.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt18},${event_type},0) ) DT18
+                    </if>
+                    <if test="dt19 != null and !dt19.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt19},${event_type},0) ) DT19
+                    </if>
+                    <if test="dt20 != null and !dt20.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt20},${event_type},0) ) DT20
+                    </if>
+                    <if test="dt21 != null and !dt21.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt21},${event_type},0) ) DT21
+                    </if>
+                    <if test="dt22 != null and !dt22.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt22},${event_type},0) ) DT22
+                    </if>
+                    <if test="dt23 != null and !dt23.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt23},${event_type},0) ) DT23
+                    </if>
+                    <if test="dt24 != null and !dt24.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt24},${event_type},0) ) DT24
+                    </if>
+			FROM
+				TB_DMS_BUSCOLL A
+			WHERE
+				A.PROCCYCLCD = '7'
+				AND A.PROCDT BETWEEN TO_DATE(#{start_time}||'0000','YYYYMMDDHH24MISS') 
+                AND TO_DATE(#{end_time}||'0000','YYYYMMDDHH24MISS') 
+                <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+				AND A.ROUTEID = #{routeid}
+		   		</if>
+			GROUP BY
+				A.BUSID
+			) X,
+			(
+			SELECT
+				A.BUSID BUSID2,
+				ROUND(AVG(${event_type}),1) DTAVG
+			FROM
+				TB_DMS_BUSCOLL A
+			WHERE
+				A.PROCCYCLCD = '7'
+				AND A.PROCDT BETWEEN TO_DATE(#{start_time}||'0000','YYYYMMDDHH24MISS') 
+                AND TO_DATE(#{end_time}||'0000','YYYYMMDDHH24MISS') 
+                <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+				AND A.ROUTEID = #{routeid}
+		   		</if>
+			GROUP BY
+				A.BUSID
+			) Y,
+			TB_ADM_BUS Z
+		WHERE
+			X.BUSID = Y.BUSID2
+			AND X.BUSID = Z.BUSID
+		ORDER BY
+			Z.CARREGNO
+		) AAA
+		<if test='time >= "0"'>
+			 		<if test="dt01 != null and !dt01.equalsIgnoreCase('')">
+                    WHERE
+              			DT01 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt02 != null and !dt02.equalsIgnoreCase('')">
+                    	OR DT02 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt03 != null and !dt03.equalsIgnoreCase('')">
+                    	OR DT03 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt04 != null and !dt04.equalsIgnoreCase('')">
+                    	OR DT04 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt05 != null and !dt05.equalsIgnoreCase('')">
+                    	OR DT05 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt06 != null and !dt06.equalsIgnoreCase('')">
+                    	OR DT06 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt07 != null and !dt07.equalsIgnoreCase('')">
+                    	OR DT07 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt08 != null and !dt08.equalsIgnoreCase('')">
+                    	OR DT08 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt09 != null and !dt09.equalsIgnoreCase('')">
+                    	OR DT09 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt10 != null and !dt10.equalsIgnoreCase('')">
+                    	OR DT10 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt11 != null and !dt11.equalsIgnoreCase('')">
+                    	OR DT11 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt12 != null and !dt12.equalsIgnoreCase('')">
+                    	OR DT12 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt13 != null and !dt13.equalsIgnoreCase('')">
+                    	OR DT13 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt14 != null and !dt14.equalsIgnoreCase('')">
+                    	OR DT14 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt15 != null and !dt15.equalsIgnoreCase('')">
+                    	OR DT15 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt16 != null and !dt16.equalsIgnoreCase('')">
+                    	OR DT16 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt17 != null and !dt17.equalsIgnoreCase('')">
+                    	OR DT17 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt18 != null and !dt18.equalsIgnoreCase('')">
+                    	OR DT18 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt19 != null and !dt19.equalsIgnoreCase('')">
+                    	OR DT19 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt20 != null and !dt20.equalsIgnoreCase('')">
+                    	OR DT20 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt21 != null and !dt21.equalsIgnoreCase('')">
+                    	OR DT21 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt22 != null and !dt22.equalsIgnoreCase('')">
+                    	OR DT22 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt23 != null and !dt23.equalsIgnoreCase('')">
+                    	OR DT23 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt24 != null and !dt24.equalsIgnoreCase('')">
+                    	OR DT24 <![CDATA[>=]]> #{time}
+                    </if>
+		</if>
+	</if>
+	<if test='search_type=="2"'>
+	SELECT
+		AAA.*,
+		NVL(FC_ROUTETOBUS_BUSS(AAA.BUSID),'-') ROUTENO,
+		NVL(FC_BUS_COMPNM(AAA.BUSID),'-') COMPNM
+	FROM
+		(
+		SELECT
+			Z.CARREGNO,
+			X.*,
+			Y.*
+		FROM
+			(
+			SELECT
+				A.BUSID BUSID
+					<if test="dt01 != null and !dt01.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt01},${event_type},0) ) DT01
+                    </if>
+                    <if test="dt02 != null and !dt02.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt02},${event_type},0) ) DT02
+                    </if>
+                    <if test="dt03 != null and !dt03.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt03},${event_type},0) ) DT03
+                    </if>
+                    <if test="dt04 != null and !dt04.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt04},${event_type},0) ) DT04
+                    </if>
+                    <if test="dt05 != null and !dt05.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt05},${event_type},0) ) DT05
+                    </if>
+                    <if test="dt06 != null and !dt06.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt06},${event_type},0) ) DT06
+                    </if>
+                    <if test="dt07 != null and !dt07.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt07},${event_type},0) ) DT07
+                    </if>
+                    <if test="dt08 != null and !dt08.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt08},${event_type},0) ) DT08
+                    </if>
+                    <if test="dt09 != null and !dt09.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt09},${event_type},0) ) DT09
+                    </if>
+                    <if test="dt10 != null and !dt10.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt10},${event_type},0) ) DT10
+                    </if>
+                    <if test="dt11 != null and !dt11.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt11},${event_type},0) ) DT11
+                    </if>
+                    <if test="dt12 != null and !dt12.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt12},${event_type},0) ) DT12
+                    </if>
+                    <if test="dt13 != null and !dt13.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt13},${event_type},0) ) DT13
+                    </if>
+                    <if test="dt14 != null and !dt14.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt14},${event_type},0) ) DT14
+                    </if>
+                    <if test="dt15 != null and !dt15.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt15},${event_type},0) ) DT15
+                    </if>
+                    <if test="dt16 != null and !dt16.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt16},${event_type},0) ) DT16
+                    </if>
+                    <if test="dt17 != null and !dt17.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt17},${event_type},0) ) DT17
+                    </if>
+                    <if test="dt18 != null and !dt18.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt18},${event_type},0) ) DT18
+                    </if>
+                    <if test="dt19 != null and !dt19.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt19},${event_type},0) ) DT19
+                    </if>
+                    <if test="dt20 != null and !dt20.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt20},${event_type},0) ) DT20
+                    </if>
+                    <if test="dt21 != null and !dt21.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt21},${event_type},0) ) DT21
+                    </if>
+                    <if test="dt22 != null and !dt22.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt22},${event_type},0) ) DT22
+                    </if>
+                    <if test="dt23 != null and !dt23.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt23},${event_type},0) ) DT23
+                    </if>
+                    <if test="dt24 != null and !dt24.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt24},${event_type},0) ) DT24
+                    </if>
+                    <if test="dt25 != null and !dt25.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt25},${event_type},0) ) DT25
+                    </if>
+                    <if test="dt26 != null and !dt26.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt26},${event_type},0) ) DT26
+                    </if>
+                    <if test="dt27 != null and !dt27.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt27},${event_type},0) ) DT27
+                    </if>
+                    <if test="dt28 != null and !dt28.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt28},${event_type},0) ) DT28
+                    </if>
+                    <if test="dt29 != null and !dt29.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt29},${event_type},0) ) DT29
+                    </if>
+                    <if test="dt30 != null and !dt30.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt30},${event_type},0) ) DT30
+                    </if>
+                    <if test="dt31 != null and !dt31.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt31},${event_type},0) ) DT31
+                    </if>
+			FROM
+				TB_DMS_BUSCOLL A
+			WHERE
+				A.PROCCYCLCD = '8'
+				AND A.PROCDT BETWEEN TO_DATE(#{start_time}||'000000','YYYYMMDDHH24MISS') 
+                AND TO_DATE(#{end_time}||'235959','YYYYMMDDHH24MISS') 
+                <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+				AND A.ROUTEID = #{routeid}
+		   		</if>
+			GROUP BY
+				A.BUSID
+			) X,
+			(
+			SELECT
+				A.BUSID BUSID2,
+				ROUND(AVG(${event_type}),1) DTAVG
+			FROM
+				TB_DMS_BUSCOLL A
+			WHERE
+				A.PROCCYCLCD = '8'
+				AND A.PROCDT BETWEEN TO_DATE(#{start_time}||'000000','YYYYMMDDHH24MISS') 
+                AND TO_DATE(#{end_time}||'235959','YYYYMMDDHH24MISS') 
+                <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+				AND A.ROUTEID = #{routeid}
+		   		</if>
+			GROUP BY
+				A.BUSID
+			) Y,
+			TB_ADM_BUS Z
+		WHERE
+			X.BUSID = Y.BUSID2
+			AND X.BUSID = Z.BUSID
+		ORDER BY
+			Z.CARREGNO
+		) AAA
+		<if test='time >= "0"'>
+			 		<if test="dt01 != null and !dt01.equalsIgnoreCase('')">
+                    WHERE
+              			DT01 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt02 != null and !dt02.equalsIgnoreCase('')">
+                    	OR DT02 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt03 != null and !dt03.equalsIgnoreCase('')">
+                    	OR DT03 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt04 != null and !dt04.equalsIgnoreCase('')">
+                    	OR DT04 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt05 != null and !dt05.equalsIgnoreCase('')">
+                    	OR DT05 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt06 != null and !dt06.equalsIgnoreCase('')">
+                    	OR DT06 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt07 != null and !dt07.equalsIgnoreCase('')">
+                    	OR DT07 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt08 != null and !dt08.equalsIgnoreCase('')">
+                    	OR DT08 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt09 != null and !dt09.equalsIgnoreCase('')">
+                    	OR DT09 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt10 != null and !dt10.equalsIgnoreCase('')">
+                    	OR DT10 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt11 != null and !dt11.equalsIgnoreCase('')">
+                    	OR DT11 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt12 != null and !dt12.equalsIgnoreCase('')">
+                    	OR DT12 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt13 != null and !dt13.equalsIgnoreCase('')">
+                    	OR DT13 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt14 != null and !dt14.equalsIgnoreCase('')">
+                    	OR DT14 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt15 != null and !dt15.equalsIgnoreCase('')">
+                    	OR DT15 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt16 != null and !dt16.equalsIgnoreCase('')">
+                    	OR DT16 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt17 != null and !dt17.equalsIgnoreCase('')">
+                    	OR DT17 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt18 != null and !dt18.equalsIgnoreCase('')">
+                    	OR DT18 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt19 != null and !dt19.equalsIgnoreCase('')">
+                    	OR DT19 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt20 != null and !dt20.equalsIgnoreCase('')">
+                    	OR DT20 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt21 != null and !dt21.equalsIgnoreCase('')">
+                    	OR DT21 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt22 != null and !dt22.equalsIgnoreCase('')">
+                    	OR DT22 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt23 != null and !dt23.equalsIgnoreCase('')">
+                    	OR DT23 <![CDATA[>=]]> #{time}
+                    </if>
+                    <if test="dt24 != null and !dt24.equalsIgnoreCase('')">
+                    	OR DT24 <![CDATA[>=]]> #{time}
+                    </if>
+		</if>
+	</if>
+	
+	</select>
+	
+	<!--//////############ v707  -->
+	<!--정류소별 수집현황조회 그리드 -->
+	<select id="selectBusStopEvent" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	<if test='search_type=="1"'>
+	SELECT
+	    Z.ROUTEID,
+	    FC_BUSSTOP_BSTOPNM(X.BSTOPID) BSTOPNM,
+	    Z.BSTOPSEQ BSTOPSEQ,
+	    X.*,
+	    Y.*
+	FROM
+   		(
+        SELECT
+            A.BSTOPID BSTOPID
+           			<if test="dt01 != null and !dt01.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt01},${event_type},0) ) DT01
+                    </if>
+                    <if test="dt02 != null and !dt02.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt02},${event_type},0) ) DT02
+                    </if>
+                    <if test="dt03 != null and !dt03.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt03},${event_type},0) ) DT03
+                    </if>
+                    <if test="dt04 != null and !dt04.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt04},${event_type},0) ) DT04
+                    </if>
+                    <if test="dt05 != null and !dt05.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt05},${event_type},0) ) DT05
+                    </if>
+                    <if test="dt06 != null and !dt06.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt06},${event_type},0) ) DT06
+                    </if>
+                    <if test="dt07 != null and !dt07.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt07},${event_type},0) ) DT07
+                    </if>
+                    <if test="dt08 != null and !dt08.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt08},${event_type},0) ) DT08
+                    </if>
+                    <if test="dt09 != null and !dt09.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt09},${event_type},0) ) DT09
+                    </if>
+                    <if test="dt10 != null and !dt10.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt10},${event_type},0) ) DT10
+                    </if>
+                    <if test="dt11 != null and !dt11.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt11},${event_type},0) ) DT11
+                    </if>
+                    <if test="dt12 != null and !dt12.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt12},${event_type},0) ) DT12
+                    </if>
+                    <if test="dt13 != null and !dt13.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt13},${event_type},0) ) DT13
+                    </if>
+                    <if test="dt14 != null and !dt14.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt14},${event_type},0) ) DT14
+                    </if>
+                    <if test="dt15 != null and !dt15.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt15},${event_type},0) ) DT15
+                    </if>
+                    <if test="dt16 != null and !dt16.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt16},${event_type},0) ) DT16
+                    </if>
+                    <if test="dt17 != null and !dt17.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt17},${event_type},0) ) DT17
+                    </if>
+                    <if test="dt18 != null and !dt18.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt18},${event_type},0) ) DT18
+                    </if>
+                    <if test="dt19 != null and !dt19.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt19},${event_type},0) ) DT19
+                    </if>
+                    <if test="dt20 != null and !dt20.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt20},${event_type},0) ) DT20
+                    </if>
+                    <if test="dt21 != null and !dt21.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt21},${event_type},0) ) DT21
+                    </if>
+                    <if test="dt22 != null and !dt22.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt22},${event_type},0) ) DT22
+                    </if>
+                    <if test="dt23 != null and !dt23.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt23},${event_type},0) ) DT23
+                    </if>
+                    <if test="dt24 != null and !dt24.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDDHH24'),#{dt24},${event_type},0) ) DT24
+                    </if>
+        FROM
+            TB_DMS_BSTOPCOLL A
+        WHERE
+            A.PROCCYCLCD = '7'
+           	AND A.PROCDT BETWEEN TO_DATE(#{start_time}||'0000','YYYYMMDDHH24MISS') 
+            AND TO_DATE(#{end_time}||'0000','YYYYMMDDHH24MISS') 
+            <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+			AND A.ROUTEID = #{routeid}
+	   		</if>
+        GROUP BY
+            A.BSTOPID
+    	) X,
+    	
+    	(
+        SELECT
+            A.BSTOPID BSTOPID2,
+            ROUND(AVG(${event_type}),1) DTAVG
+        FROM
+            TB_DMS_BSTOPCOLL A
+        WHERE
+           	A.PROCCYCLCD = '7'
+            AND A.PROCDT BETWEEN TO_DATE(#{start_time}||'0000','YYYYMMDDHH24MISS') 
+            AND TO_DATE(#{end_time}||'0000','YYYYMMDDHH24MISS') 
+            <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+			AND A.ROUTEID = #{routeid}
+	   		</if>
+        GROUP BY
+            A.BSTOPID
+    	) Y,
+   		(
+        SELECT
+            ROUTEID,
+            NODEID,
+            PATHSEQ,
+            BSTOPSEQ
+        FROM
+            TB_ADM_ROUTEPNODE
+       <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+       WHERE
+			ROUTEID = #{routeid}
+	   </if>
+    	) Z
+	WHERE
+	    X.BSTOPID = Z.NODEID (+)
+	    AND   Y.BSTOPID2 = Z.NODEID
+	ORDER BY
+	    Z.PATHSEQ,
+	    Z.NODEID
+	</if>
+	
+	<if test='search_type=="2"'>
+	SELECT
+	    Z.ROUTEID,
+	    FC_BUSSTOP_BSTOPNM(X.BSTOPID) BSTOPNM,
+	    Z.BSTOPSEQ BSTOPSEQ,
+	    X.*,
+	    Y.*
+	FROM
+   		(
+        SELECT
+            A.BSTOPID BSTOPID
+           			<if test="dt01 != null and !dt01.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt01},${event_type},0) ) DT01
+                    </if>
+                    <if test="dt02 != null and !dt02.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt02},${event_type},0) ) DT02
+                    </if>
+                    <if test="dt03 != null and !dt03.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt03},${event_type},0) ) DT03
+                    </if>
+                    <if test="dt04 != null and !dt04.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt04},${event_type},0) ) DT04
+                    </if>
+                    <if test="dt05 != null and !dt05.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt05},${event_type},0) ) DT05
+                    </if>
+                    <if test="dt06 != null and !dt06.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt06},${event_type},0) ) DT06
+                    </if>
+                    <if test="dt07 != null and !dt07.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt07},${event_type},0) ) DT07
+                    </if>
+                    <if test="dt08 != null and !dt08.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt08},${event_type},0) ) DT08
+                    </if>
+                    <if test="dt09 != null and !dt09.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt09},${event_type},0) ) DT09
+                    </if>
+                    <if test="dt10 != null and !dt10.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt10},${event_type},0) ) DT10
+                    </if>
+                    <if test="dt11 != null and !dt11.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt11},${event_type},0) ) DT11
+                    </if>
+                    <if test="dt12 != null and !dt12.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt12},${event_type},0) ) DT12
+                    </if>
+                    <if test="dt13 != null and !dt13.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt13},${event_type},0) ) DT13
+                    </if>
+                    <if test="dt14 != null and !dt14.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt14},${event_type},0) ) DT14
+                    </if>
+                    <if test="dt15 != null and !dt15.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt15},${event_type},0) ) DT15
+                    </if>
+                    <if test="dt16 != null and !dt16.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt16},${event_type},0) ) DT16
+                    </if>
+                    <if test="dt17 != null and !dt17.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt17},${event_type},0) ) DT17
+                    </if>
+                    <if test="dt18 != null and !dt18.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt18},${event_type},0) ) DT18
+                    </if>
+                    <if test="dt19 != null and !dt19.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt19},${event_type},0) ) DT19
+                    </if>
+                    <if test="dt20 != null and !dt20.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt20},${event_type},0) ) DT20
+                    </if>
+                    <if test="dt21 != null and !dt21.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt21},${event_type},0) ) DT21
+                    </if>
+                    <if test="dt22 != null and !dt22.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt22},${event_type},0) ) DT22
+                    </if>
+                    <if test="dt23 != null and !dt23.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt23},${event_type},0) ) DT23
+                    </if>
+                    <if test="dt24 != null and !dt24.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt24},${event_type},0) ) DT24
+                    </if>
+                    <if test="dt25 != null and !dt25.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt25},${event_type},0) ) DT25
+                    </if>
+                    <if test="dt26 != null and !dt26.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt26},${event_type},0) ) DT26
+                    </if>
+                    <if test="dt27 != null and !dt27.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt27},${event_type},0) ) DT27
+                    </if>
+                    <if test="dt28 != null and !dt28.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt28},${event_type},0) ) DT28
+                    </if>
+                    <if test="dt29 != null and !dt29.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt29},${event_type},0) ) DT29
+                    </if>
+                    <if test="dt30 != null and !dt30.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt30},${event_type},0) ) DT30
+                    </if>
+                    <if test="dt31 != null and !dt31.equalsIgnoreCase('')">
+                    	,SUM(DECODE(TO_CHAR(PROCDT,'YYYYMMDD'),#{dt31},${event_type},0) ) DT31
+                    </if>
+        FROM
+            TB_DMS_BSTOPCOLL A
+        WHERE
+            A.PROCCYCLCD = '8'
+           	AND A.PROCDT BETWEEN TO_DATE(#{start_time}||'000000','YYYYMMDDHH24MISS') 
+            AND TO_DATE(#{end_time}||'235959','YYYYMMDDHH24MISS') 
+            <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+			AND A.ROUTEID = #{routeid}
+	   		</if>
+        GROUP BY
+            A.BSTOPID
+    	) X,
+    	
+    	(
+        SELECT
+            A.BSTOPID BSTOPID2,
+            ROUND(AVG(${event_type}),1) DTAVG
+        FROM
+            TB_DMS_BSTOPCOLL A
+        WHERE
+           	A.PROCCYCLCD = '8'
+            AND A.PROCDT BETWEEN TO_DATE(#{start_time}||'000000','YYYYMMDDHH24MISS') 
+            AND TO_DATE(#{end_time}||'235959','YYYYMMDDHH24MISS') 
+            <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+			AND A.ROUTEID = #{routeid}
+	   		</if>
+        GROUP BY
+            A.BSTOPID
+    	) Y,
+   		(
+        SELECT
+            ROUTEID,
+            NODEID,
+            PATHSEQ,
+            BSTOPSEQ
+        FROM
+            TB_ADM_ROUTEPNODE
+       <if test="routeid!=null and !routeid.equalsIgnoreCase('')">
+       WHERE
+			ROUTEID = #{routeid}
+	   </if>
+    	) Z
+	WHERE
+	    X.BSTOPID = Z.NODEID (+)
+	    AND   Y.BSTOPID2 = Z.NODEID
+	ORDER BY
+	    Z.PATHSEQ,
+	    Z.NODEID
+	</if>
+	
+	</select>
+	
+	<!--//////############ v708  -->
+	<!--회사목록 조회 -->
+	<select id="selectCompList" resultType="TbAdmBusstopVO">
+	SELECT
+		COMPID,
+		COMPNM
+	FROM
+		TB_ADM_BUSCOMP
+	WHERE
+		USEYN = '1'
+	ORDER BY
+		COMPNM ASC
+	</select>
+	<!--노선목록 조회-->
+	<select id="selectRouteListWithComp" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+		A. ROUTEID,
+		A. ROUTENO
+	FROM
+		TB_ADM_BUSROUTE A,
+		TB_ADM_ROUTETOCOMP B
+	WHERE
+		USEYN = '1'
+		<if test='compid!="0" and compid!=null'>
+			AND B.COMPID = #{compid}
+			AND A.ROUTEID = B.ROUTEID
+		</if>
+	ORDER BY
+		ROUTENO ASC
+	</select>
+	<!--차량번호 조회-->
+	<select id="selectCarRegNo" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+		A.BUSID BUSID,
+		FC_BUS_CARREGNO(A.BUSID) CARREGNO
+	FROM
+		TB_ICM_BUSTOROUTE A,
+		TB_ADM_BUS B
+	WHERE
+		A.BUSID = B.BUSID
+		AND B.USEYN = '1'
+		AND A.ROUTEID = #{routeid}
+		AND A.APP_STARTDT = (
+			SELECT
+				MAX(APP_STARTDT)
+			FROM
+				TB_ICM_BUSTOROUTE
+			WHERE
+				BUSID = A.BUSID
+			)
+	ORDER BY
+		CARREGNO ASC
+	</select>
+	
+	<!--차량별 통신수집이력 조회-->
+	<select id="selectBusEventLog" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	<if test='event_type=="1"'>
+		SELECT
+		    TO_CHAR(EVT_OCCURDT,'YYYY/MM/DD HH24:MI:SS') EVT_OCCURDT,
+		    BUSID,
+		    EVTTPCD,
+		    EVTSUBTPCD,
+		    MDTID,
+		    A.ROUTEID ROUTEID,
+		    POSX,
+		    POSY,
+		    HEADING,
+		    NODEID,
+		    LLINKID,
+		    PATHSEQ,
+		    DETECT_NODECNT,
+		    RUNSTATCD,
+		    DECODE(LASTBUSYN,'0','일반','1','막차','-') LASTBUS,
+   		 	DECODE(EMPTYBUSYN,'0','일반','1','공차','-') EMPTYBUS,
+   			DECODE(CHGBUSYN,'0','일반','1','대차','-') CHGBUS,
+		    OPENSTATCD,
+		    DECODE(EMGCYYN,'0','긴급없음','1','긴급','-') EMGCY,
+		    DECODE(ACCIDYN,'0','사고없음','1','사고','-') ACCID,
+    		DECODE(TRBLYN,'0','고장없음','1','고장','-') TRBL,
+		    TO_CHAR(ROUND( (CENTER_COLLDT - EVT_OCCURDT) * 86400,2) ) GAP,
+		    INCIDTPCD,
+		    MDTSTATCD,
+		    RUNVIOLTPCD,
+		   	DECODE(RUNSPD,      NULL,'0',RUNSPD)       RUNSPD,
+    		DECODE(RUNDIST,     NULL,'0',RUNDIST)      RUNDIST,
+    		DECODE(RUNTM,       NULL,'0',RUNTM)        RUNTM,
+    		DECODE(REAL_RUNORD, NULL,'0',REAL_RUNORD)  REAL_RUNORD,
+    		DECODE(BSTOP_STOPTM,NULL,'0',BSTOP_STOPTM) BSTOP_STOPTM,
+		    RUN_STARTDT,
+		    FIXINT_CYCL,
+		    TERM_DELAYTM,
+		    TERM_SNDDT,
+		    CENTER_COLLDT,
+		    PLAN_RUNCNT,
+		    ORIGIN_BSTOPID,
+		    DEST_BSTOPID,
+		    COMMSUCCNT,
+		    FC_BUS_CARREGNO(BUSID) REGNO,
+		    FC_CODE_CDNM('EVTTPCD',EVTTPCD) EVTTYPE,
+		    FC_CODE_CDNM('EVTSUBTPCD',EVTSUBTPCD) EVTSUBTYPE,
+		    FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO,
+		    DECODE(SUBSTR(LINKNM,1,INSTR(LINKNM,'~') - 1),'',TO_CHAR(START_NODEID),'',TO_CHAR(START_NODEID),'',TO_CHAR(START_NODEID),SUBSTR(LINKNM
+			,1,INSTR(LINKNM,'~') - 1) )
+		    || '~'
+		    || DECODE(SUBSTR(LINKNM,INSTR(LINKNM,'~') + 1,LENGTH(LINKNM) ),'',TO_CHAR(END_NODEID),'',TO_CHAR(END_NODEID),'',TO_CHAR(END_NODEID),SUBSTR
+			(LINKNM,INSTR(LINKNM,'~') + 1,LENGTH(LINKNM) ) ) LLINKNM,
+		    FC_BUSSTOP_BSTOPNM(ORIGIN_BSTOPID) ORIGIN_BSTOPNM,
+		    FC_BUSSTOP_BSTOPNM(DEST_BSTOPID) DEST_BSTOPNM,
+		    FC_NODE_NODENM(NODEID) NODENM,
+		    FC_CODE_CDNM('RUNSTATCD',RUNSTATCD) RUNSTATTYPE,
+		    FC_CODE_CDNM('OPENSTATCD',OPENSTATCD) OPENSTATTYPE,
+		    FC_CODE_CDNM('INCIDTPCD',INCIDTPCD) INCIDTYPE,
+		    FC_CODE_CDNM('MDTSTATCD',MDTSTATCD) MDTSTAT,
+		    FC_CODE_CDNM('RUNVIOLTPCD',RUNVIOLTPCD) RUNVIOLTYPE,
+		    FC_BUSCOMP_COMPNM(B.COMPID) COMPNM
+		FROM
+		    TB_BMH_RUNEVTCOLL A,
+		    TB_ADM_ROUTETOCOMP B,
+		    TB_ADM_LINK C
+		WHERE
+		    A.ROUTEID = B.ROUTEID
+		    AND   A.LLINKID = C.LINKID (+)
+		    AND   A.EVT_OCCURDT BETWEEN TO_DATE(#{start_time},'YYYYMMDDHH24MISS') AND TO_DATE(#{end_time},'YYYYMMDDHH24MISS')
+		    AND   A.BUSID = #{busid}
+		    
+		UNION
+		
+		SELECT
+		    TO_CHAR(EVT_OCCURDT,'YYYY/MM/DD HH24:MI:SS') EVT_OCCURDT,
+		    BUSID,
+		    EVTTPCD,
+		    EVTSUBTPCD,
+		    MDTID,
+		    A.ROUTEID ROUTEID,
+		    POSX,
+		    POSY,
+		    HEADING,
+		    NODEID,
+		    LLINKID,
+		    PATHSEQ,
+		    DETECT_NODECNT,
+		    RUNSTATCD,
+		    DECODE(LASTBUSYN,'0','일반','1','막차','-') LASTBUS,
+   		 	DECODE(EMPTYBUSYN,'0','일반','1','공차','-') EMPTYBUS,
+   			DECODE(CHGBUSYN,'0','일반','1','대차','-') CHGBUS,
+		    OPENSTATCD,
+		    DECODE(EMGCYYN,'0','긴급없음','1','긴급','-') EMGCY,
+		    DECODE(ACCIDYN,'0','사고없음','1','사고','-') ACCID,
+    		DECODE(TRBLYN,'0','고장없음','1','고장','-') TRBL,
+		    '' GAP,
+		    INCIDTPCD,
+		    MDTSTATCD,
+		    RUNVIOLTPCD,
+		    DECODE(RUNSPD,      NULL,'0',RUNSPD)       RUNSPD,
+    		DECODE(RUNDIST,     NULL,'0',RUNDIST)      RUNDIST,
+    		DECODE(RUNTM,       NULL,'0',RUNTM)        RUNTM,
+    		DECODE(REAL_RUNORD, NULL,'0',REAL_RUNORD)  REAL_RUNORD,
+    		DECODE(BSTOP_STOPTM,NULL,'0',BSTOP_STOPTM) BSTOP_STOPTM,
+		    RUN_STARTDT,
+		    FIXINT_CYCL,
+		    TERM_DELAYTM,
+		    TERM_SNDDT,
+		    CENTER_COLLDT,
+		    PLAN_RUNCNT,
+		    ORIGIN_BSTOPID,
+		    DEST_BSTOPID,
+		    COMMSUCCNT,
+		    FC_BUS_CARREGNO(BUSID) REGNO,
+		    FC_CODE_CDNM('EVTTPCD',EVTTPCD) EVTTYPE,
+		    FC_CODE_CDNM('EVTSUBTPCD',EVTSUBTPCD) EVTSUBTYPE,
+		    FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO,
+		    DECODE(SUBSTR(LINKNM,1,INSTR(LINKNM,'~') - 1),'',TO_CHAR(START_NODEID),'',TO_CHAR(START_NODEID),'',TO_CHAR(START_NODEID),SUBSTR(LINKNM
+			,1,INSTR(LINKNM,'~') - 1) )
+		    || '~'
+		    || DECODE(SUBSTR(LINKNM,INSTR(LINKNM,'~') + 1,LENGTH(LINKNM) ),'',TO_CHAR(END_NODEID),'',TO_CHAR(END_NODEID),'',TO_CHAR(END_NODEID),SUBSTR
+			(LINKNM,INSTR(LINKNM,'~') + 1,LENGTH(LINKNM) ) ) LLINKNM,
+		    FC_BUSSTOP_BSTOPNM(ORIGIN_BSTOPID) ORIGIN_BSTOPNM,
+		    FC_BUSSTOP_BSTOPNM(DEST_BSTOPID) DEST_BSTOPNM,
+		    FC_NODE_NODENM(NODEID) NODENM,
+		    FC_CODE_CDNM('RUNSTATCD',RUNSTATCD) RUNSTATTYPE,
+		    FC_CODE_CDNM('OPENSTATCD',OPENSTATCD) OPENSTATTYPE,
+		    FC_CODE_CDNM('INCIDTPCD',INCIDTPCD) INCIDTYPE,
+		    FC_CODE_CDNM('MDTSTATCD',MDTSTATCD) MDTSTAT,
+		    FC_CODE_CDNM('RUNVIOLTPCD',RUNVIOLTPCD) RUNVIOLTYPE,
+		    FC_BUSCOMP_COMPNM(B.COMPID) COMPNM
+		FROM
+		    TB_BMH_RUNEVTOMTD A,
+		    TB_ADM_ROUTETOCOMP B,
+		    TB_ADM_LINK C
+		WHERE
+		    A.ROUTEID = B.ROUTEID
+		    AND   A.LLINKID = C.LINKID (+)
+		    AND   A.EVT_OCCURDT BETWEEN TO_DATE(#{start_time},'YYYYMMDDHH24MISS') AND TO_DATE(#{end_time},'YYYYMMDDHH24MISS')
+		    AND   A.BUSID = #{busid}
+		ORDER BY
+		    BUSID,
+		    EVT_OCCURDT
+	</if>
+	<if test='event_type=="2"'>
+	SELECT
+		    TO_CHAR(EVT_OCCURDT,'YYYY/MM/DD HH24:MI:SS') EVT_OCCURDT,
+		    BUSID,
+		    EVTTPCD,
+		    EVTSUBTPCD,
+		    MDTID,
+		    A.ROUTEID ROUTEID,
+		    POSX,
+		    POSY,
+		    HEADING,
+		    NODEID,
+		    LLINKID,
+		    PATHSEQ,
+		    DETECT_NODECNT,
+		    RUNSTATCD,
+		    DECODE(LASTBUSYN,'0','일반','1','막차','-') LASTBUS,
+   		 	DECODE(EMPTYBUSYN,'0','일반','1','공차','-') EMPTYBUS,
+   			DECODE(CHGBUSYN,'0','일반','1','대차','-') CHGBUS,
+		    OPENSTATCD,
+		    DECODE(EMGCYYN,'0','긴급없음','1','긴급','-') EMGCY,
+		    DECODE(ACCIDYN,'0','사고없음','1','사고','-') ACCID,
+    		DECODE(TRBLYN,'0','고장없음','1','고장','-') TRBL,
+		    TO_CHAR(ROUND( (CENTER_COLLDT - EVT_OCCURDT) * 86400,2) ) GAP,
+		    INCIDTPCD,
+		    MDTSTATCD,
+		    RUNVIOLTPCD,
+		    DECODE(RUNSPD,      NULL,'0',RUNSPD)       RUNSPD,
+    		DECODE(RUNDIST,     NULL,'0',RUNDIST)      RUNDIST,
+    		DECODE(RUNTM,       NULL,'0',RUNTM)        RUNTM,
+    		DECODE(REAL_RUNORD, NULL,'0',REAL_RUNORD)  REAL_RUNORD,
+    		DECODE(BSTOP_STOPTM,NULL,'0',BSTOP_STOPTM) BSTOP_STOPTM,
+		    RUN_STARTDT,
+		    FIXINT_CYCL,
+		    TERM_DELAYTM,
+		    TERM_SNDDT,
+		    CENTER_COLLDT,
+		    PLAN_RUNCNT,
+		    ORIGIN_BSTOPID,
+		    DEST_BSTOPID,
+		    COMMSUCCNT,
+		    FC_BUS_CARREGNO(BUSID) REGNO,
+		    FC_CODE_CDNM('EVTTPCD',EVTTPCD) EVTTYPE,
+		    FC_CODE_CDNM('EVTSUBTPCD',EVTSUBTPCD) EVTSUBTYPE,
+		    FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO,
+		    DECODE(SUBSTR(LINKNM,1,INSTR(LINKNM,'~') - 1),'',TO_CHAR(START_NODEID),'',TO_CHAR(START_NODEID),'',TO_CHAR(START_NODEID),SUBSTR(LINKNM
+			,1,INSTR(LINKNM,'~') - 1) )
+		    || '~'
+		    || DECODE(SUBSTR(LINKNM,INSTR(LINKNM,'~') + 1,LENGTH(LINKNM) ),'',TO_CHAR(END_NODEID),'',TO_CHAR(END_NODEID),'',TO_CHAR(END_NODEID),SUBSTR
+			(LINKNM,INSTR(LINKNM,'~') + 1,LENGTH(LINKNM) ) ) LLINKNM,
+		    FC_BUSSTOP_BSTOPNM(ORIGIN_BSTOPID) ORIGIN_BSTOPNM,
+		    FC_BUSSTOP_BSTOPNM(DEST_BSTOPID) DEST_BSTOPNM,
+		    FC_NODE_NODENM(NODEID) NODENM,
+		    FC_CODE_CDNM('RUNSTATCD',RUNSTATCD) RUNSTATTYPE,
+		    FC_CODE_CDNM('OPENSTATCD',OPENSTATCD) OPENSTATTYPE,
+		    FC_CODE_CDNM('INCIDTPCD',INCIDTPCD) INCIDTYPE,
+		    FC_CODE_CDNM('MDTSTATCD',MDTSTATCD) MDTSTAT,
+		    FC_CODE_CDNM('RUNVIOLTPCD',RUNVIOLTPCD) RUNVIOLTYPE,
+		    FC_BUSCOMP_COMPNM(B.COMPID) COMPNM
+		FROM
+		    TB_BMH_RUNEVTCOLL A,
+		    TB_ADM_ROUTETOCOMP B,
+		    TB_ADM_LINK C
+		WHERE
+		    A.ROUTEID = B.ROUTEID
+		    AND   A.LLINKID = C.LINKID (+)
+		    AND   A.EVT_OCCURDT BETWEEN TO_DATE(#{start_time},'YYYYMMDDHH24MISS') AND TO_DATE(#{end_time},'YYYYMMDDHH24MISS')
+		    AND   A.BUSID = #{busid}
+		ORDER BY
+		    BUSID,
+		    EVT_OCCURDT
+	</if>
+	<if test='event_type=="3"'>
+		SELECT
+		    TO_CHAR(EVT_OCCURDT,'YYYY/MM/DD HH24:MI:SS') EVT_OCCURDT,
+		    BUSID,
+		    EVTTPCD,
+		    EVTSUBTPCD,
+		    MDTID,
+		    A.ROUTEID ROUTEID,
+		    POSX,
+		    POSY,
+		    HEADING,
+		    NODEID,
+		    LLINKID,
+		    PATHSEQ,
+		    DETECT_NODECNT,
+		    RUNSTATCD,
+		    DECODE(LASTBUSYN,'0','일반','1','막차','-') LASTBUS,
+   		 	DECODE(EMPTYBUSYN,'0','일반','1','공차','-') EMPTYBUS,
+   			DECODE(CHGBUSYN,'0','일반','1','대차','-') CHGBUS,
+		    OPENSTATCD,
+		    DECODE(EMGCYYN,'0','긴급없음','1','긴급','-') EMGCY,
+		    DECODE(ACCIDYN,'0','사고없음','1','사고','-') ACCID,
+    		DECODE(TRBLYN,'0','고장없음','1','고장','-') TRBL,
+		    '' GAP,
+		    INCIDTPCD,
+		    MDTSTATCD,
+		    RUNVIOLTPCD,
+		    DECODE(RUNSPD,      NULL,'0',RUNSPD)       RUNSPD,
+    		DECODE(RUNDIST,     NULL,'0',RUNDIST)      RUNDIST,
+    		DECODE(RUNTM,       NULL,'0',RUNTM)        RUNTM,
+    		DECODE(REAL_RUNORD, NULL,'0',REAL_RUNORD)  REAL_RUNORD,
+    		DECODE(BSTOP_STOPTM,NULL,'0',BSTOP_STOPTM) BSTOP_STOPTM,
+		    RUN_STARTDT,
+		    FIXINT_CYCL,
+		    TERM_DELAYTM,
+		    TERM_SNDDT,
+		    CENTER_COLLDT,
+		    PLAN_RUNCNT,
+		    ORIGIN_BSTOPID,
+		    DEST_BSTOPID,
+		    COMMSUCCNT,
+		    FC_BUS_CARREGNO(BUSID) REGNO,
+		    FC_CODE_CDNM('EVTTPCD',EVTTPCD) EVTTYPE,
+		    FC_CODE_CDNM('EVTSUBTPCD',EVTSUBTPCD) EVTSUBTYPE,
+		    FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO,
+		    DECODE(SUBSTR(LINKNM,1,INSTR(LINKNM,'~') - 1),'',TO_CHAR(START_NODEID),'',TO_CHAR(START_NODEID),'',TO_CHAR(START_NODEID),SUBSTR(LINKNM
+			,1,INSTR(LINKNM,'~') - 1) )
+		    || '~'
+		    || DECODE(SUBSTR(LINKNM,INSTR(LINKNM,'~') + 1,LENGTH(LINKNM) ),'',TO_CHAR(END_NODEID),'',TO_CHAR(END_NODEID),'',TO_CHAR(END_NODEID),SUBSTR
+			(LINKNM,INSTR(LINKNM,'~') + 1,LENGTH(LINKNM) ) ) LLINKNM,
+		    FC_BUSSTOP_BSTOPNM(ORIGIN_BSTOPID) ORIGIN_BSTOPNM,
+		    FC_BUSSTOP_BSTOPNM(DEST_BSTOPID) DEST_BSTOPNM,
+		    FC_NODE_NODENM(NODEID) NODENM,
+		    FC_CODE_CDNM('RUNSTATCD',RUNSTATCD) RUNSTATTYPE,
+		    FC_CODE_CDNM('OPENSTATCD',OPENSTATCD) OPENSTATTYPE,
+		    FC_CODE_CDNM('INCIDTPCD',INCIDTPCD) INCIDTYPE,
+		    FC_CODE_CDNM('MDTSTATCD',MDTSTATCD) MDTSTAT,
+		    FC_CODE_CDNM('RUNVIOLTPCD',RUNVIOLTPCD) RUNVIOLTYPE,
+		    FC_BUSCOMP_COMPNM(B.COMPID) COMPNM
+		FROM
+		    TB_BMH_RUNEVTOMTD A,
+		    TB_ADM_ROUTETOCOMP B,
+		    TB_ADM_LINK C
+		WHERE
+		    A.ROUTEID = B.ROUTEID
+		    AND   A.LLINKID = C.LINKID (+)
+		    AND   A.EVT_OCCURDT BETWEEN TO_DATE(#{start_time},'YYYYMMDDHH24MISS') AND TO_DATE(#{end_time},'YYYYMMDDHH24MISS')
+		    AND   A.BUSID = #{busid}
+		ORDER BY
+		    BUSID,
+		    EVT_OCCURDT
+	</if>
+    </select>
+    
+    <!--//////############ v709  -->
+	<!--노선별 평균수집율 조회 -->
+	<select id="selectRouteAvgPercnt" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    ROUTEID,
+	    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO,
+	    CEIL(AVG(PERCNT1) ) AVGP1,
+	    CEIL(AVG(PERCNT2) ) AVGP2
+	FROM
+	    (
+	        SELECT
+	            *
+	        FROM
+	            (
+	                SELECT
+	                    (
+	                        CASE
+	                            WHEN ( ROUND( (BSTOP_ARRIV_CNT + CROSS_PASS_CNT) / (TOTAL_NODECNT),2) * 100 ) > 100 THEN 100
+	                            ELSE ROUND( (BSTOP_ARRIV_CNT + CROSS_PASS_CNT) / (TOTAL_NODECNT),2) * 100
+	                        END
+	                    ) AS PERCNT1,
+	                    ROUND( (BSTOP_ARRIV_CNT + CROSS_PASS_CNT) / (TOTAL_NODECNT - (START_PATHSEQ - 1) ),2) * 100 PERCNT2,
+	                    ROUTEID,
+	                    BUSID,
+	                    REAL_RUNORD,
+	                    TO_CHAR(RUN_STARTDT,'HH24:MI:SS') RUN_STARTDT,
+	                    TO_CHAR(RUN_ENDDT,'HH24:MI:SS') RUN_ENDDT,
+	                    START_PATHSEQ,
+	                    END_PATHSEQ,
+	                    DETECT_NODECNT,
+	                    ABS(TRUNC( (RUN_ENDDT - RUN_STARTDT) * 24 * 60 * 60,0) ) TMGAP,
+	                    RUNDIST,
+	                    RUNTM,
+	                    BSTOP_ARRIV_CNT,
+	                    BSTOP_DEP_CNT,
+	                    CROSS_PASS_CNT,
+	                    TOTAL_NODECNT,
+	                    TOTAL_BSTOPCNT,
+	                    OUTROUTECNT
+	                FROM
+	                    DMH_BUSRUNREC
+	                WHERE
+	                    RUN_STARTDT BETWEEN TO_DATE(#{start_time}||'023000','YYYYMMDDHH24MISS') AND TO_DATE(#{end_time}||'022959','YYYYMMDDHH24MISS')
+	            )
+	        WHERE
+	            PERCNT1 <![CDATA[>=]]> #{percnt1}
+	    )
+	GROUP BY
+	    ROUTEID
+	ORDER BY
+	    ROUTEID
+	</select>
+	<!--차량별 수집율 조회 -->
+	<select id="selectBusAvgPercnt" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+    *
+	FROM
+    	(SELECT
+            (
+                CASE
+                    WHEN ( ROUND( (BSTOP_ARRIV_CNT + CROSS_PASS_CNT) / (TOTAL_NODECNT),2) * 100 ) > 100 THEN 100
+                    ELSE ROUND( (BSTOP_ARRIV_CNT + CROSS_PASS_CNT) / (TOTAL_NODECNT),2) * 100
+                END
+            ) AS PERCNT1,
+            ROUND( (BSTOP_ARRIV_CNT + CROSS_PASS_CNT) / (TOTAL_NODECNT - (START_PATHSEQ - 1) ),2) * 100 PERCNT2,
+            ROUTEID,
+            BUSID,
+            REAL_RUNORD,
+            TO_CHAR(RUN_STARTDT,'YYYY/MM/DD HH24:MI:SS') RUN_STARTDT,
+            TO_CHAR(RUN_ENDDT,'YYYY/MM/DD HH24:MI:SS') RUN_ENDDT,
+            START_PATHSEQ,
+            END_PATHSEQ,
+            DETECT_NODECNT,
+            ABS(TRUNC( (RUN_ENDDT - RUN_STARTDT) * 24 * 60 * 60,0) ) TMGAP,
+            RUNDIST,
+            RUNTM,
+            BSTOP_ARRIV_CNT,
+            BSTOP_DEP_CNT,
+            CROSS_PASS_CNT,
+            TOTAL_NODECNT,
+            TOTAL_BSTOPCNT,
+            OUTROUTECNT
+        FROM
+            DMH_BUSRUNREC
+        WHERE
+            RUN_STARTDT BETWEEN TO_DATE(#{start_time}||'030000','YYYYMMDDHH24MISS') AND TO_DATE(#{end_time}||'025959','YYYYMMDDHH24MISS')
+            AND   ROUTEID = #{routeid}
+        ORDER BY
+            BUSID,
+            REAL_RUNORD
+    ) WHERE PERCNT1 > #{percnt1}
+	</select>
+	
+	
+	<!--//////############ v611  -->
+	<!--차량단말기 제공이력조회 -->
+	<select id="selectBusMdtEvent" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	
+	SELECT /*+ USE_HASH(BB,AA) */
+	    ARRIVTM,
+	    STARTTM,
+	    TO_CHAR(BB.PROCDT,'HH24:MI:SS') PROCDT,
+	    FC_BUS_CARREGNO(AA.BUSID) CARREGNO,
+	    AA.PATHSEQ,
+	    BB.NODEID,
+	    FC_NODE_NODENM(BB.NODEID) NODENM,
+	    BB.PATHSEQ,
+	    FC_BUS_CARREGNO(FFBUS_BUSID) FFCARRENO,
+	    FC_BUS_CARREGNO(FBUS_BUSID) FCARRENO,
+	    FC_BUS_CARREGNO(NBUS_BUSID) NCARRENO,
+	    FC_BUS_CARREGNO(NNBUS_BUSID) NNCARRENO,
+	    DECODE(FFBUS_LOCGAP,-999,NULL,FFBUS_LOCGAP) FFBUS_LOCGAP,
+	    DECODE(FFBUS_TMGAP,-999,NULL,FFBUS_TMGAP) FFBUS_TMGAP,
+	    DECODE(FBUS_LOCGAP,-999,NULL,FBUS_LOCGAP) FBUS_LOCGAP,
+	    DECODE(FBUS_TMGAP,-999,NULL,FBUS_TMGAP) FBUS_TMGAP,
+	    DECODE(NBUS_LOCGAP,-999,NULL,NBUS_LOCGAP) NBUS_LOCGAP,
+	    DECODE(NBUS_TMGAP,-999,NULL,NBUS_TMGAP) NBUS_TMGAP,
+	    DECODE(NNBUS_LOCGAP,-999,NULL,NNBUS_LOCGAP) NNBUS_LOCGAP,
+	    DECODE(NNBUS_TMGAP,-999,NULL,NNBUS_TMGAP) NNBUS_TMGAP,
+	    FC_NODE_NODENM(BB.BSTOPID_1) BSTOPID_1NM,
+	    BB.ARRPLANTM_1,
+	    FC_NODE_NODENM(BB.BSTOPID_2) BSTOPID_2NM,
+	    BB.ARRPLANTM_2,
+	    FC_NODE_NODENM(BB.BSTOPID_3) BSTOPID_3NM,
+	    BB.ARRPLANTM_3
+	FROM
+	    (
+	        SELECT
+	            ROUTEID,
+	            BUSID,
+	            NODEID,
+	            PATHSEQ,
+	            PLAN_RUNORD,
+	            TO_CHAR(MAX(ARRIVTM),'HH24:MI:SS') ARRIVTM,
+	            TO_CHAR(MAX(STARTTM),'HH24:MI:SS') STARTTM
+	        FROM
+	            (
+	                SELECT
+	                    NODEID,
+	                    PATHSEQ,
+	                    DECODE(EVTSUBTPCD,3,EVT_OCCURDT,NULL) STARTTM,
+	                    DECODE(EVTSUBTPCD,2,EVT_OCCURDT,1,EVT_OCCURDT,NULL) ARRIVTM,
+	                    BUSID,
+	                    ROUTEID,
+	                    PLAN_RUNORD
+	                FROM
+	                    DMH_TMSPACE
+	                WHERE
+	                    EVT_OCCURDT BETWEEN TO_DATE(#{start_time},'YYYYMMDDHH24MISS') AND TO_DATE(#{end_time},'YYYYMMDDHH24MISS')
+	                    AND   EVTTPCD = 21
+	                    AND   ROUTEID = #{routeid}
+	                    AND   BUSID = #{busid}
+	                    AND   EXISTS (
+	                        SELECT
+	                            'X'
+	                        FROM
+	                            TB_ADM_ROUTEPNODE
+	                        WHERE
+	                            ROUTEID = #{routeid}
+	                            AND   NODEID = DMH_TMSPACE.NODEID
+	                    )
+	            )
+	        GROUP BY
+	            ROUTEID,
+	            BUSID,
+	            NODEID,
+	            PATHSEQ,
+	            PLAN_RUNORD
+	    ) AA,
+	    (
+	        SELECT
+	            *
+	        FROM
+	            BMH_MDTOFFER
+	        WHERE
+	            PROCDT BETWEEN TO_DATE(#{start_time},'YYYYMMDDHH24MISS') AND TO_DATE(#{end_time},'YYYYMMDDHH24MISS')
+	            AND   NODEID IN (
+	                SELECT
+	                    NODEID
+	                FROM
+	                    TB_ADM_ROUTEPNODE
+	                WHERE
+	                    ROUTEID = #{routeid}
+	            )
+	            AND   BUSID = #{busid}
+	    ) BB
+	WHERE
+	    AA.PATHSEQ = BB.PATHSEQ
+	    AND   AA.PLAN_RUNORD = BB.PLAN_RUNORD
+	ORDER BY
+	    AA.PATHSEQ
+	</select>
+	
+	<!--//////############ v612  -->
+	<!--차량단말기 수집이력조회-->
+	<select id="selectRouteList" resultType="TbAdmBusstopVO">
+	SELECT
+	    ROUTEID ROUTEID,
+	    FC_CODE_CDNM('ROUTETPCD',ROUTETPCD) ROUTETPCD,
+	    ROUTENO
+	FROM
+	    TB_ADM_BUSROUTE A
+	ORDER BY
+	    ROUTEID
+	</select>
+	<select id="selectBusListWithBusrun" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    AA.BUSID,
+	    BB.CARREGNO,
+	    BB.BUSSTATCD,
+	    FC_CODE_CDNM('BUSSTATCD',BB.BUSSTATCD) BUSSTATNM,
+	    FC_BUSCOMP_COMPNM(BB.COMPID) COMPNM
+	FROM
+	    (
+	        SELECT
+	            BUSID
+	        FROM
+	            BMC_BUSRUN
+	        WHERE
+	            ROUTEID = #{routeid}
+	    ) AA,
+	    ADM_BUS BB
+	WHERE
+	    AA.BUSID = BB.BUSID
+	ORDER BY
+	    BUSID
+	</select>
+	<select id="selectBusMdtCollEvent" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    TO_CHAR(EVT_OCCURDT,'HH24:MI:SS') EVT_OCCURDT,
+	    TO_CHAR(CENTER_COLLDT,'HH24:MI:SS') CENTER_COLLDT,
+	    NODEID,
+	    FC_NODE_NODENM(NODEID) NODENM,
+	    DETECT_NODECNT,
+	    REAL_RUNORD,
+	    MSGSEQ,
+	    ABS(TRUNC( (CENTER_COLLDT - EVT_OCCURDT) * 24 * 60 * 60,0) ) DTIME,
+	    FC_CODE_CDNM('EVTTPCD',EVTTPCD) EVTTPCD,
+	    DECODE(EVTTPCD,'21',FC_CODE_CDNM('EVTSUBTPCD',EVTSUBTPCD),'25',FC_CODE_CDNM('RUNVIOLTPCD',RUNVIOLTPCD),'24',FC_CODE_CDNM('INCIDTPCD',INCIDTPCD),'-') EVTSUBTPCD,
+	    BUSID,
+	    MDTID,
+	    ROUTEID,
+	    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO,
+	    POSX,
+	    POSY,
+	    HEADING,
+	    MODEM_SERIALNO,
+	    DECODE(LASTBUSYN,'0','일반','1','막차','-') LASTBUSYN,
+   		DECODE(EMPTYBUSYN,'0','일반','1','공차','-') EMPTYBUSYN,
+   		DECODE(CHGBUSYN,'0','일반','1','대차','-') CHGBUSYN,
+	    EVTTPCD EVTTP,
+	    FC_CODE_CDNM('OPENSTATCD',OPENSTATCD) OPENSTATCD,
+	    MDTSTATCD,
+	    FC_CODE_CDNM('RUNSTATCD',RUNSTATCD) RUNSTATCD,
+		DECODE(RUNSPD,      NULL,'0',RUNSPD)       RUNSPD,
+    	DECODE(RUNDIST,     NULL,'0',RUNDIST)      RUNDIST,
+    	DECODE(RUNTM,       NULL,'0',RUNTM)        RUNTM,
+    	DECODE(BSTOP_STOPTM,NULL,'0',BSTOP_STOPTM) BSTOP_STOPTM,
+	    RUNSTATCD_1
+	FROM
+	    BMH_RUNEVTCOLL
+	WHERE
+	    EVT_OCCURDT BETWEEN TO_DATE(#{start_time}||'00','YYYYMMDDHH24MISS') AND TO_DATE(#{end_time}||'59','YYYYMMDDHH24MISS')
+	    AND   BUSID = #{busid}
+	    <if test='evttpcd!="0"'>
+	    AND   EVTTPCD = #{evttpcd}
+	    </if>
+	ORDER BY
+	    EVT_OCCURDT DESC,
+	    CENTER_COLLDT DESC
+	</select>
+	
+	<!--//////############ v614  -->
+	<!--노선별 운행대수 조회 왼쪽그리드-->
+	<select id="selectRouteRunList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    A.ROUTEID,
+	    B.ROUTENO,
+	    LIC_BUSCNT,
+	    A.RUNCNT,
+	    FC_CODE_CDNM('ROUTETPCD',B.ROUTETPCD) ROUTETPCDNM,
+	    (
+	        CASE
+	            WHEN A.RUNCNT - LIC_BUSCNT > 0 THEN ''
+	            ELSE '-'
+	        END
+	    ) RUNSTS,
+	    FC_BUSCOMP_COMPNM(C.COMPID) COMPNM
+	FROM
+	    (
+	        SELECT
+	            ROUTEID,
+	            COUNT(BUSID) RUNCNT
+	        FROM
+	            TB_DMS_BUSCOLL
+	        WHERE
+	            PROCCYCLCD = '8'
+	            AND TO_CHAR(PROCDT, 'YYYYMMDD') = #{start_time}
+	        GROUP BY
+	            ROUTEID
+	    ) A,
+	    TB_ADM_BUSROUTE B,
+	    TB_ADM_ROUTETOCOMP C
+	WHERE
+	    A.ROUTEID = B.ROUTEID
+	    AND   B.ROUTEID = C.ROUTEID
+	    <if test="compid != null and !compid.equalsIgnoreCase('0')">
+	    AND   C.COMPID = #{compid}
+	    </if>
+	    <if test="routeid != null and !routeid.equalsIgnoreCase('0')">
+	    AND   B.ROUTEID = #{routeid}
+	    </if>
+	ORDER BY
+	    A.ROUTEID
+	</select>
+	
+	<!--노선별 운행대수 조회 오른쪽그리드-->
+	<select id="selectBusRunList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    A.BUSID,
+	    B.CARREGNO,
+	    FC_BUSCOMP_COMPNM(B.COMPID) COMPNM,
+	    FC_CODE_CDNM('LOWPLATEYN',B.LOWPLATEYN) LOWPLATEYN,
+	    FC_CODE_CDNM('BUSSTATCD',B.BUSSTATCD) BUSSTATCD
+	FROM
+	    (
+	        SELECT
+	            ROUTEID,
+	            BUSID
+	        FROM
+	            TB_DMS_BUSCOLL
+	        WHERE
+	            PROCCYCLCD = '8'
+	            AND TO_CHAR(PROCDT, 'YYYYMMDD') = #{start_time}
+	            AND   ROUTEID = #{routeid}
+	    ) A,
+	    TB_ADM_BUS B
+	WHERE
+	    A.BUSID = B.BUSID
+	ORDER BY
+	    B.BUSSTATCD
+	</select>
+	
+	<!--//////############ v615  -->
+	<!--회차별운행이력 왼쪽그리드 -->
+	<select id="selectBusWithStat" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    DISTINCT AA.BUSID,
+	    AA.CARREGNO,
+	    AA.BUSSTATCD,
+	    FC_CODE_CDNM('BUSSTATCD',AA.BUSSTATCD) BUSSTATNM,
+	    FC_CODE_CDNM('LOWPLATEYN',AA.LOWPLATEYN) LOWPLATEYN
+	FROM
+	    ADM_BUS AA,
+	    TB_ICM_BUSTOROUTE BB
+	WHERE
+	    AA.BUSID = BB.BUSID
+	    <if test="routeid != null and !routeid.equalsIgnoreCase('0')">
+	    AND   BB.ROUTEID = #{routeid}
+	    </if>
+	    <if test="compid != null and !compid.equalsIgnoreCase('0')">
+	    AND AA.COMPID = #{compid}			
+	   	</if>
+	    AND AA.USEYN = '1'
+	ORDER BY
+	    AA.BUSSTATCD
+	</select>
+	
+	<!--회차별운행이력 오른쪽그리드-->
+	<select id="selectBusRunEvent" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    A.BUSID BUSID,
+	    B.CARREGNO CARREGNO,
+	    TO_CHAR(A.RUN_STARTDT,'YYYY/MM/DD HH24:MI:SS') RUN_STARTDT,
+	    TO_CHAR(A.RUN_ENDDT,'YYYY/MM/DD HH24:MI:SS') RUN_ENDDT,
+	    A.ROUTEID ROUTEID,
+	    FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO,
+	    A.DRIVERID DRIVERID,
+	    FC_BUSDRIVER_DRIVERNM(A.DRIVERID) BUS_DRIVERNM,
+	    A.COMPID COMPID,
+	    FC_BUSCOMP_COMPNM(A.COMPID) COMPNM,
+	    A.PLAN_RUNORD PLAN_RUNORD,
+	    A.REAL_RUNORD REAL_RUNORD,
+	    FC_RUNSTART_BSTOPNM(A.ROUTEID,A.START_PATHSEQ) START_PATHSEQ,
+	    FC_RUNEND_BSTOPNM(A.ROUTEID,A.END_PATHSEQ) END_PATHSEQ,
+	    A.DETECT_NODECNT DETECT_NODECNT,
+	    A.RUNSPD RUNSPD,
+	    A.RUNDIST RUNDIST,
+	    LPAD(TRUNC(A.RUNTM / 60),3,'0')
+	    || ''
+	    || LPAD(MOD(A.RUNTM,60),2,'0')
+	    || '' RUNTM,
+	    A.OVERSPDCNT OVERSPDCNT,
+	    A.OPENRUNCNT OPENRUNCNT,
+	    A.ACCELCNT ACCELCNT,
+	    A.DECELCNT DECELCNT,
+	    A.OUTROUTECNT OUTROUTECNT,
+	    A.STOPSKIPCNT STOPSKIPCNT,
+	    A.VOLDELAYCNT VOLDELAYCNT,
+	    A.TRBLCNT TRBLCNT,
+	    A.ACCIDCNT ACCIDCNT,
+	    A.EMGCYCNT EMGCYCNT
+	FROM
+	    TB_DMH_BUSRUNREC A,
+	    TB_ADM_BUS B
+	WHERE
+	    A.BUSID = B.BUSID
+	    AND   A.RUN_STARTDT BETWEEN TO_DATE(#{start_time}||'030000','YYYYMMDDHH24MISS') AND TO_DATE(#{end_time}||'025959','YYYYMMDDHH24MISS')
+	   <if test="carregno != null and !carregno.equalsIgnoreCase('')">
+	    AND B.CARREGNO LIKE '%'||#{carregno}||'%'			
+	   </if>
+	   <if test="compid != null and !compid.equalsIgnoreCase('0')">
+	    AND B.COMPID = #{compid}			
+	   </if>
+	   <if test="routeid != null and !routeid.equalsIgnoreCase('0')">
+	    AND A.ROUTEID = #{routeid}			
+	   </if>
+	ORDER BY
+	    A.BUSID,
+	    A.REAL_RUNORD
+	</select>
+	
+	
+	<!--//////############ v616  -->
+	<!--정류소별운행이력 왼쪽그리드 -->
+	<select id="selectBusWithStat2" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+	SELECT
+	    TO_CHAR(RUN_ENDDT,'YYYY/MM/DD HH24:MI:SS') RUN_ENDDT,
+	    BUSID,
+	    RUNORD,
+	    TO_CHAR(RUN_STARTDT,'YYYY/MM/DD HH24:MI:SS') RUN_STARTDT,
+	    ROUTEID,
+	    COMPID,
+	    CARREGNO,
+	    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO,
+	    FC_BUSCOMP_COMPNM(COMPID) COMPNM,
+	    FC_RUNSTART_BSTOPNM(ROUTEID,START_PATHSEQ) START_STOPNM,
+	    FC_RUNEND_BSTOPNM(ROUTEID,END_PATHSEQ) END_STOPNM,
+	    ( TOTAL_BSTOPCNT
+	    || '/'
+	    || BSTOP_DEP_CNT ) TOTAL_BSTOPCNT
+	FROM
+	    TB_DMH_TMSPACECHART
+	WHERE
+	    RUN_ENDDT BETWEEN TO_DATE(#{start_time}||'000000','YYYYMMDDHH24MISS') + 3 / 24 AND TO_DATE(#{start_time}||'235959','YYYYMMDDHH24MISS') + 3 / 24
+	    <if test="compid != null and !compid.equalsIgnoreCase('0')">
+	    AND COMPID = #{compid}			
+	    </if>
+	   <if test="routeid != null and !routeid.equalsIgnoreCase('0')">
+	    AND ROUTEID = #{routeid}			
+	   </if>
+	   <if test="searchWord != null and !searchWord.equalsIgnoreCase('')">
+		AND CARREGNO LIKE '%'||#{searchWord}||'%'
+		</if>
+	ORDER BY
+	    ROUTEID,
+	    BUSID,
+	    RUNORD
+	</select>
+	 <!--정류소별운행이력 오른쪽그리드 -->
+    <!-- 차량별 출발 도착 시간 조회  -->
+        <select id="selectStartArrivTimeList" parameterType="TbAdmBusstopVO" resultType="TbAdmBusstopVO">
+    	SELECT	
+	    	A.ROUTEID,
+	    	A.PATHSEQ,
+	    	A.NODEID,
+	    	FC_BUSSTOP_BSTOPNM(A.NODEID) NODENM,
+      		B.EVT_TIME ARRIVTM,
+      		C.EVT_TIME STARTTM,
+	    	FC_CODE_CDNM('DIRCD',A.DIRCD) DIRCD,
+      		ABS(ROUND(24 * 60 * 60 * (B.EVT_OCCURDT - C.EVT_OCCURDT))) STOP_TIME 
+		FROM
+			<if test='search_type=="1"'>
+				TB_ADH_ROUTEPNODEUPD A,
+ 			</if>
+ 			<if test='search_type=="2"'>
+ 				TB_ADM_ROUTEPNODE A,
+ 			</if>
+      		(
+        		SELECT
+	    			PATHSEQ,
+	    			TO_CHAR(MAX(EVT_OCCURDT),'HH24:MI:SS') EVT_TIME,
+      				MAX(EVT_OCCURDT) EVT_OCCURDT
+				FROM
+	    			TB_DMH_TMSPACE
+				WHERE
+	    			EVT_OCCURDT BETWEEN TO_DATE(#{start_time},'YYYYMMDDHH24MISS') AND TO_DATE(#{end_time},'YYYYMMDDHH24MISS')
+	    			AND EVTTPCD = '21'
+	    			AND BUSID = #{busid}
+	    			AND EVTSUBTPCD = 2  
+	    		GROUP BY PATHSEQ 
+      		) B,
+      		(
+        		SELECT
+      				PATHSEQ,
+	    			TO_CHAR(MAX(EVT_OCCURDT),'HH24:MI:SS') EVT_TIME,
+      				MAX(EVT_OCCURDT) EVT_OCCURDT
+				FROM
+	    			TB_DMH_TMSPACE
+				WHERE
+	    			EVT_OCCURDT BETWEEN TO_DATE(#{start_time},'YYYYMMDDHH24MISS') AND TO_DATE(#{end_time},'YYYYMMDDHH24MISS')
+	    			AND EVTTPCD = '21'
+	    			AND BUSID = #{busid}
+	    			AND EVTSUBTPCD = 3  
+	    		GROUP BY PATHSEQ 
+      		) C
+		WHERE
+	    	A.ROUTEID = #{routeid}
+ 			<if test='search_type=="1"'>
+ 			AND A.UPDDT = (SELECT MIN(UPDDT) FROM TB_ADH_ROUTEPNODEUPD WHERE ROUTEID = #{routeid}
+  			AND UPDDT <![CDATA[>]]> TO_DATE(#{searchWord}||'235959', 'YYYYMMDDHH24MISS'))
+ 			</if>
+      		AND A.PATHSEQ = B.PATHSEQ(+)
+      		AND A.PATHSEQ = C.PATHSEQ(+)
+	    	AND A.NODEGBCD = '2'
+		ORDER BY A.PATHSEQ
+    </select>
+    <select id="selectTestResult" parameterType="TbAdmBusstopVO" resultType="int">
+		SELECT
+		    COUNT(*) AS CNT
+		FROM
+		    TB_ADH_ROUTEPNODEUPD
+		WHERE
+		    ROUTEID = #{routeid}
+		    AND   UPDDT = (
+		        SELECT
+		            MIN(UPDDT)
+		        FROM
+		            TB_ADH_ROUTEPNODEUPD
+		        WHERE
+		            ROUTEID = #{routeid}
+		            AND UPDDT <![CDATA[>]]> TO_DATE(#{searchWord}||'235959', 'YYYYMMDDHH24MISS')
+		    )
+		   AND   NODEGBCD = '2'
+    </select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

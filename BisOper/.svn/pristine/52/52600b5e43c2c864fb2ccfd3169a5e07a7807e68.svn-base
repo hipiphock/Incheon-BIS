@@ -1,0 +1,28 @@
+package com.bis.service;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import com.bis.vo.re.TbBmhMdtmsgVO;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - Message Manager
+ * Business Name  : 
+ * Class Name 	  : MessageService.java
+ * Description 	  : 
+ * Modification History 
+ * 수정일			수정자		수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.31	박주언		created new file
+ * </PRE>
+ * 
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+public interface MessageService {
+
+	List<TbBmhMdtmsgVO> selectMessageList(TbBmhMdtmsgVO vo) throws SQLException;
+
+}

@@ -1,0 +1,188 @@
+$(document).ready(function(){
+	appendLoader("로딩중...");
+	initBox();
+	initEvent();
+});
+
+/**
+ * 운행정시성통계조회의 경우, 두 가지 경우가 있음.
+ * 1. 버스회사가 전체로 나온 경우
+ * 	이 경우에는 각각의 버스회사들이 column으로 하나하나 나온다.
+ * 2. 하나의 회사만 선택된 경우,
+ * 	이 경우에는 그 회사의 버스가 다니는 노선들이 column으로 하나하나 나온다.
+ * 
+ */
+
+// basic model for bottom layer
+var basic_model = [
+	{label:"선택",	name:"checkbox",index:"checkbox",			width:"30",	sortable:false, editable: true, align:"center",
+		formatter:'checkbox',	edittype:"checkbox", editoptions:{value:'Y:N', defaultValue:'N'}},
+	{label:"구분",	name:"",	index:"",	width:"120",	align:"center",		sorttype:"text"}
+];
+
+// 버스회사에서 "전체" 선택시 사용하는 모델
+// initBox에서 initialize한다.
+var total_company_model = [
+	{label:"선택",	name:"checkbox",index:"checkbox",			width:"30",	sortable:false, editable: true, align:"center",
+		formatter:'checkbox',	edittype:"checkbox", editoptions:{value:'Y:N', defaultValue:'N'}},
+	{label:"구분",	name:"",	index:"",	width:"120",	align:"center",		sorttype:"text"}
+];
+
+// 버스회사에서 버스회사 하나가 선택되었을 때 사용하는 모델
+// make_model_for_company 함수에서 사용한다. 
+//var model = [];
+
+
+function initBox(){	
+	// initializing first box - bus company
+	ajaxCall("./route/selectCompList.do", null, null, initial_work, null);
+	function initial_work(data){
+		dealwithCompany(data);
+		make_total_company_model(data);
+	}
+	// function for company selection box
+	function dealwithCompany(data){
+		var parsedData = data.companyList;
+		var select = document.getElementById("busCompany");
+		for(var i in parsedData){
+			var opt = document.createElement("option");
+			opt.value = parsedData[i].compid;
+			opt.text = parsedData[i].compnm;
+			select.appendChild(opt);
+		}
+	}
+	// make total_company_model
+	function make_total_company_model(data){
+		var parsedData = data.companyList;
+		for(var i in parsedData){
+			var new_label = parsedData[i].compnm;
+			var new_name = parsedData[i].compid;
+			var new_index = parsedData[i].compid;
+			var obj_to_append =
+				{label:new_label,	name:new_name,	index:new_index,	width:"100",	align:"left",	sorttype:"text"};
+			total_company_model.push(obj_to_append);
+		}
+	}
+}
+
+function loadGrid(){
+	
+	var date_option = $("#date_month_selector option:selected").val();
+	var comp_option = $("#busCompany option:selected").val();
+	
+	var param = {
+		compid:		comp_option,
+		start_dt:	$("#start_date").val(),
+		end_dt:		$("#end_date").val(),
+	};
+	
+	// case: "전체"가 선택됨
+	if(comp_option == ""){
+		$("#result_table").jqGrid("GridUnload");
+		makeGrid("#result_table", total_company_model, null, total_completed, null);
+		$(window).bind('resize', function() {
+			$("#result_table").jqGrid('setGridHeight', $("#main_table").height() - 23);
+			$("#result_table").jqGrid('setGridWidth', $("#main_table").width());
+		}).trigger('resize');
+		// divide case into two: case for date, and case for month
+	}
+	
+	// case: 버스회사 하나가 선택됨
+	else{
+		// first, make model
+		make_model_for_company(comp_option).then(function(model){
+			// then, do the grid work
+			$("#result_table").jqGrid("GridUnload");
+			makeGrid("#result_table", model, null, one_completed, null);
+			$(window).bind('resize', function() {
+				$("#result_table").jqGrid('setGridHeight', $("#main_table").height() - 23);
+				$("#result_table").jqGrid('setGridWidth', $("#main_table").width());
+			}).trigger('resize');
+		});
+		// divide case into two: case for date, and case for month
+//		reloadGrid("#result_table", "./evaluation/selectOperTiming_DataByDate.do", param, null, null);
+	}
+}
+
+// make model for specific company
+function make_model_for_company(compID){
+	return new Promise(function (resolve, reject){
+		ajaxCall("./route/selectRouteListbyCompany.do", {compid:compID}, null, onSuccess, null);
+		function onSuccess(data){
+			var model = [];
+			model.push.apply(model, basic_model);	// put basic_model into model
+			var parsedData = data.resultList;
+			for(var i in parsedData){
+				var new_label = parsedData[i].routeno;
+				var new_name = parsedData[i].routeid;
+				var new_index = parsedData[i].routeid;
+				var obj_to_append = {label:new_label,	name:new_name,	index:new_index,	width:"100",	align:"left",	sorttype:"text"};
+				model.push(obj_to_append);
+			}
+			resolve(model);
+		}
+	});
+}
+
+// case: "전체"를 선택했을 때
+// x축: 각각의 회사들
+// y축: 위반한 횟수
+function total_completed(data){
+	console.log(data);
+	var chartOpt = {
+		xAxis:{
+			
+		},
+		yAxis:{
+			
+		},
+		series:[]
+	};
+	var chart = setChart2d("main_chart", "column", chartOpt);
+}
+
+// case: 특정 회사를 선택했을 때
+// x축: 각 노선번호
+// y축: 위반한 횟수
+function one_completed(data){
+	console.log(data);
+	var chartOpt = {
+		xAxis:{
+					
+		},
+		yAxis:{
+
+		},
+		series:[]
+	};
+	var chart = setChart2d("main_chart", "column", chartOpt);
+}
+
+function initEvent(){
+	
+	$("#date_month_selector").change(function(){
+		if($("#date_month_selector option:selected").val() == 0){
+			var to_date = document.getElementsByClassName("in180");
+			to_date[0].type = "date";
+			to_date[1].type = "date";
+		}
+		else{
+			var to_month = document.getElementsByClassName("in180");
+			to_month[0].type = "month";
+			to_month[1].type = "month";
+		}
+	});
+	
+	$("#busCompany").change(function(){
+		
+	});
+	
+	$("#btn_search").click(function(){
+		loadGrid();
+	});
+	
+	// 새로고침
+	$("#btn_refresh").click(function(){
+		location.reload();
+	});
+}

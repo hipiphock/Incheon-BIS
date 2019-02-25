@@ -1,0 +1,173 @@
+/*내용상단 타이들 및 버튼*/
+.two_left li a{line-height: 25px; color: #000; font-size: 12px; vertical-align: middle; padding-right: 6px; display: block; font-weight: normal;}
+.two_left li{border-right:1px solid #d5d5d5; border-top: 1px solid #a2aab3; border-bottom: 1px solid #a2aab3; background-color:#fcfcfc; vertical-align: middle; height: 25px; float: left;}
+.two_left li img{ line-height:25px; margin:0px 3px 2px 6px; vertical-align: middle;}
+.two_left li:last-child{ border-right:1px solid #a2aab3;}
+.two_left li:first-child{ border-left:1px solid #a2aab3;}
+.two_left li a:hover{background: #525252;color: #fff}
+.two_left ul, .main_list_box{margin-right: 5px; float: left;}
+.main_list{height: 27px; border: 1px solid #969696; font-size: 12px; width: 110px;}
+
+/*버튼 선택 상태*/
+.two_left .btnSelected{line-height: 25px; color: #fff; font-size: 12px; border: 1px solid #1b1b1b!important; border-left:none!important; background-color:#525252; vertical-align: middle; height: 25px; float: left;}
+.two_left .btnSelected a{color: #fff;}
+
+/*내용 상세 레이아웃---------------------------------------------------------------------------------------------------------------------------------------*/
+.map{height: 100%; text-align: center;}
+.nosun{position:absolute; left:0; width: 300px; bottom: 0; top: 0; border-right:1px solid #7e7e7e; display: none;}
+.present{position:absolute; right:0; width: 362px; bottom: 0; top: 0; border-left:1px solid #7e7e7e;}
+
+.one{position:absolute; left:0; right:0; z-index: 100000;}/*<--------------------------------------------------------------지도만 나왔을 때*/
+.two_nosun{position:absolute; left: 301px; right:0; z-index: 10;}/*<---------------------------------------------------지도 '노선'만 나왔을 때*/
+.two_present{position:absolute; left:0; right:363px; z-index: 10;}/*<--------------------------------------------------지도 '운영현황'만 나왔을 때*/
+.three{position:absolute; left: 301px; right:363px; z-index: 10;}/*<---------------------------------------------------지도 3개 모두 나왔을 때*/
+
+.map_btn{position: absolute; top: 5px; left: 50%; margin-left: -84px; font-size: 11px; }
+.map_btn_nml{float: left; background:#ffffff; width: 53px; height:22px; line-height: 22px; cursor: pointer; 
+            border-top: 1px solid #7e7e7e; border-bottom: 1px solid #7e7e7e; 
+            border-left:1px solid #7e7e7e; }
+.map_btn li:last-child{border-right: 1px solid #7e7e7e;}
+.map_btn li:hover{background:#4594e5;color: #fff;}
+.map_btn_click{background:#4594e5; color: #fff;float: left;width: 53px; height:22px; line-height: 22px; cursor: pointer; 
+            border-top: 1px solid #7e7e7e; border-bottom: 1px solid #7e7e7e; 
+            border-left:1px solid #7e7e7e;}
+.map_con{width: 100%; height: 100%; background-color: #f7f5ec;}/*<----------------------------------------지도 들어갈 곳*/
+.map_con{width: 100%; height: 100%; background-color: #f7f5ec;}/*<----------------------------------------지도 들어갈 곳*/
+.map_con{width: 100%; height: 100%; background-color: #f7f5ec;}/*<----------------------------------------지도 들어갈 곳*/
+
+/*노선*/
+.nosun_con{padding:13px 13px 0 13px; overflow: hidden; position: absolute; top: 26px; bottom: 33px; width:274px;}
+.nosun_number{font-size: 12px; overflow: hidden;}
+.nosun_number .bus_number{font-size: 20px; color: #000; font-weight: bold;}
+
+.nosun_number .bus_number span{color: #fff; font-size: 11px; font-weight: normal; letter-spacing: -1px; margin-right: 8px; vertical-align: middle;}
+.bus_green{background:#6aad1a; border: 1px solid #528d0c;}/*<----------초록색*/
+.bus_red{background:#df3f19; border: 1px solid #be2400;}/*<----------빨간색*/
+.bus_bule{background:#3d7eeb; border: 1px solid #1b56b8;}/*<----------파란색*/
+#txt_routeno {font-size: 20px; color: #000; font-weight: bold;}
+
+.bus_stop_number{color: #000; margin-top:4px;}
+.bus_stop_number span{color: #bfbfbf; margin-left: 5px;}
+.bus_route{float: left; color: #3942f7; margin:11px 0;}
+.bus_re{float: right; margin-top:11px;}
+.bus_re span{font-weight: bold;}
+.bus_start{margin-right: 5px;}
+.bus_last{margin-left: 5px; color: #de0000;}
+
+/*노선에 버튼 세개*/
+.bus_btn{clear: both; font-size: 11px; overflow: hidden;} 
+.bus_btn li a{float: left; line-height:17px; height: 17px; border: 1px solid #bfbfbf; padding: 2px 6.55px; color: #666666; margin-right:4px;}
+.bus_btn li:last-child{margin-right:-5px;}
+.bus_btn li a:hover{background: #f5f5f5;}
+.bus_btn li img{ vertical-align: middle; margin: 0 2px 2px 0;}
+
+/*노선 내부 검색*/
+.nosun_serch{position:relative; margin: 8px 0; background-color:#f5f5f5; border: 1px solid #c2c2c2; font-size: 12px; width:100%; height: 25px;  overflow: hidden; box-sizing: border-box;}
+.nosun_serch span{ border-left:1px solid #c2c2c2;line-height: 25px; height: 25px; float:right; width: 50px; cursor: pointer; text-align: center; background: #fff;}
+.nosun_serch span:hover{ background: #f5f5f5;}
+.nosun_serchbox{ height: 16px; margin: 3px; padding:1px 3px; background-color:#f5f5f5; border: none; width: 172px; font-size: 12px;}
+/*노선 리스트*/
+.nosun_listbox{position: absolute; top:85px; border-top:1px solid #424242; border-bottom: 1px solid #424242; border-left:1px solid #ddd; border-right:1px solid #ddd; width:274px; bottom:0;}
+.nosun_list{position: absolute; width:100%; height: 100%;}
+
+/*자동갱신라인*/
+.list_bottom{position: absolute; bottom: 0; left:13px; height: 28px; font-size: 12px; width: 264px; line-height: 23px;}
+
+/*운영현황 보기*/
+.main_tab_con{position: absolute; top:33px; width:337px; padding:6px 12px 12px 12px; background: #ebecee; border-right:1px solid #7e7e7e; bottom:0; border-bottom: 1px solid #7e7e7e; overflow: hidden;}
+
+
+h4{font-size: 12px; font-weight: normal; float: left; line-height: 25px;}
+.main_tab_titel{ height: 25px; margin-top: 4px;}
+
+.tab_con_con1{width: 336px; height: 35%;  position: absolute;}
+.tab_con_con2{width: 336px; height: 34%; position: absolute; top: 36.5%;}
+.tab_con_con3{width: 336px; bottom: 13px; position: absolute; top: 71%;}
+
+.con1{background: #fff; position: absolute; width: 100%; bottom: 36px; top: 28px; border: 1px solid #aeaeae; border-bottom:none; box-sizing: border-box;}/*첫줄 표 들어가는 곳 감싸기*/
+.con1-2{ position: absolute; width: 100%;  bottom:0; height: 36px; background: #f5f5f5; box-sizing: border-box; border: 1px solid #aeaeae; border-top:1px solid #e9e9e9;}
+.con1-2_number{float: right; padding:4px 4px 0 0;}
+.con1-2_number p{width: 59px; height: 17px; border: 1px solid #749dc6; border-radius: 5px; line-height: 17px; float: left; margin-left: 3px; font-weight: bold; font-size: 14px; padding: 3px; text-align: right; background: #eaeaea;}
+.con1-2_black{color: #000;}
+.con1-2_green{color: #11a501;}
+.con1-2_red{color: #ee0000;}
+
+/*상태이상줄*/
+.con2_left{float: left; width: 204px;}
+.con2_right{float:right; width:125px;}
+.con2, .con2-2{background: #f5f5f5; position: absolute; bottom:0; top: 28px; border: 1px solid #aeaeae; box-sizing: border-box;}
+.con2-2{background: #f5f5f5; position: absolute; bottom:0; top: 28px; border: 1px solid #aeaeae; box-sizing: border-box;}
+.con2{width:204px;}
+.con2-2{width:125px;}
+
+.con3{background: #fff; position: absolute; width: 100%; bottom:0; top: 28px; border: 1px solid #aeaeae;box-sizing: border-box;}
+
+/*BIT목록*/
+.main_left_btn{float: left;}
+.main_tab_top{width: 100%; overflow: hidden;}
+.main_serchbox{float: right; width: 294px; height: 19px; border: 1px solid #aeaeae; background: #fff; padding:3px 5px;}
+.main_left_btn .list_main{padding:0 5px ; height: 26px; margin-left: 5px; width: 308px;}
+.main_serch{height: 18px; font-size: 12px; float: left; width: 90%; border: none; line-height: 18px;}
+.serch_btn{float: right; cursor: pointer;}
+
+.main_tab_chart1{ position: absolute; top: 40px; bottom: 35px; border: 1px solid #aeaeae; width: 337px; box-sizing: border-box; background: #fff;}
+.main_tab_chart1-con{position: absolute; bottom: 0; height: 25px; width: 336px; text-align: center; font-size: 12px;}
+
+.main_tab_chart1-con span{ border-right: 1px solid #d3d3d3; padding: 0 10px;}
+.main_tab_chart1-con span:last-child{border-right:none;}
+
+/*BIT상태이상 and 돌발정보*/
+.main_tab_chart2{ position: absolute; top: 40px; bottom: 13px; border: 1px solid #aeaeae; width: 337px; box-sizing: border-box; background: #fff;}
+.main_tab_chart3{ position: absolute; top: 13px; bottom: 13px; border: 1px solid #aeaeae; width: 337px; box-sizing: border-box; background: #fff;}
+
+/*서버상태*/
+.suver{position: absolute; width: 100%; bottom:26px; top: 78%;}
+.main_bit_list{width: 335px; height: 100%; font-size: 12px; overflow: hidden;}
+/*데이타베이스*/
+.database_wrap{position: absolute;}
+.main_database{width: 100%;}
+.main_database li{float: left; height: 22px; line-height: 22px; color: #777; border-bottom: 1px solid #aeaeae; font-size: 11px; font-weight: normal; text-align: center;}
+.main_database li:first-child{width: 104px;}
+.main_database li:nth-child(2){width: 71px;}
+.main_database li:nth-child(3){width: 49px;}
+.main_database li:nth-child(4){width: 110px;}
+.main_database_con li p:first-child{width: 115px;}
+.main_database_con li p:last-child{width: 80px; border-right: none;}
+.main_database_con .red{width: 48px; color: #ee0000;}
+.main_database_con .green{width: 48px; color: #0c7a00;}
+.main_database_con{overflow-y: scroll; position: absolute; top: 23px; bottom: 0; width: 100%;}
+.main_database_con li p{float: left; height: 22px; line-height: 22px; border-bottom:1px solid #c9c9c9; border-right: 1px solid #c9c9c9; text-align: center; font-size: 11px;}
+.progress{position: relative; width: 70px; height: 22px;}
+.pr_number{display: block; position: absolute; width: 100%; z-index: 9; height: 22px;}
+.pr_bar_red{display: block; position: absolute; height: 22px; z-index:8; background: url(../images/progress_red.jpg);}
+.pr_bar_green{display: block; position: absolute; height: 22px; z-index:8; background: url(../images/progress_green.jpg);}
+
+/*프로그래스바  width값 변해야 할 부분*/
+.pr_width{width: 90%;}
+
+/*노선리스트 상세*/
+.nosun_list_title{position:absolute; width:100%; height:23px;}
+.nosun_list_title li{float: left; font-size: 11px; color: #333; line-height: 23px; background-color: #f2f2f2; text-align: center; border-bottom: 1px solid #c0c0c0;}
+
+.nosun_list_title li:nth-child(1){width:25px;}
+.nosun_list_title li:nth-child(2){width:98px;}
+.nosun_list_title li:nth-child(3){width:24px;}
+.nosun_list_title li:nth-child(4){width:76px;}
+.nosun_list_title li:nth-child(5){width:51px;}
+
+.nosun_list_conten{position:absolute ; top:24px; bottom:0; width: 100%; overflow-y:scroll; }
+.nosun_list_table{position: absolute; top:0; bottom:0; width: 100%; font-size: 11px; text-align: left; border-collapse: collapse;}
+.nosun_list_table tr{cursor: pointer; clear: both;}
+
+.nosun_list_table tr:hover{background-color: #f2f2f2;}
+.nosun_list_table tr.selected{background-color: #f6ffa6;}
+.nosun_list_table tr td{border-bottom: 1px solid #ddd; padding:0 2px; border-right: 1px solid #ddd; box-sizing: border-box; line-height: 30px; height: 30px; display: block; float: left;}
+.nosun_list_table tr td:nth-child(1){text-align:right; width:24px;}
+.nosun_list_table tr td:nth-child(2){width:98px; text-overflow: ellipsis; -o-text-overflow: ellipsis; overflow: hidden; white-space: nowrap; word-wrap: normal !important;}
+.nosun_list_table tr td:nth-child(3){text-align:center; width:24px; padding-top: 6px;}
+.nosun_list_table tr td:nth-child(4){width:77px; text-overflow: ellipsis; -o-text-overflow: ellipsis; overflow: hidden; white-space: nowrap; word-wrap: normal !important;}
+.nosun_list_table tr td:nth-child(5){text-align:right; border-right:none; width:33px;}
+
+/* context menu tag */
+.contextMenu {position: absolute; top:0px; left:0px; width: 0.1px; height: 0.1px; z-index: 999; background: rgba(255, 255, 255, 0.1);}
+

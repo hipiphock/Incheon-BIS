@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+	  <setting name="cacheEnabled" value="false"/>
+	  <setting name="useGeneratedKeys" value="false"/>
+<!-- 	  <setting name="mapUnderscoreToCamelCase" value="true"/> -->
+	</settings>
+
+    <typeAliases>
+    	<!-- 신규 추가  -->
+    	<typeAlias alias="TbEcmExorgresponVO"			type="com.bis.vo.re.TbEcmExorgresponVO"/>
+    	<typeAlias alias="TbEcmExorgVO"					type="com.bis.vo.re.TbEcmExorgVO"/>
+    	<typeAlias alias="TbOmcMdtctrlVO"				type="com.bis.vo.re.TbOmcMdtctrlVO"/>
+    	<typeAlias alias="TbBmcMdtstatVO"          		type="com.bis.vo.re.TbBmcMdtstatVO"/>
+    	<typeAlias alias="TbOmmFacilVO"					type="com.bis.vo.re.TbOmmFacilVO"/>
+    	<typeAlias alias="TbOmmWbitparamVO"				type="com.bis.vo.re.TbOmmWbitparamVO"/>
+    	<typeAlias alias="TbAdmBusrouteVO"       	    type="com.bis.vo.re.TbAdmBusrouteVO"/> 
+    	<typeAlias alias="TbAdmBusstopVO"       	    type="com.bis.vo.re.TbAdmBusstopVO"/> 
+    	<typeAlias alias="TbAdmBusVO"       	        type="com.bis.vo.re.TbAdmBusVO"/> 
+    	<typeAlias alias="TbAdmRoutenodeVO"       	    type="com.bis.vo.re.TbAdmRoutenodeVO"/> 
+    	<typeAlias alias="TbBmcBstopbusarrivVO"         type="com.bis.vo.re.TbBmcBstopbusarrivVO"/> 
+    	<typeAlias alias="TbAdmNodeVO"                  type="com.bis.vo.re.TbAdmNodeVO"/>    	
+    	<typeAlias alias="TbBmhRunevtcollVO"            type="com.bis.vo.re.TbBmhRunevtcollVO"/>    	
+    	<typeAlias alias="TbOmmBitVO"                   type="com.bis.vo.re.TbOmmBitVO"/>
+    	<typeAlias alias="TbAdmRouteschedVO"            type="com.bis.vo.re.TbAdmRouteschedVO"/>
+    	<typeAlias alias="TbIshBitshockVO"              type="com.bis.vo.re.TbIshBitshockVO"/>
+    	<typeAlias alias="TbIscBitstatVO"               type="com.bis.vo.re.TbIscBitstatVO"/>
+    	<typeAlias alias="TbIshBitbusarrivVO"			type="com.bis.vo.re.TbIshBitbusarrivVO"/>
+    	<typeAlias alias="TbOmmCodeVO"                  type="com.bis.vo.re.TbOmmCodeVO"/>
+    	<typeAlias alias="TbOmmUserVO"                  type="com.bis.vo.re.TbOmmUserVO"/>
+    	<typeAlias alias="TbOmhFacilfailasVO"           type="com.bis.vo.re.TbOmhFacilfailasVO"/>
+    	<typeAlias alias="TbIscBitmsgVO"          		type="com.bis.vo.re.TbIscBitmsgVO"/>
+    	<typeAlias alias="TbOmmBitparamVO"           	type="com.bis.vo.re.TbOmmBitparamVO"/>
+		<typeAlias alias="TbOmcBitctrlVO"           	type="com.bis.vo.re.TbOmcBitctrlVO"/>
+
+		<typeAlias alias="TbBitScenarioVO"           	type="com.bis.vo.re.TbBitScenarioVO"/>
+		<typeAlias alias="TbNewBitparamVO"           	type="com.bis.vo.re.TbNewBitparamVO"/>
+    	<typeAlias alias="TbServerStatusVO"           	type="com.bis.vo.re.TbServerStatusVO"/>
+    	<typeAlias alias="TbOmcBitfileregVO"           	type="com.bis.vo.re.TbOmcBitfileregVO"/>
+    	
+    	<typeAlias alias="TbBusstopVO"               	type="com.bis.vo.re.TbBusstopVO"/>
+    	<typeAlias alias="TbAdmGarageVO"           		type="com.bis.vo.re.TbAdmGarageVO"/> 
+    	
+    	<typeAlias alias="TbDmhBusrunrecVO"           	type="com.bis.vo.re.TbDmhBusrunrecVO"/>
+    	<typeAlias alias="TbIchProtestreqVO"           	type="com.bis.vo.re.TbIchProtestreqVO"/>
+    	<typeAlias alias="TbAdhRouteversionpdVO"        type="com.bis.vo.re.TbAdhRouteversionpdVO"/>
+    	<typeAlias alias="TbOmmAdminareaVO"      		type="com.bis.vo.re.TbOmmAdminareaVO"/>
+    	<typeAlias alias="TbOmmProcessVO"      			type="com.bis.vo.re.TbOmmProcessVO"/>
+    	<typeAlias alias="TbOmmViolparamVO"      		type="com.bis.vo.re.TbOmmViolparamVO"/>
+    	<typeAlias alias="TbEchCardcashVO"      		type="com.bis.vo.re.TbEchCardcashVO"/>
+    	<typeAlias alias="TbEchWeathercollVO"      		type="com.bis.vo.re.TbEchWeathercollVO"/>
+    	<typeAlias alias="TbEchLnkdsndrcvVO"      		type="com.bis.vo.re.TbEchLnkdsndrcvVO"/>
+    	 
+    	 
+    	
+    	<!-- 버스공지사항전송 -->
+    	<!-- added by 박주언 -->
+    	<typeAlias alias="TbAdmBusCompVO"				type="com.bis.vo.re.TbAdmBusCompVO"/>
+    	<typeAlias alias="TbAdmRouteToComVO"			type="com.bis.vo.re.TbAdmRouteToComVO"/>
+    	<typeAlias alias="TbBmcBusRunVO"				type="com.bis.vo.re.TbBmcBusRunVO"/>
+    	
+    	<!-- 버스운행관리 / 돌발상황관리 / 돌발상황 대응이력관리 -->
+    	<!-- added by 박주언 -->
+    	<typeAlias alias="TbBmhIncidRespVO"				type="com.bis.vo.re.TbBmhIncidRespVO"/>
+    	<typeAlias alias="TbBmmIncidScnroVO"			type="com.bis.vo.re.TbBmmIncidScnroVO"/>
+    	
+    	<!-- 배차관리 -->
+    	<!-- added by 박주언 -->
+    	<typeAlias alias="TbIchDayAllocPlanVO"			type="com.bis.vo.re.TbIchDayAllocPlanVO"/>
+    	<typeAlias alias="TbIcmRoutemjbstopVO"			type="com.bis.vo.re.TbIcmRoutemjbstopVO"/>
+    	
+    	<!-- 운행서비스평가 -->
+    	<!-- added by 박주언 -->
+    	<typeAlias alias="TbDmhTmspaceVO"				type="com.bis.vo.re.TbDmhTmspaceVO"/>
+    	<typeAlias alias="TbDmsPassingTimeVO"			type="com.bis.vo.re.TbDmsPassingTimeVO"/>
+    	
+    	<!-- 인천 BIS / 운행서비스평가 / 운행위반사항통보 -->
+    	<!-- added by 박주언 -->
+    	<typeAlias alias="TbAdhPenaltyTreatVO"			type="com.bis.vo.re.TbAdhPenaltyTreatVO"/>
+    	
+    	<!-- 인천 BIS / 운행서비스평가 / 운행정시성통계조회 -->
+    	<!-- added by 박주언 -->
+    	<typeAlias alias="TbDmsRunonschedVO" 			type="com.bis.vo.re.TbDmsRunonschedVO"/>
+    	
+    	<!-- 인천 BIS / 이력통계/분석 / 운행이력조회 / 운전자메시지 이력조회 -->
+    	<typeAlias alias="TbBmhMdtmsgVO"				type="com.bis.vo.re.TbBmhMdtmsgVO"/>
+    	 
+    	<!--  ###################### 이하 변경 전 VO ######################  -->
+
+    	<typeAlias alias="BitVO"               		    type="com.bis.vo.BitVO"/> 
+    	<typeAlias alias="BusrouteVO"          		    type="com.bis.vo.BusrouteVO"/> 
+    	<typeAlias alias="BusstopVO"           		    type="com.bis.vo.BusstopVO"/> 
+    	<typeAlias alias="LinkVO"              		    type="com.bis.vo.LinkVO"/> 
+    	<typeAlias alias="NodeVO"              		    type="com.bis.vo.NodeVO"/>
+    	<typeAlias alias="UsersVO"     		            type="com.bis.vo.UsersVO"/>
+    	<typeAlias alias="CommonCodeVO" 			    type="com.bis.vo.CommonCodeVO"/> 
+    	<typeAlias alias="BitProvideDetailHistoryVO" 	type="com.bis.vo.BitProvideDetailHistoryVO"/> 
+    
+		<!-- add alias and package  -->
+		<typeAlias alias="TableSpaceVO"         	    type="com.bis.vo.TableSpaceVO"/> 
+		<typeAlias alias="ObeStatusVO"          	    type="com.bis.vo.ObeStatusVO"/> 
+		<typeAlias alias="SystemInformationVO"  	    type="com.bis.vo.SystemInformationVO"/> 
+		<typeAlias alias="SystemLoginHistoryVO" 		type="com.bis.vo.SystemLoginHistoryVO"/> 
+		<typeAlias alias="BusTimeTableVO"				type="com.bis.vo.BusTimeTableVO"/>
+		<typeAlias alias="VehicleVO"					type="com.bis.vo.VehicleVO"/>
+		<typeAlias alias="BitShockSensorHistoryVO"	    type="com.bis.vo.BitShockSensorHistoryVO"/>
+		<typeAlias alias="BusIncidentHistoryVO"			type="com.bis.vo.BusIncidentHistoryVO"/>
+		<typeAlias alias="BitStatusHistoryVO"			type="com.bis.vo.BitStatusHistoryVO"/>
+		<typeAlias alias="BitConnectHistoryVO"			type="com.bis.vo.BitConnectHistoryVO"/>
+		<typeAlias alias="BusIncidentHistoryVO"			type="com.bis.vo.BusIncidentHistoryVO"/>
+		<typeAlias alias="BusViolationHistoryVO"		type="com.bis.vo.BusViolationHistoryVO"/>
+		<typeAlias alias="BusOperationHistVO"			type="com.bis.vo.BusOperationHistVO"/>
+		<typeAlias alias="BisParameterVO"		    	type="com.bis.vo.BisParameterVO"/>
+		
+		<typeAlias alias="ArrivalTrustVO"		    	type="com.bis.vo.ArrivalTrustVO"/>
+		<typeAlias alias="DatePlanVO"		         		type="com.bis.vo.DatePlanVO"/>
+		<typeAlias alias="ProcessParameterVO"		   	type="com.bis.vo.ProcessParameterVO"/>
+		<typeAlias alias="MProcessCurrentVO"		   	type="com.bis.vo.MProcessCurrentVO"/>
+		
+    </typeAliases>
+</configuration>

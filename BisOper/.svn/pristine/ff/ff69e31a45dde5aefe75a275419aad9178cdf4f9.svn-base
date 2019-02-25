@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="EVALUATION">
+
+	<!-- 부당운행이력 -->
+	<select id="selectViolentOperHistList" parameterType="TbDmhTmspaceVO" resultType="TbDmhTmspaceVO">
+	SELECT 
+    	EVT_OCCURDT, 
+    	BUSID, 
+    	FC_BUS_CARREGNO(BUSID) CARNO, 
+    	ROUTEID ROUTEID, 
+    	FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO, 
+    	POSX, 
+    	POSY, 
+    	FC_BUS_COMPNM(BUSID) COMPNM,
+    	FC_BUS_COMPID(BUSID) COMPID,
+    	LLINKID, 
+    	PATHSEQ, 
+    	RUNVIOLTPCD,
+    	DECODE( RUNVIOLTPCD,            
+        	'13',   FC_NODE_NODENM(NODEID), 
+            '11',   FC_NODE_NODENM(NODEID), 
+            DECODE( SUBSTR(LINKNM, 1, INSTR(LINKNM, '~')-1),    
+                '........',       TO_CHAR(START_NODEID),           
+                '....',           TO_CHAR(START_NODEID),           
+                '',               TO_CHAR(START_NODEID),                   
+                SUBSTR(LINKNM, 1, INSTR(LINKNM, '~')-1) 
+            ) ||'~'||
+            DECODE ( 
+				SUBSTR(LINKNM, INSTR(LINKNM, '~')+1, LENGTH(LINKNM)),  
+                '........',        TO_CHAR(END_NODEID),           
+                '....',            TO_CHAR(END_NODEID),   
+                '',                TO_CHAR(END_NODEID),    
+                SUBSTR(LINKNM, INSTR(LINKNM, '~')+1, LENGTH(LINKNM)) 
+            ) 
+		) POSNM,
+    	FC_CODE_CDNM('RUNVIOLTPCD', RUNVIOLTPCD) RUNVIOLTYPE, 
+    	REAL_RUNORD, 
+    	PLAN_RUNORD 
+	FROM
+		TB_DMH_TMSPACE A, 
+    	TB_ADM_LINK B 
+	WHERE
+		A.LLINKID = B.LINKID(+)
+		<if test="evt_occurdt != null and !evt_occurdt.equalsIgnoreCase('')">
+		AND trunc(EVT_OCCURDT) = TO_DATE(TO_CHAR(#{evt_occurdt}), 'YYYY-MM-DD')
+        </if>
+        <if test="evttpcd != null and !evttpcd.equalsIgnoreCase('')">
+  		AND EVTTPCD = #{evttpcd}
+  		</if>
+  		<if test="busid != null and !busid.equalsIgnoreCase('')">
+  		AND A.BUSID = #{busid}
+  		</if>
+  		<if test="routeid != null and !routeid.equalsIgnoreCase('')">
+  		AND A.ROUTEID = #{routeid}
+  		</if>
+  		<if test="runvioltpcd != null and !runvioltpcd.equalsIgnoreCase('')">
+  		AND RUNVIOLTPCD = #{runvioltpcd}
+  		</if>
+	ORDER BY EVT_OCCURDT
+	</select>
+	
+	<!-- 운행평가 - 운행정시성통계조회 -->
+	<select id="selectOperTimingDate" parameterType="TbDmsRunonschedVO" resultType="hashmap">
+	SELECT DISTINCT
+	<choose>
+		<when test='proccyclcd=="8"'>
+			TO_CHAR(PROCDT, 'YYYY/MM/DD') DT                  
+		FROM TB_DMS_RUNONSCHED                              
+		WHERE PROCCYCLCD = 8                                 
+			AND PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS')
+            AND TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS')
+		</when>
+		<when test='proccyclcd=="9"'>
+			TO_CHAR(PROCDT, 'YYYY/MM') DT
+		FROM TB_DMS_RUNONSCHED                                 
+		WHERE PROCCYCLCD = 9
+			AND PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS')                  
+            AND LAST_DAY(TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS'))
+		</when>
+		<otherwise>
+		</otherwise>
+	</choose>
+	ORDER BY DT
+	</select>
+	
+	<!-- 운행평가 - 운행정시성통계조회 -->
+	<select id="selectOperTimingRoute" parameterType="TbDmsRunonschedVO" resultType="TbDmsRunonschedVO">
+	SELECT DISTINCT 
+	    ROUTEID ROUTEID, 
+	    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO 
+	FROM
+	    TB_DMS_RUNONSCHED
+	WHERE COMPID = #{compid}
+	    AND PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS') 
+	    AND LAST_DAY(TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS')) 
+	    AND PROCCYCLCD = #{proccyclcd}
+	ORDER BY ROUTENO
+	</select>
+	
+	<!-- 운행평가 - 운행정시성통계조회 -->
+	<select id="selectOperTimingComp" parameterType="TbDmsRunonschedVO" resultType="TbDmsRunonschedVO">
+	SELECT DISTINCT
+	    COMPID COMPID,  
+	    FC_BUSCOMP_COMPNM(COMPID) COMPNM 
+	FROM 
+	    TB_DMS_RUNONSCHED 
+	WHERE
+	    PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS') 
+	    AND LAST_DAY(TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS')) 
+	    AND PROCCYCLCD = #{proccyclcd}
+	ORDER BY COMPNM
+	</select>
+	
+	<select id="selectOperTimingRouteStaTistics" parameterType="TbDmsRunonschedVO" resultType="hashmap">
+	SELECT
+	<choose>
+		<when test='proccyclcd=="8"'>
+			TO_CHAR(PROCDT, 'YYYY/MM/DD')  DT,
+	    	ROUND(AVG(NVL(RUNONSCHED, 0)), 2) AS "${routeid}" 
+		FROM TB_DMS_RUNONSCHED 
+		WHERE PROCCYCLCD = 8
+			AND ROUTEID = #{routeid} 
+			AND PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS') 
+			AND TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS')
+		GROUP BY TO_CHAR(PROCDT, 'YYYY/MM/DD')
+		</when>
+		<when test='proccyclcd=="9"'>
+			TO_CHAR(PROCDT, 'YYYY/MM')  DT,
+	    	ROUND(AVG(NVL(RUNONSCHED, 0)), 2) AS "${routeid}"
+		FROM TB_DMS_RUNONSCHED 
+		WHERE PROCCYCLCD = 9
+			AND ROUTEID = #{routeid} 
+			AND PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS') 
+			AND LAST_DAY(TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS'))
+		GROUP BY TO_CHAR(PROCDT, 'YYYY/MM')
+		</when>
+		<otherwise>
+		</otherwise>
+	</choose>  
+	ORDER BY DT
+	</select>
+	
+	<select id="selectOperTimingCompStaTistics" parameterType="TbDmsRunonschedVO" resultType="hashmap">
+	SELECT
+	<choose>
+		<when test='proccyclcd=="8"'>
+			TO_CHAR(PROCDT, 'YYYY/MM/DD')  DT,
+	    	ROUND(AVG(NVL(RUNONSCHED, 0)), 2) AS "${compid}"
+		FROM TB_DMS_RUNONSCHED 
+		WHERE PROCCYCLCD = 8
+			AND COMPID = #{compid} 
+			AND PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS') 
+			AND TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS') 
+		GROUP BY TO_CHAR(PROCDT, 'YYYY/MM/DD')
+		</when>
+		<when test='proccyclcd=="9"'>
+			TO_CHAR(PROCDT, 'YYYY/MM')  DT, 
+	    	ROUND(AVG(NVL(RUNONSCHED, 0)), 2) AS "${compid}"
+		FROM 
+		    TB_DMS_RUNONSCHED 
+		WHERE 
+		    PROCCYCLCD = 9
+		    AND COMPID = #{compid}
+		    AND PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS') 
+		    AND LAST_DAY(TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS'))
+		GROUP BY TO_CHAR(PROCDT, 'YYYY/MM')
+		</when>
+		<otherwise>
+		</otherwise>
+	</choose>  
+	ORDER BY DT
+	</select>
+	
+	<!-- 운행평가 - 버스몰림율통계조회 -->
+	<select id="selectStopColumn" parameterType="TbDmsBuscrowdVO" resultType="TbDmsBuscrowdVO">
+	SELECT 
+	    PATHSEQ, 
+	    FC_BUSSTOP_BSTOPNM(NODEID) BSTOPNM 
+	FROM TB_ADM_ROUTEPNODE
+	WHERE ROUTEID = #{routeid}
+	  AND NODEGBCD = '2'
+	ORDER BY BSTOPSEQ
+	</select>
+	
+	<select id="selectCongestionStatistics" parameterType="TbDmsBuscrowdVO" resultType="hashmap">
+	SELECT 
+	    ROUND(AVG(NVL(BUSCROWD, 0)), 2) VAL1, 
+	    ROUND(AVG(NVL(AVG_LOCGAP, 0) <![CDATA[/]]> 60), 0) VAL2, 
+	    PATHSEQ,
+	    BSTOPID,
+	    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO
+	FROM TB_DMS_BUSCROWD
+	WHERE
+		PROCDT BETWEEN TO_DATE(#{search_start_date}, 'YYYYMMDDHH24MISS') 
+		AND TO_DATE(#{search_end_date}, 'YYYYMMDDHH24MISS') 
+		AND PROCCYCLCD = #{proccyclcd}
+		AND ROUTEID = #{routeid}
+	GROUP BY ROUTEID,
+	         PATHSEQ,
+	         BSTOPID
+	ORDER BY PATHSEQ
+	</select>
+	
+</mapper>

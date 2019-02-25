@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BBS">
+
+	<!-- 이의신청내역조회 - 이의신청내역 -->
+	<select id="selectReqtreatcdList" parameterType="TbIchProtestreqVO" resultType="TbIchProtestreqVO">
+		SELECT 
+		    HISTNO, 
+		    FC_BUSCOMP_COMPNM(COMPID) COMPNM, 
+		    REQ_USERID, 
+		    TO_CHAR(REGDT, 'YYYY/MM/DD HH24:MI:SS') REGDT, 
+		    REQ_TITLE, 
+		    REQ_DETAIL, 
+		    TO_CHAR(TREATDT, 'YYYY/MM/DD HH24:MI:SS') TREATDT, 
+		    TREAT_USERID, 
+		    FC_CODE_CDNM('REQTREATCD', REQTREATCD) REQTREATCD, 
+		    TREAT_DETAIL 
+		FROM TB_ICH_PROTESTREQ
+		WHERE REGDT BETWEEN TO_DATE(#{search_startdt},'YYYY/MM/DD HH24:MI:SS') 
+		                AND TO_DATE(#{search_enddt},'YYYY/MM/DD HH24:MI:SS') 
+		  <if test="reqtreatcd != null and !reqtreatcd.equalsIgnoreCase('')">
+		  AND REQTREATCD = #{reqtreatcd}
+		  </if>
+		  <if test="compid != null and !compid.equalsIgnoreCase('')">
+		  AND COMPID = #{compid}
+		  </if>
+		ORDER BY 1, 2, 4
+	</select>
+</mapper>

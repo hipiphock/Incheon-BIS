@@ -1,0 +1,55 @@
+package com.bis.dao;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.stereotype.Repository;
+
+import com.bis.vo.re.TbDmhTmspaceVO;
+import com.bis.vo.re.TbDmsRunonschedVO;
+
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS / 운행서비스평가
+ * Business Name  : 
+ * Class Name 	  : EvaluationDAO.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일           	수정자       	수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.18	박주언		created new file
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Repository("evaluationDAO")
+public class EvaluationDAO {
+	
+	@Resource
+	private SqlSessionTemplate sqlSession;
+
+	public List<TbDmhTmspaceVO> selectViolentOperHistList(TbDmhTmspaceVO vo) throws SQLException{
+		return sqlSession.selectList("EVALUATION.selectViolentOperHistList", vo);
+	}
+
+	public List<TbDmsRunonschedVO> selectOperTiming_Date(TbDmsRunonschedVO vo) throws SQLException {
+		return sqlSession.selectList("EVALUATION.selectOperTiming_Date", vo);
+	}
+	
+	public List<TbDmsRunonschedVO> selectOperTiming_Month(TbDmsRunonschedVO vo) throws SQLException {
+		return sqlSession.selectList("EVALUATION.selectOperTiming_Month", vo);
+	}
+
+	public List<TbDmsRunonschedVO> selectOperTiming_Route(TbDmsRunonschedVO vo) throws SQLException {
+		return sqlSession.selectList("EVALUATION.selectOperTiming_Route", vo);
+	}
+	
+	public List<TbDmsRunonschedVO> selectOperTiming_Comp(TbDmsRunonschedVO vo) throws SQLException {
+		return sqlSession.selectList("EVALUATION.selectOperTiming_Comp", vo);
+	}
+}

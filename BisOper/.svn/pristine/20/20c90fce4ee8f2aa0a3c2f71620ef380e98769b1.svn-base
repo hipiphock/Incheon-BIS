@@ -1,0 +1,103 @@
+$(document).ready(function(){
+	appendLoader("로딩중...");
+	initBox();
+	initGrid();
+	initEvent();
+});
+
+var bus_model = [
+	{label:"차량번호",		name:"carregno",index:"carno",	width:"85",	align:"center",	sorttype:"text"},
+	{label:"버스ID",		name:"busid",	index:"busid",	width:"65",	align:"center",	sorttype:"text"}
+];
+
+var run_model = [
+	{label:""},
+];
+
+//function for initalizing boxes - first, second
+function initBox(){
+	// initializing first box - bus company
+	ajaxCall("./route/selectCompList.do", null, null, dealwithCompany, null);
+	// initializing second box - bus route
+	ajaxCall("./route/selectRouteList.do", null, null, dealwithRoute, null);
+}
+
+//function for company selection box
+function dealwithCompany(data){
+	var parsedData = data.companyList;
+	var select = document.getElementById("busCompany");
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].compid;
+		opt.text = parsedData[i].compnm;
+		select.appendChild(opt);
+	}
+}
+
+//function for route selection box
+function dealwithRoute(data){	
+	var select = document.getElementById("busRoute");
+	select.disabled = true;
+	select.options.length = 0;
+	var opt = document.createElement("option");
+	opt.value = "";
+	opt.text = "전체";
+	select.appendChild(opt);
+	select.options[0].selected = "selected";
+	var parsedData = data.resultList;
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].routeid;
+		opt.text = parsedData[i].routeno;
+		select.appendChild(opt);
+	}
+	select.disabled = false;
+}
+
+function initGrid(){
+	makeMultiGrid("#bus_list", bus_model, 600, null, null, null, null);
+	$("#bus_list").jqGrid("setGridParam", {multiboxonly:false});
+	$(window).bind('resize', function() {
+		$("#bus_list").jqGrid('setGridHeight', $("#bus_chart").height() - 23);
+		$("#bus_list").jqGrid('setGridWidth', $("#bus_chart").width());
+
+	}).trigger('resize');
+}
+
+function load_buslist_grid(compID, routeID){
+	showLoader();
+	console.log(compID, routeID);
+	reloadGrid("#bus_list", "./route/selectBusListtoNotify.do", {compid:compID, routeid:routeID}, "resultList");
+}
+
+function initEvent(){
+	// 새로고침
+	$("#btn_refresh").click(function(){
+		location.reload();
+	});
+	
+	/**
+	 * 검색 버튼을 누르면 하단 운행회차 이력 grid가 업데이트 되고, 같이 버스 목록도 업데이트 됨.
+	 */
+	$("#btn_search").click(function(){
+		var compID = $("#busCompany option:selected").val();
+		var routeID = $("#busRoute option:selected").val();
+		load_buslist_grid(compID, routeID);
+	});
+	
+	// when you change company
+	$("#busCompany").change(function(){
+		var compID = $("#busCompany option:selected").val();
+		if(compID == ""){
+			ajaxCall("./route/selectRouteList.do", null, null, dealwithRoute, null);
+		}
+		else ajaxCall("./route/selectRouteListbyCompany.do", {compid:compID}, null, dealwithRoute, null);
+	});
+	
+	// select all
+	$("#btn_all").click(function(){
+		$(":checkbox").each(function(){
+			this.checked = true;
+		});
+	});
+}

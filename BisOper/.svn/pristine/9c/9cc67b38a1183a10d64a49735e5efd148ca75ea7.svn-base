@@ -1,0 +1,412 @@
+package com.bis.service.impl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.bis.dao.SystemDAO;
+import com.bis.service.SystemService;
+import com.bis.util.Const;
+import com.bis.vo.BisParameterVO;
+import com.bis.vo.SystemInformationVO;
+import com.bis.vo.TableSpaceVO;
+import com.bis.vo.re.TbEcmExorgVO;
+import com.bis.vo.re.TbEcmExorgresponVO;
+import com.bis.vo.re.TbOmmAdminareaVO;
+import com.bis.vo.re.TbOmmCodeVO;
+import com.bis.vo.re.TbOmmProcessVO;
+import com.bis.vo.re.TbOmmUserVO;
+import com.bis.vo.re.TbOmmViolparamVO;
+import com.bis.vo.re.TbServerStatusVO;
+
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 운영단말
+ * Business Name  : 
+ * Class Name 	  : SystemServiceImpl.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                        수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2017.09.20	    황중모                       최초생성
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Service("systemService")
+public class SystemServiceImpl extends EgovAbstractServiceImpl implements SystemService {
+
+	@Resource(name = "systemDAO")
+	private SystemDAO systemDAO;
+	
+	/**
+     * 유지보수업체정보관리 - 관계기관정보검색 (v0609)
+     */
+    public List<TbEcmExorgVO> selectRelatorgList(TbEcmExorgVO vo) throws SQLException {
+    	return systemDAO.selectRelatorgList(vo);
+    }
+    
+    /**
+     *  유지보수업체정보관리 - max 관계기관id(v0609)
+     */
+    public TbEcmExorgVO selectMaxRelatorgid() throws SQLException {
+    	return systemDAO.selectMaxRelatorgid();
+    }
+    
+    /**
+     * 유지보수업체정보관리 - 관계기관정보검색 (v0609)
+     */
+    public int insertRelatorg(TbEcmExorgVO vo) throws SQLException {
+    	return systemDAO.insertRelatorg(vo);
+    }
+    
+    /**
+     *  유지보수업체정보관리 - 관계기관정보 내용 수정(v0609)
+     */
+    public int updateRelatorg(TbEcmExorgVO vo) throws SQLException {
+    	return systemDAO.updateRelatorg(vo);
+    }
+    
+    /**
+     *  유지보수업체정보관리 - 관계기관정보 내용 삭제(v0609)
+     */
+    public int deleteRelatorg(TbEcmExorgVO vo) throws SQLException {
+    	return systemDAO.deleteRelatorg(vo);
+    }
+    
+    /**
+    *  유지보수업체정보관리 - 관계기관정보 담당자 삭제(v0609)
+    */
+   public int deleteExorgrespon(TbEcmExorgVO vo) throws SQLException {
+   	return systemDAO.deleteExorgrespon(vo);
+   }
+   
+   /**
+    * 유지보수업체정보관리 - 담당자정보검색 (v0609)
+    */
+   public List<TbEcmExorgresponVO> selectExorgresponList(TbEcmExorgresponVO vo) throws SQLException {
+   	return systemDAO.selectExorgresponList(vo);
+   }
+   
+   /**
+    * 유지보수업체정보관리 - 담당자 신규등록(v0609)
+    */
+   public int insertExorgrespon(TbEcmExorgresponVO vo) throws SQLException {
+   	return systemDAO.insertExorgrespon(vo);
+   }
+	
+   /**
+    *  유지보수업체정보관리 - 담당자 내용 수정(v0609)
+    */
+   public int updateExorgrespon(TbEcmExorgresponVO vo) throws SQLException {
+   	return systemDAO.updateExorgrespon(vo);
+   }
+   
+	/**
+     * 코드 카테고리 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmmCodeVO> selectCodeCateList(TbOmmCodeVO vo) throws SQLException {
+    	return systemDAO.selectCodeCateList(vo);
+    }
+	
+	/**
+     * 코드 목록 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmmCodeVO> selectCodeList(TbOmmCodeVO vo) throws SQLException {
+    	return systemDAO.selectCodeList(vo);
+    }
+    
+    /**
+     * 신규 코드  조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public TbOmmCodeVO selectNewCodeCd(TbOmmCodeVO vo) throws SQLException {
+    	return systemDAO.selectNewCodeCd(vo);
+    }
+    
+	/**
+     * 관계기관 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmmCodeVO> selectRelatorgidList(TbOmmCodeVO vo) throws SQLException {
+    	return systemDAO.selectRelatorgidList(vo);
+    }
+    
+    /**
+     * 코드 저장
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int saveCode(List<TbOmmCodeVO> list, TbOmmCodeVO vo) throws SQLException {
+    	int delete_result = deleteCode(vo);
+    	int insert_result = insertCode(list);
+    	
+    	if( (delete_result == Const.SQL_SUCCESS) && (insert_result == Const.SQL_SUCCESS) )
+    		return Const.SQL_SUCCESS;    	
+    	else
+    		return Const.SQL_ERROR;	
+    }
+    
+    /**
+     * 코드 삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int deleteCode(TbOmmCodeVO vo) throws SQLException {    	
+    	systemDAO.deleteCode(vo);
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * 코드 삽입
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int insertCode(List<TbOmmCodeVO> list) throws SQLException {
+    	for(int i=0; i < list.size(); i++) {
+    		systemDAO.insertCode(list.get(i));
+    	}
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * 서버 상태 목록 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbServerStatusVO> selectServerStateList() throws SQLException {
+    	return systemDAO.selectServerStateList();
+    }
+    
+    /**
+     * 서버별 BIT 상태 조회 
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbServerStatusVO> selectBitServerStatList() throws SQLException {
+    	return systemDAO.selectBitServerStatList();
+    }
+    
+    
+    /**
+     * 코드 카테고리 삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int deleteCodecategory(TbOmmCodeVO vo) throws SQLException {
+    	systemDAO.deleteCode(vo);
+    	systemDAO.deleteCodecategory(vo);
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * 코드 카테고리 수정
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int updateCodecategory(List<TbOmmCodeVO> list) throws SQLException {
+    	
+    	for(int i=0; i < list.size(); i++) {
+    		systemDAO.updateCodecategory(list.get(i));
+    	}
+    	return Const.SQL_SUCCESS;
+    }
+    
+    /**
+     * 코드 카테고리 등록
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int insertCodecategory(TbOmmCodeVO vo) throws SQLException {
+    	return systemDAO.insertCodecategory(vo);
+    }
+    
+    /**
+     * 행정구역 정보조회 - 행정구역 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public List<TbOmmAdminareaVO> selectAdminareaList(TbOmmAdminareaVO vo) throws SQLException {
+		return systemDAO.selectAdminareaList(vo);
+	}
+    
+	 /**
+     * 운영파라미터관리 - 프로세스조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public List<TbOmmProcessVO> selectProcessList(TbOmmProcessVO vo) throws SQLException {
+		return systemDAO.selectProcessList(vo);
+	}
+	
+	 /**
+     * 운영파라미터관리 - 프로세스입력
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public int insertProcess(TbOmmProcessVO vo) throws SQLException {
+		return systemDAO.insertProcess(vo);
+	}
+
+	 /**
+     * 운영파라미터관리 - 프로세스수정
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public int updateProcess(TbOmmProcessVO vo) throws SQLException {
+		return systemDAO.updateProcess(vo);
+	}
+
+	 /**
+     * 운영파라미터관리 - 프로세스삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public int deleteProcess(TbOmmProcessVO vo) throws SQLException {
+		return systemDAO.deleteProcess(vo);
+	}
+
+	 /**
+     * 운영위반기준정보관리 - 운행위반기준정보검색
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public List<TbOmmViolparamVO> selectViolateList(TbOmmViolparamVO vo) throws SQLException {
+		return systemDAO.selectViolateList(vo);
+	}
+	
+
+	/**
+     * 운영위반기준정보관리 - 운행위반기준정보 신규등록
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public int insertViolate(TbOmmViolparamVO vo) throws SQLException {
+		return systemDAO.insertViolate(vo);
+	}
+
+	/**
+     * 운영위반기준정보관리 - 운행위반기준정보 수정
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public int updateViolate(TbOmmViolparamVO vo) throws SQLException {
+		return systemDAO.updateViolate(vo);
+	}
+
+	/**
+     * 운영위반기준정보관리 - 운행위반기준정보 삭제
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public int deleteViolate(TbOmmViolparamVO vo) throws SQLException {
+		return systemDAO.deleteViolate(vo);
+	}
+
+	
+	//######################## 이하 구 버전 / 수정 코드 위로 올리기 #####################
+	
+
+	/**
+     * 테이블 스페이스 및 상태 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public List<TableSpaceVO> selectTableSpaceList() throws SQLException {
+		return systemDAO.selectTableSpaceList();
+	}
+	
+	/**
+     * 시스템 등록
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+	public int insertSysInfo(SystemInformationVO vo) throws SQLException {
+		return systemDAO.insertSysInfo(vo);
+    }
+	
+    /**
+     * 파라미터 그룹 조회 
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<BisParameterVO> selectParamGrpList() throws SQLException {
+    	return systemDAO.selectParamGrpList();
+    }
+    
+    /**
+     * 파라미터 조회 
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<BisParameterVO> selectParamList(BisParameterVO vo) throws SQLException {
+    	return systemDAO.selectParamList(vo);
+    }
+    
+    /**
+     * 시스템 접속 이력 조회
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public List<TbOmmUserVO> selectLoginHisList(TbOmmUserVO vo) throws SQLException {
+    	return systemDAO.selectLoginHisList(vo);
+    }
+    
+    /**
+     * 파라미터 수정
+     * @param vo
+     * @return
+     * @throws SQLException
+     */
+    public int updateParameter(List<BisParameterVO> list) throws SQLException {
+    	for(int i=0; i < list.size(); i++) {
+    		systemDAO.updateParameter(list.get(i));
+    	}
+    	return Const.SQL_SUCCESS;
+    }
+
+	
+
+
+
+	
+    
+}

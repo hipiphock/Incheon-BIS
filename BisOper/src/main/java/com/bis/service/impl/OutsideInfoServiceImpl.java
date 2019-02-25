@@ -1,0 +1,121 @@
+package com.bis.service.impl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.bis.dao.OutsideInfoDAO;
+import com.bis.service.OutsideInfoService;
+import com.bis.vo.re.TbAdmLinkVO;
+import com.bis.vo.re.TbEchCardcashVO;
+import com.bis.vo.re.TbEchExorgincidVO;
+import com.bis.vo.re.TbEchLnkdsndrcvVO;
+import com.bis.vo.re.TbEchNewscollVO;
+import com.bis.vo.re.TbEchWeathercollVO;
+
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 운영단말
+ * Business Name  : 
+ * Class Name 	  : OutsideInfoServiceImpl.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                        수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.24	    		     주형빈                    최초생성
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2018 by IncheonBis All right reserved.
+ */
+
+@Service("outsideinfoService")
+public class OutsideInfoServiceImpl extends EgovAbstractServiceImpl implements OutsideInfoService {
+	
+	@Resource(name = "outsideinfoDAO")
+	private OutsideInfoDAO outsideinfoDAO;
+
+	/**
+	 * //교통카드 연계정보관리 - 교통카드 및 현금수입금 조회
+	 * @return 
+	 * @throws SQLException
+	 */
+	public List<TbEchCardcashVO> selectCardCashList(TbEchCardcashVO vo) throws SQLException {
+		return outsideinfoDAO.selectCardCashList(vo);
+	}
+
+	/**
+	 * //교통카드 연계정보관리 - 내역삭제
+	 * @return 
+	 * @throws SQLException
+	 */
+	public int deleteCardCash(TbEchCardcashVO vo) throws SQLException {
+		return outsideinfoDAO.deleteCardCash(vo);
+	}
+
+	/**
+	 * //기상정보 수집이력조회 - 기상정보 수집이력검색
+	 * @return 
+	 * @throws SQLException
+	 */
+	public List<TbEchWeathercollVO> selectWeatherCallList(TbEchWeathercollVO vo) throws SQLException {
+		return outsideinfoDAO.selectWeatherCallList(vo);
+	}
+
+	/**
+	 * //외부연계정보 - 연계정보 송수신이력조회
+	 * @return 
+	 * @throws SQLException
+	 */
+	public List<TbEchLnkdsndrcvVO> selectLinkedOutsideInfoList(TbEchLnkdsndrcvVO vo) throws SQLException {
+		return outsideinfoDAO.selectLinkedOutsideInfoList(vo);
+	}
+
+	/**
+	 * 외부연계정보 - 교통상황 연계정보 조회 - 돌발수집이력검색
+	 * @return 
+	 * @throws SQLException
+	 */
+	public List<TbEchExorgincidVO> selectIncidRecordList(TbEchExorgincidVO vo) throws SQLException {
+		return outsideinfoDAO.selectIncidRecordList(vo);
+	}
+
+	/**
+	 * 외부연계정보 - 교통상황 연계정보 조회 - 돌발변경이력검색
+	 * @return 
+	 * @throws SQLException
+	 */
+	public List<TbEchExorgincidVO> selectIncidChangedRecordList(TbEchExorgincidVO vo) throws SQLException {
+		return outsideinfoDAO.selectIncidChangedRecordList(vo);
+	}
+
+	/**
+	 * 외부연계정보 - 교통상황 연계정보 조회 - 관련링크검색
+	 * @return 
+	 * @throws SQLException
+	 */
+	public List<TbAdmLinkVO> selectIncidLinkInfoList(TbAdmLinkVO vo) throws SQLException {
+		return outsideinfoDAO.selectIncidLinkInfoList(vo);
+	}
+
+	/**
+	 * 외부연계정보 - 뉴스정보 수집이력조회
+	 * @return 
+	 * @throws SQLException
+	 */
+	public List<TbEchNewscollVO> selectNewScollList(TbEchNewscollVO vo) throws SQLException {
+		return outsideinfoDAO.selectNewScollList(vo);
+	}
+	
+	
+	
+	
+	
+	
+    
+}

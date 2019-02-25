@@ -1,0 +1,180 @@
+$(document).ready(function(){
+	// inital works
+	appendLoader("로딩중...");
+	initBox();
+	initGrid();
+	initEvent();
+});
+
+// for bus list result
+var left_box = [
+	{label:"선택",	name:"checkbox",index:"checkbox",			width:"30",	sortable:false, editable: true, align:"center",
+		formatter:'checkbox',	edittype:"checkbox", editoptions:{value:'Y:N', defaultValue:'N'}},
+    {label:"버스회사",	name:"compnm",		index:"compnm",			width:"80",		align:"center",	sorttype:"text"},
+    {label:"노선번호",	name:"routeno",		index:"routeno",		width:"50", 	align:"center",	sorttype:"text"},
+    {label:"차량번호",	name:"carregno",	index:"carregno",		width:"100",	align:"center",	sorttype:"text"},
+    {label:"운행상태",	name:"rundistinctcd",index:"rundistinctcd",	width:"70",		align:"center",	sorttype:"text"},
+    {label:"단말기ID",name:"mdtid",		index:"mdtid",			width:"60",		align:"right",	sorttype:"text"},
+    {label:"버스ID",	name:"busid",		index:"busid",			width:"100",	align:"center",	sorttype:"text"},
+    {label:"노선ID",	name:"routeid",		index:"routeid",		width:"98",		align:"center",	sorttype:"text"}    
+];
+
+// for selection from left
+var right_box = [
+	{label:"선택",	name:"checkbox",index:"checkbox",			width:"30",	sortable:false, editable: true, align:"center",
+		formatter:'checkbox',	edittype:"checkbox", editoptions:{value:'Y:N', defaultValue:'N'}},
+	{label:"버스회사",	name:"compnm",		index:"compnm",			width:"80",		align:"center",	sorttype:"text"},
+	{label:"노선번호",	name:"routeno",		index:"routeno",		width:"50", 	align:"center",	sorttype:"text"},
+	{label:"차량번호",	name:"carregno",	index:"carregno",		width:"100",	align:"center",	sorttype:"text"},
+	{label:"운행상태",	name:"rundistinctcd",index:"rundistinctcd",	width:"70",		align:"center",	sorttype:"text"},
+	{label:"단말기ID",name:"mdtid",		index:"mdtid",			width:"60",		align:"right",	sorttype:"text"},
+	{label:"버스ID",	name:"busid",		index:"busid",			width:"100",	align:"center",	sorttype:"text"},
+	{label:"노선ID",	name:"routeid",		index:"routeid",		width:"98",		align:"left",	sorttype:"text"}    
+];
+
+/**
+ * Global Variables
+ */
+var Queue = [];
+
+
+/**
+ * End of Global Variables
+ */
+
+//function for initalizing boxes - first, second
+function initBox(){
+	// initializing first box - bus company
+	ajaxCall("./route/selectCompList.do", null, null, dealwithCompany, null);
+	// initializing second box - bus route
+	ajaxCall("./route/selectRouteList.do", null, null, dealwithRoute, null);
+}
+
+//function for company selection box
+function dealwithCompany(data){
+	var parsedData = data.companyList;
+	var select = document.getElementById("busCompany");
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].compid;
+		opt.text = parsedData[i].compnm;
+		select.appendChild(opt);
+	}
+}
+
+//function for route selection box
+function dealwithRoute(data){	
+	var select = document.getElementById("busRoute");
+	select.disabled = true;
+	select.options.length = 0;
+	var opt = document.createElement("option");
+	opt.value = "";
+	opt.text = "전체";
+	select.appendChild(opt);
+	select.options[0].selected = "selected";
+	var parsedData = data.resultList;
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].routeid;
+		opt.text = parsedData[i].routeno;
+		select.appendChild(opt);
+	}
+	select.disabled = false;
+}
+
+//function for intial event
+function initGrid(){
+	// initializing left and right box
+	makeGrid("#left_bus_list", left_box, 600, "resultList", onSelected, leftCompleted, null);
+	makeGrid("#right_bus_list", right_box, 600, "resultList", null, rightCompleted, null);
+	
+	function onSelected(rowid){
+		
+	}
+	
+	function leftCompleted(data){
+		$("#total_search_result").text("전송대상차량조회결과 " + data.records + "건");
+	}
+	
+	function rightCompleted(data){
+		$("selected_bus_result").text("전송대상차량 " + data.records + "대");
+	}
+	
+	$(window).bind('resize', function() {
+		$("#left_bus_list").jqGrid('setGridHeight', $(".main_chart").height() - 23);
+		$("#left_bus_list").jqGrid('setGridWidth', $(".main_chart").width());
+		
+		$("#right_bus_list").jqGrid('setGridHeight', $(".main_chart").height() - 23);
+		$("#right_bus_list").jqGrid('setGridWidth', $(".main_chart").width());
+	}).trigger('resize');
+	
+	loadGrid("", "");
+}
+
+//load grid in the left
+function loadGrid(compID, routeID){
+	showLoader();
+	reloadGrid("#left_bus_list", "./route/selectBusListtoNotify.do", {compid:compID, routeid:routeID}, "resultList");
+}
+
+
+// for every single events
+function initEvent(){
+	// when you change company
+	$("#busCompany").change(function(){
+		var compID = $("#busCompany option:selected").val();
+		if(compID == ""){
+			ajaxCall("./route/selectRouteList.do", null, null, dealwithRoute, null);
+			loadGrid("", "");
+		}
+		else ajaxCall("./route/selectRouteListbyCompany.do", {compid:compID}, null, refreshRoute, null);
+		function refreshRoute(data){
+			dealwithRoute(data);
+			var compID = $("#busCompany option:selected").val();
+			var routeID = $("#busRoute option:selected").val();
+			loadGrid(compID, routeID);
+		}
+	});
+	
+	// when you change route
+	$("#busRoute").change(function(){
+		var compID = $("#busCompany option:selected").val(); 
+		var routeID = $("#busRoute option:selected").val();
+		loadGrid(compID, routeID);
+	});
+	
+	// when you click search
+	$("#btn_search").click(function(){
+		var compID = $("#busCompany option:selected").val(); 
+		var routeID = $("#busRoute option:selected").val();
+		loadGrid(compID, routeID);
+	});
+	
+	// check all element or not
+	$("#checkAll").click(function(){
+		$("input:checkbox").not(this).prop("checked", this.checked);
+	});
+	
+	// move element from left list to right list
+	$("#btn_movRight").click(function(){
+		// first, get selected element
+//		var clonedRow = $('tbody tr:first').clone();
+//		clonedRow.find('input').val('');
+//		$(this).prev().find($('table tbody')).append(clonedRow);
+		var queue = [];
+		$("#left_bus_list > tbody > tr:checked").each(function(){
+			console.log("asdfasdf");
+		});
+		// then, copy those selected element to the right
+		for(var i = 0; i < queue.length(); i++){
+			// append each copied rows
+			$("#right_bus_list > tbody:last").append(/*append something*/);
+		}
+		// question: how should I check the concurrency?
+	});
+	
+	// move element from right list to left list
+	$("#btn_movLeft").click(function(){
+//		$("#right_bus_list > tbody:last > tr:last").remove();
+	});
+}

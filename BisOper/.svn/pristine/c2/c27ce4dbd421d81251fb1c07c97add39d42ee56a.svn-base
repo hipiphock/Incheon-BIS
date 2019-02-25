@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RUN">
+
+	<select id="selectBusRunList" parameterType="TbDmhBusrunrecVO" resultType="TbDmhBusrunrecVO">
+	SELECT 
+	    A.BUSID BUSID, 
+    	B.CARREGNO CARNO,
+    	TO_CHAR(A.RUN_STARTDT, 'YYYY/MM/DD HH24:MI:SS') RUN_STARTDT, 
+    	TO_CHAR(A.RUN_ENDDT,  'YYYY/MM/DD HH24:MI:SS') RUN_ENDDT, 
+    	A.ROUTEID ROUTEID, 
+    	FC_BUSROUTE_ROUTENO(A.ROUTEID) ROUTENO, 
+    	A.DRIVERID DRIVERID, 
+    	A.COMPID COMPID, 
+    	FC_BUSCOMP_COMPNM(A.COMPID) COMPNM, 
+    	A.REAL_RUNORD REAL_RUNORD, FC_RUNSTART_BSTOPNM(A.ROUTEID, A.START_PATHSEQ) START_PATHSEQ, 
+    	FC_RUNEND_BSTOPNM(A.ROUTEID, A.END_PATHSEQ) END_PATHSEQ, 
+    	(A.OVERSPDCNT + A.OPENRUNCNT + A.ACCELCNT + A.DECELCNT + A.OUTROUTECNT + A.STOPSKIPCNT + A.VOLDELAYCNT) VIOL_CNT 
+	FROM 
+	    TB_DMH_BUSRUNREC A, 
+	    TB_ADM_BUS B 
+	WHERE
+	    A.BUSID = B.BUSID
+	    <if test="search_date != null and !search_date.equalsIgnoreCase('')">
+	    AND trunc(A.RUN_STARTDT) = TO_DATE(TO_CHAR(#{search_date}), 'YYYY-MM-DD')
+	    </if>
+	    <if test="compid != null and !compid.equalsIgnoreCase('')">
+	    AND B.COMPID = #{compid}
+	    </if>
+	    <if test="routeid != null and !routeid.equalsIgnoreCase('')">
+	    AND A.ROUTEID = #{routeid}
+	    </if>
+	ORDER BY A.BUSID, A.REAL_RUNORD
+	</select>
+	
+	
+	<!-- 배차준수율통계조회  - 검색날짜-->
+	<select id="selectRunObeyDTList" parameterType="TbDmsAllocobsrvVO" resultType="hashmap">
+		SELECT DISTINCT 
+		    <if test='proccyclcd == "8"'> 
+	            TO_CHAR(PROCDT, 'YYYY/MM/DD') DT
+	        </if>
+	        <if test='proccyclcd == "9"'>     
+	            TO_CHAR(PROCDT, 'YYYY/MM') DT
+	        </if>
+		FROM TB_DMS_ALLOCOBSRV 
+		WHERE 1=1 
+		<if test='proccyclcd == "8"'>
+		  AND PROCCYCLCD = '8'
+		</if>
+		<if test='proccyclcd == "9"'>
+		  AND PROCCYCLCD = '9'
+		</if> 
+		  AND PROCDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS') 
+		                 AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS') 
+		ORDER BY DT
+	</select>
+	
+	
+	
+	<!-- 배차준수율통계조회  - 버스회사기준 노선명-->
+	<select id="selectRunObeyRoutenoList" parameterType="TbDmsAllocobsrvVO" resultType="TbDmsAllocobsrvVO">
+		SELECT DISTINCT 
+		    TO_CHAR(ROUTEID) ROUTEID, 
+		    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO 
+		FROM TB_DMS_ALLOCOBSRV
+		WHERE COMPID = #{compid}
+		  AND PROCDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS') 
+		                 AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS') 
+		<if test='proccyclcd == "8"'>
+		  AND PROCCYCLCD = '8'
+		</if>
+		<if test='proccyclcd == "9"'>
+		  AND PROCCYCLCD = '9'
+		</if> 
+		ORDER BY ROUTENO
+	</select>
+	
+	<!-- 배차준수율통계조회 -차트통계데이터(전체선택) -->
+	<select id="selectRunObeyCompStatisticsValue" parameterType="TbDmsAllocobsrvVO" resultType="hashmap">
+		SELECT 
+		    A.DT DT,  
+		    NVL(B.VAL,0) as "${compid}"
+		FROM
+		    (
+		        SELECT DISTINCT 
+		        <if test='proccyclcd == "8"'> 
+		            TO_CHAR(PROCDT, 'YYYY/MM/DD') DT,
+		        </if>
+		        <if test='proccyclcd == "9"'>     
+		            TO_CHAR(PROCDT, 'YYYY/MM') DT,
+		        </if>
+		            PROCDT,
+		            PROCCYCLCD
+		        FROM TB_DMS_ALLOCOBSRV
+		        WHERE 1=1
+		        <if test='proccyclcd == "8"'>
+		          AND PROCCYCLCD = 8
+		        </if>
+		        <if test='proccyclcd == "9"'>
+		          AND PROCCYCLCD = 9
+		        </if> 
+		  		  AND PROCDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS') 
+		          		         AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS') 
+		    ) A,
+		      ( 
+		        SELECT 
+		        <if test='proccyclcd == "8"'> 
+		            TO_CHAR(PROCDT, 'YYYY/MM/DD') DT,
+		        </if>
+		        <if test='proccyclcd == "9"'>     
+		            TO_CHAR(PROCDT, 'YYYY/MM') DT,
+		        </if>  
+		            ROUND(AVG(NVL(ALLOCOBSRV,0))) VAL,
+		            COMPID,
+		            FC_BUSCOMP_COMPNM(COMPID) COMPNM  
+		        FROM TB_DMS_ALLOCOBSRV
+		        WHERE 1=1
+		       
+		      
+		          AND COMPID = #{compid}
+				  AND PROCDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS') 
+				                 AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS') 
+				<if test='proccyclcd == "8"'>
+		          and PROCCYCLCD = 8
+		        GROUP BY TO_CHAR(PROCDT, 'YYYY/MM/DD')
+		        </if>
+		        <if test='proccyclcd == "9"'>
+		        	and PROCCYCLCD = 9
+		        GROUP BY TO_CHAR(PROCDT, 'YYYY/MM')   
+		        </if>	       
+		        ,COMPID 
+		        ORDER BY DT
+		    ) B 
+		where A.DT = B.DT(+)
+		ORDER BY DT
+	</select>
+	
+	
+	
+	
+	<!-- 배차준수율통계조회 -차트통계데이터(버스회사지정) -->
+	<select id="selectRunObeyRouteStatisticsValue" parameterType="TbDmsAllocobsrvVO" resultType="hashmap">
+		SELECT 
+		    A.DT DT,  
+		    NVL(B.VAL,0) as "${routeid}"
+		FROM
+		    (
+		        SELECT DISTINCT 
+		        <if test='proccyclcd == "8"'> 
+		            TO_CHAR(PROCDT, 'YYYY/MM/DD') DT,
+		        </if>
+		        <if test='proccyclcd == "9"'>     
+		            TO_CHAR(PROCDT, 'YYYY/MM') DT,
+		        </if>
+		            PROCDT,
+		            PROCCYCLCD
+		        FROM TB_DMS_ALLOCOBSRV
+		        WHERE 1=1
+		        <if test='proccyclcd == "8"'>
+		          AND PROCCYCLCD = 8
+		        </if>
+		        <if test='proccyclcd == "9"'>
+		          AND PROCCYCLCD = 9
+		        </if> 
+		  		  AND PROCDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS') 
+		          		         AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS') 
+		    ) A,
+		      ( 
+		        SELECT 
+		        <if test='proccyclcd == "8"'> 
+		            TO_CHAR(PROCDT, 'YYYY/MM/DD') DT,
+		        </if>
+		        <if test='proccyclcd == "9"'>     
+		            TO_CHAR(PROCDT, 'YYYY/MM') DT,
+		        </if>  
+		            ROUND(AVG(NVL(ALLOCOBSRV,0))) VAL,
+		            ROUTEID,
+		            FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO  
+		        FROM TB_DMS_ALLOCOBSRV
+		        WHERE 1=1
+		          AND ROUTEID = #{routeid}
+				  AND PROCDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS') 
+				                 AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS') 
+				<if test='proccyclcd == "8"'>
+		          and PROCCYCLCD = 8
+		        GROUP BY TO_CHAR(PROCDT, 'YYYY/MM/DD')
+		        </if>
+		        <if test='proccyclcd == "9"'>
+		        	and PROCCYCLCD = 9
+		        GROUP BY TO_CHAR(PROCDT, 'YYYY/MM')   
+		        </if>	       
+		        ,ROUTEID 
+		        ORDER BY DT
+		    ) B 
+		where A.DT = B.DT(+)
+		ORDER BY DT
+	</select>
+	
+	<!-- 운행이력조회 - 시공간 운행이력조회 -->
+	<select id="selectStopListforGrid" parameterType="TbAdhRoutepnodeupdVO" resultType="TbAdhRoutepnodeupdVO">
+	SELECT 
+	    PATHSEQ,
+	    FC_BUSSTOP_BSTOPNM(NODEID) BSTOPNM,
+	    FC_BUSSTOP_SHORT_BSTOPID(NODEID) SHORT_BSTOPID 
+	FROM TB_ADH_ROUTEPNODEUPD
+	WHERE
+		ROUTEID = #{routeid}
+		AND UPDDT = (
+			SELECT MIN(UPDDT)
+			FROM TB_ADH_ROUTEPNODEUPD
+	        WHERE ROUTEID = #{routeid} 
+			AND UPDDT  <![CDATA[>]]> TO_DATE(#{search_date}, 'YYYYMMDDHH24MISS')
+		) 
+		AND NODEGBCD = '2'
+	ORDER BY BSTOPSEQ
+	</select>
+	
+	<select id="selectTimeSpaceBusRunList" parameterType="TbDmhTmspaceChartVO" resultType="TbDmhTmspaceChartVO">
+	SELECT
+		LPAD(BUSID, 9, '0') BUSID, 
+	    CARREGNO, 
+	    ROUTEID,
+	    COMPID,
+	    FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO,
+	    FC_BUSCOMP_COMPNM(COMPID) COMPNM, 
+	    RUNORD, 
+	    TO_CHAR(RUN_STARTDT,'YYYY/MM/DD HH24:MI:SS') RUN_STARTDT, 
+	    TO_CHAR(RUN_ENDDT,'YYYY/MM/DD HH24:MI:SS') RUN_ENDDT, 
+	    TOTAL_BSTOPCNT,
+	    SEQ_LIST,
+	    NODE_LIST,
+	    HMS_LIST, 
+	    CROSS_PASS_CNT, 
+	    BSTOP_DEP_CNT 
+	FROM TB_DMH_TMSPACECHART
+	WHERE RUN_ENDDT BETWEEN TO_DATE(#{search_start_date},'YYYYMMDDHH24MISS') + 3/24 
+	                    AND TO_DATE(#{search_end_date},'YYYYMMDDHH24MISS') + 3/24  
+		AND COMPID = #{compid}
+		AND ROUTEID = #{routeid}
+		AND CARREGNO LIKE '%'#{carregno}'%'
+	ORDER BY COMPID, ROUTEID, BUSID, RUNORD
+	</select>
+	
+
+	
+</mapper>

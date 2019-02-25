@@ -1,0 +1,70 @@
+package com.bis.dao;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.stereotype.Repository;
+
+import com.bis.vo.re.TbAdmBusCompVO;
+import com.bis.vo.re.TbDmhTmspaceVO;
+import com.bis.vo.re.TbDmsBuscrowdVO;
+import com.bis.vo.re.TbDmsRunonschedVO;
+
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS / 운행서비스평가
+ * Business Name  : 
+ * Class Name 	  : EvaluationDAO.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일           	수정자       	수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.18	박주언		created new file
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Repository("evaluationDAO")
+public class EvaluationDAO {
+	
+	@Resource
+	private SqlSessionTemplate sqlSession;
+
+	public List<TbDmhTmspaceVO> selectViolentOperHistList(TbDmhTmspaceVO vo) throws SQLException{
+		return sqlSession.selectList("EVALUATION.selectViolentOperHistList", vo);
+	}
+
+	public List<Map<String, String>> selectOperTimingDate(TbDmsRunonschedVO vo) throws SQLException{
+		return sqlSession.selectList("EVALUATION.selectOperTimingDate", vo);
+	}
+
+	public List<TbDmsRunonschedVO> selectOperTimingRoute(TbDmsRunonschedVO vo) throws SQLException{
+		return sqlSession.selectList("EVALUATION.selectOperTimingRoute", vo);
+	}
+
+	public List<TbDmsRunonschedVO> selectOperTimingComp(TbDmsRunonschedVO vo) throws SQLException{
+		return sqlSession.selectList("EVALUATION.selectOperTimingComp", vo);
+	}
+
+	public List<Map<String, Object>> selectOperTimingRouteStaTistics(TbDmsRunonschedVO vo) throws SQLException {
+		return sqlSession.selectList("EVALUATION.selectOperTimingRouteStaTistics", vo);
+	}
+
+	public List<Map<String, Object>> selectOperTimingCompStaTistics(TbDmsRunonschedVO vo) throws SQLException {
+		return sqlSession.selectList("EVALUATION.selectOperTimingCompStaTistics", vo);
+	}
+
+	public List<TbDmsBuscrowdVO> selectStopColumn(TbDmsBuscrowdVO vo) throws SQLException{
+		return sqlSession.selectList("EVALUATION.selectStopColumn", vo);
+	}
+
+	public List<Map<String, Object>> selectCongestionStatistics(TbDmsBuscrowdVO vo) throws SQLException{
+		return sqlSession.selectList("EVALUATION.selectCongestionStatistics");
+	}
+}

@@ -1,0 +1,223 @@
+package com.bis.service.impl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.bis.dao.BusDAO;
+import com.bis.service.BusService;
+import com.bis.vo.re.TbAdmBusVO;
+import com.bis.vo.re.TbAdmBusrouteVO;
+import com.bis.vo.re.TbAdmGarageVO;
+import com.bis.vo.re.TbBmcMdtstatVO;
+import com.bis.vo.re.TbBmhIncidRespVO;
+import com.bis.vo.re.TbBmhRunevtcollVO;
+import com.bis.vo.re.TbBmmIncidScnroVO;
+import com.bis.vo.re.TbDmhBusrunrecVO;
+
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS - 운영단말
+ * Business Name  : 
+ * Class Name 	  : BusServiceImpl.java
+ * Description 	  : 
+ * Modification History 
+ *   수정일                        수정자       		    수정내용
+ * ----------   ---------   -------------------------------
+ * 2017.010.20	    			 김주암                    최초생성
+ * </PRE>
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+
+@Service("busService")
+public class BusServiceImpl extends EgovAbstractServiceImpl implements BusService {
+	
+	@Resource(name = "busDAO")
+	private BusDAO busDAO;
+	
+	/**
+	 * 부당운행조희 - 우측 부당운행검색리스트 테이블 (v0108)
+	 */
+	public List<TbBmhRunevtcollVO> selectViolRunList(TbBmhRunevtcollVO vo) throws SQLException {
+		return busDAO.selectViolRunList(vo); 
+	}
+	
+	/**
+	 * 부당운행조희 - 좌측 버스목록 테이블 (v0108)
+	 */
+	public List<TbAdmBusVO> selectBusList(TbAdmBusVO vo) throws SQLException {
+		return busDAO.selectBusList(vo); 
+	}
+	
+	/**
+	 * 운행종합상황조회 - 왼쪽 테이블에서 한 row를 더블클릭시 나타나는 오른쪽 아래 테이블 (v0109)
+	 */
+	public List<TbBmhRunevtcollVO> selectBusViolList(TbBmhRunevtcollVO vo) throws SQLException {
+		return busDAO.selectBusViolList(vo); 
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 차고지명 카테고리 정보  (v0603) 
+	 */
+	public List<TbAdmGarageVO> selectGarageCateList() throws SQLException {
+		return busDAO.selectGarageCateList();
+	}
+	
+	/**
+	 * 전산장비 기초정보관리 - 신규등록 시  쓸  garageapid (v0603) 
+	 */
+	public TbAdmGarageVO selectMaxGarageapid() throws SQLException {
+		return busDAO.selectMaxGarageapid();
+	}
+	
+	/**
+	 *  차량단말기 상태정보조회/제어 - 차량단말기상태검색 (v0604)
+	 */
+	public List<TbBmcMdtstatVO> selectMdtStat(TbBmcMdtstatVO vo) throws SQLException {
+		return busDAO.selectMdtStat(vo); 
+	}
+	
+	/**
+	 * 무선업그레이드관리(lg) - 무선 업그레이드 차량 검색 (v0701)
+	 */
+	public List<TbAdmBusVO> selectWirelessUpgradeBusList(TbAdmBusVO vo) throws SQLException {
+		return busDAO.selectWirelessUpgradeBusList(vo); 
+	}
+	
+	/**
+	 * 무선업그레이드관리(lg) - 무선 업그레이드 차량 검색 (v0701)
+	 */
+	public List<TbAdmBusVO> selectBusTerminalUpgrade(TbAdmBusVO vo) throws SQLException {
+		return busDAO.selectBusTerminalUpgrade(vo); 
+	}
+	
+	/**
+	 *  업그레이드현황조회 - 무선업그레이드 차량검색 (v0704)  
+	 */
+	public List<TbAdmBusVO> selectWirelessUpgrade(TbAdmBusVO vo) throws SQLException {
+		return busDAO.selectWirelessUpgrade(vo); 
+	}
+	
+	/**
+	 *  업그레이드현황조회 - 단말기 업그레이드 현황검색  (v0704)  
+	 */
+	public List<TbAdmBusVO> selectMdtUpgrade(TbAdmBusVO vo) throws SQLException {
+		return busDAO.selectMdtUpgrade(vo); 
+	}
+	
+	/**
+	 * 버스 운행 이력/통계
+	 * @return 버스 돌발 이력/통계
+	 * @throws SQLException
+	 */
+	public List<TbBmhRunevtcollVO> selectOperationHisList(TbBmhRunevtcollVO vo) throws SQLException {
+		return busDAO.selectOperationHisList(vo);
+	}
+	
+	/**
+	 * 버스 돌발 이력/통계
+	 * @return 버스 돌발 이력/통계
+	 * @throws SQLException
+	 */
+	public List<TbBmhRunevtcollVO> selectBusIncidentHisList(TbBmhRunevtcollVO vo) throws SQLException {
+		return busDAO.selectBusIncidentHisList(vo);
+	}	
+	
+	/**
+	 * 버스 위반 이력/통계
+	 * @return 버스 위반 이력/통계
+	 * @throws SQLException
+	 */
+	public List<TbBmhRunevtcollVO> selectBusViolationHisList(TbBmhRunevtcollVO vo) throws SQLException {
+		return busDAO.selectBusViolationHisList(vo);
+	}	
+	
+	/**
+	 * 실시간 버스 돌발 목록 조회
+	 * @param vo
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<TbBmhRunevtcollVO> selectBusInciList() throws SQLException {
+		return busDAO.selectBusInciList();
+	}
+		
+	/**
+	 * 버스운행관리 / 돌발상황관리 / 돌발대응 시나리오 관리
+	 * added by 박주언
+	 */
+	public List<TbBmhIncidRespVO> selectIncidReactHisList(TbBmhIncidRespVO vo) throws SQLException {
+		return busDAO.selectIncidReactHisList(vo);
+	}
+	
+	 
+	/**
+ 	 * 차량기초정보조회
+ 	 * @return
+ 	 * @throws SQLException
+ 	 */
+	public List<TbAdmBusrouteVO> selectBusBasicInfoList(TbAdmBusrouteVO vo) throws SQLException {
+		return busDAO.selectBusBasicInfoList(vo);
+	}
+
+	/**
+ 	 * 처리여부 변경
+ 	 * @return
+ 	 * @throws SQLException
+ 	 */
+	public int updateBusTreatyn(TbAdmBusrouteVO vo) throws SQLException {
+		return busDAO.updateBusTreatyn(vo);
+	}
+
+	
+
+	/**
+ 	 * 기반정보관리 - 인허가관리 - 인허가 검색
+ 	 * @return
+ 	 * @throws SQLException
+ 	 */
+	public List<TbAdmBusVO> selectSearchPermList(TbAdmBusVO vo)throws SQLException {
+		return busDAO.selectSearchPermList(vo);
+	}
+	
+	
+	/**
+ 	 * 보고서 - 일일버스운행정보
+ 	 * @return
+ 	 * @throws SQLException
+ 	 */
+	public List<TbDmhBusrunrecVO> selectOneDayBusRunRecList(TbDmhBusrunrecVO vo) throws SQLException {
+		return busDAO.selectOneDayBusRunRecList(vo);
+	}
+	
+	
+	/**
+	 * 버스운행관리 / 돌발상황관리 / 돌발대응 시나리오 관리
+	 * added by 박주언
+	 */
+	public List<TbBmmIncidScnroVO> selectIncidReactScnroList(TbBmmIncidScnroVO vo) throws SQLException {
+		return busDAO.selectIncidReactScnroList(vo);
+	}
+
+	@Override
+	public List<TbBmhIncidRespVO> selectRespHistList(TbBmhIncidRespVO vo)
+			throws SQLException {
+		return busDAO.selectRespHistList(vo);
+	}
+
+	
+
+
+	/***************************** 이하 DB 변경 전 *****************************/
+
+
+	
+	
+}

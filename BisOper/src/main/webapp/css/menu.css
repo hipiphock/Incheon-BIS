@@ -1,0 +1,97 @@
+/*top검색*/
+.top_serch{position: absolute; top: 14px; right:15px; background: #1f77d1; border: 1px solid #206dbc;  width: 180px; padding:7px 2px;}
+.top_serch img{vertical-align: middle; cursor: pointer;}
+.top_serch_textbox{border: none; background:#1f77d1; color: #fff; padding-left: 5px; width: 145px; }
+
+/*top메뉴*/
+.login_top h1{padding: 18px;}
+.login_top, .top_menu{width: 100%; height: 63px; background-color: #4594e5; border-bottom: 1px solid #1963af;} /*<----------메뉴배경*/
+.menu_logo{float: left; padding: 13px;}/*<----------로고*/
+h1 a img{vertical-align: middle; margin-right: 10px;}
+h1 span{ font-size: 14px; font-weight: normal; border-left: 1px solid #a2caf2; vertical-align: middle; color: #fff; padding-left: 10px;}
+.box_set {position: absolute; right: 0; top: 0; width:63px; height:48px; border-left:1px solid #1963af; font-size: 12px; cursor:pointer; text-align: center;  padding: 8px 0;}  /*<----------설정*/
+.manu_text{display: block; height: 12px; color: #fff; font-size: 12px;}
+
+.manu_center{position: absolute; width:1070px; left: 50%; margin-left: -495px; top: 0;}
+.manu_center .menu1, .manu_center .menu2, .manu_center .menu3, .manu_center .menu4, .manu_center .menu5, 
+.manu_center .menu6, .manu_center .menu7, .manu_center .menu8, .manu_center .menu9, .manu_center .menu10, 
+.manu_center .menu11, .manu_center .menu12{float: left; position: relative; width:89px; padding:36px 0 10px 0; text-align:center;  cursor: pointer; box-sizing:border-box;}
+
+/*메인메뉴 아이콘*/
+.manu_center .menu1{background: url(../images/menu_icon1_nml.png)center 0px no-repeat;}
+.manu_center .menu1:hover{background: url(../images/menu_icon1_hover.png)center 0px no-repeat;}
+.manu_center .menu2{background: url(../images/menu_icon2_nml.png)center 0px no-repeat;}
+.manu_center .menu2:hover{background: url(../images/menu_icon2_hover.png)center 0px no-repeat;}
+.manu_center .menu3{background: url(../images/menu_icon3_nml.png)center 0px no-repeat;}
+.manu_center .menu3:hover{background: url(../images/menu_icon3_hover.png)center 0px no-repeat;}
+.manu_center .menu4{background: url(../images/menu_icon4_nml.png)center 0px no-repeat;}
+.manu_center .menu4:hover{background: url(../images/menu_icon4_hover.png)center 0px no-repeat;}
+.manu_center .menu5{background: url(../images/menu_icon5_nml.png)center 0px no-repeat;}
+.manu_center .menu5:hover{background: url(../images/menu_icon5_hover.png)center 0px no-repeat;}
+.manu_center .menu6{background: url(../images/menu_icon6_nml.png)center 0px no-repeat;}
+.manu_center .menu6:hover{background: url(../images/menu_icon6_hover.png)center 0px no-repeat;}
+.manu_center .menu7{background: url(../images/menu_icon7_nml.png)center 0px no-repeat;}
+.manu_center .menu7:hover{background: url(../images/menu_icon7_hover.png)center 0px no-repeat;}
+.manu_center .menu8{background: url(../images/menu_icon8_nml.png)center 0px no-repeat;}
+.manu_center .menu8:hover{background: url(../images/menu_icon8_hover.png)center 0px no-repeat;}
+.manu_center .menu9{background: url(../images/menu_icon9_nml.png)center 0px no-repeat;}
+.manu_center .menu9:hover{background: url(../images/menu_icon9_hover.png)center 0px no-repeat;}
+.manu_center .menu10{background: url(../images/menu_icon10_nml.png)center 0px no-repeat;}
+.manu_center .menu10:hover{background: url(../images/menu_icon10_hover.png)center 0px no-repeat;}
+.manu_center .menu11{background: url(../images/menu_icon11_nml.png)center 0px no-repeat;}
+.manu_center .menu11:hover{background: url(../images/menu_icon11_hover.png)center 0px no-repeat;}
+.manu_center .menu12{background: url(../images/menu_icon12_nml.png)center 0px no-repeat;}
+.manu_center .menu12:hover{background: url(../images/menu_icon12_hover.png)center 0px no-repeat;}
+
+
+/*메인메뉴 마우스오버*/
+.manu_center .menu1:hover .menuname a, .manu_center .menu2:hover .menuname a,
+.manu_center .menu3:hover .menuname a, .manu_center .menu4:hover .menuname a,
+.manu_center .menu5:hover .menuname a, .manu_center .menu6:hover .menuname a,
+.manu_center .menu7:hover .menuname a, .manu_center .menu8:hover .menuname a,
+.manu_center .menu9:hover .menuname a, .manu_center .menu10:hover .menuname a,
+.manu_center .menu11:hover .menuname a, .manu_center .menu12:hover .menuname a
+{color: #feffbf}
+
+.manu_center .menu1:hover .subDaps1, .manu_center .menu2:hover .subDaps1,
+.manu_center .menu3:hover .subDaps1, .manu_center .menu4:hover .subDaps1,
+.manu_center .menu5:hover .subDaps1, .manu_center .menu6:hover .subDaps1,
+.manu_center .menu7:hover .subDaps1, .manu_center .menu8:hover .subDaps1,
+.manu_center .menu9:hover .subDaps1, .manu_center .menu10:hover .subDaps1,
+.manu_center .menu11:hover .subDaps1, .manu_center .menu12:hover .subDaps1,
+.manu_center .menu1:hover .menuArrow, .manu_center .menu2:hover .menuArrow,
+.manu_center .menu3:hover .menuArrow, .manu_center .menu4:hover .menuArrow,
+.manu_center .menu5:hover .menuArrow, .manu_center .menu6:hover .menuArrow,
+.manu_center .menu7:hover .menuArrow, .manu_center .menu8:hover .menuArrow,
+.manu_center .menu9:hover .menuArrow, .manu_center .menu10:hover .menuArrow,
+.manu_center .menu11:hover .menuArrow, .manu_center .menu12:hover .menuArrow
+{display: block;}
+
+.manu_center .menuname a{color: #fff; font-size: 12px;}
+
+/*서브메뉴있는것들 화살표*/
+.arrow{background: url(../images/menu_arow2.png)95% no-repeat;}
+
+/*서브메뉴1*/
+.menuArrow{position: absolute; top:54px; left:50%; margin-left:-7px; z-index: 9999; display: none;}
+.subDaps1, .subDaps2{z-index: 999; position: absolute; background: #fff; border: 1px solid #626262; width:195px; display: none; box-sizing:border-box; box-shadow: 2px 2px 0px rgba(0,0,0,0.3);}
+.subDaps1{margin:9px 0 0 -50px}
+.subDaps2{left:193px; margin-top: -31px}
+.subDaps1 li{border-bottom: 1px solid #c5c5c5; width: 100%; height: 30px;}
+.subDaps1 li:hover{background: #eee;}
+.subDaps1 li:hover > a{color: #0859e7; font-weight: bold;}
+.subDaps1 li:hover > .arrow{background: url(../images/menu_arow2_hover.png)95% no-repeat;}
+
+.subDaps1 li:last-child{border-bottom: none;}
+
+.subDaps1 li a{color: #000; font-size: 12px; display: block; width: 100%; text-align: left; padding-left: 5px; height:30px; line-height:30px; box-sizing:border-box;}
+
+.subDaps1 li:hover .subDaps2{display: block;}
+
+
+
+
+
+
+
+

@@ -1,0 +1,213 @@
+var model = new Array();
+
+$(document).ready(function(){
+	appendLoader("조회 중...");
+	initEvent();
+	initPicker();
+	initGrid();
+	setCategory();
+});
+
+
+function initPicker(){
+	datePicker();
+};
+
+function setCategory(){
+	var strTemp = "";
+	strTemp += "<option value='8'>일별</option>";
+	strTemp += "<option value='9'>월별</option>";
+	$("#sel_proccyclcd").empty().append(strTemp);
+
+	ajaxCall("./comp/selectCompCateList.do", null, null, onSuccess, null);
+	function onSuccess(data) { 
+		var strTemp = "<option value>전체</option>";
+		$.each(data.resultList,function(index, value){
+			strTemp += "<option value='"+value.compid+"'>"+value.compnm+"</option>";
+		});
+		$("#sel_compid").empty().append(strTemp);
+	}
+	
+
+};
+
+function initGrid(){
+	
+	$(window).bind('resize', function() {
+		$("#detail_list").jqGrid('setGridHeight', $(".conbottom.v0409bottom .main_chart").height()- 23);
+		$("#detail_list").jqGrid('setGridWidth', $(".conbottom.v0409bottom .main_chart").width());		
+	}).trigger('resize');
+	};
+
+
+
+function initEvent(){
+	//검색버튼 클릭
+	$("#btn_search").on("click",function(){
+		var sel_proccyclcd = $("#sel_proccyclcd option:selected").val();
+		var sel_compid = $("#sel_compid option:selected").val();
+		var startdt = "";
+		var enddt = "";
+		if(sel_proccyclcd =="8"){ //일별
+			startdt = $("#inp_search_startdt").val().replace(/-/g,'')+"000000";
+			enddt = $("#inp_search_enddt").val().replace(/-/g,'')+"000000";
+		} else if(sel_proccyclcd =="9"){//월별
+			startdt = $("#inp_search_startdt").val().replace(/-/g,'')+"01000000";
+			enddt = $("#inp_search_enddt").val().replace(/-/g,'')+"01000000";
+		}
+		if(Number(enddt) >= Number(startdt)){
+			showLoader();
+			$("#detail_list").GridUnload();
+			model = [];
+			model.push({label:"구분",	name:"DT", index:"DT", width: "130", align:"center"});
+			
+			if(sel_compid==""){
+				ajaxCall("./comp/selectCompCateList.do", null, null, comp_success, null);
+				function comp_success(data) { 
+					$.each(data.resultList,function(index, value){
+						model.push({label:value.compnm,	name:value.compid, index:value.compid, width: "80",	align:"center"});
+					});
+					makeGrid("#detail_list", model, 125, "resultList", null, null ,null);
+					
+					var all_param = {
+							search_startdt : startdt,
+							search_enddt : enddt,
+							proccyclcd : sel_proccyclcd
+					};
+					$("#detail_list").trigger("reloadGrid");
+					reload("#detail_list","./run/selectRunObey.do", all_param ,"resultList");
+					$("#detail_list").trigger('resize');
+				};
+			} else {
+				var select_param ={
+						search_startdt : startdt,
+						search_enddt : enddt,
+						proccyclcd : sel_proccyclcd,
+						compid : sel_compid
+				};
+				ajaxCall("./run/selectRunObeyRoutenoList.do", select_param , null, route_success, null);
+				function route_success(data) { 
+					$.each(data.resultList,function(index, value){
+						model.push({label:value.routeno, name:value.routeid, index:value.routeid, width: "80", align:"center"});
+					});
+					makeGrid("#detail_list", model, 125, "resultList", null, null ,null);
+					
+					$("#detail_list").trigger("reloadGrid");
+					reload("#detail_list","./run/selectRunObey.do", select_param ,"resultList");
+					$("#detail_list").trigger('resize');
+				};
+			}
+		} else {
+			showAlert("조회기간을 잘못 설정하였습니다.");
+		}
+	});
+	
+	function reload(gridId, url, params, jsonRoot) {
+		$(gridId).jqGrid("clearGridData");
+		ajaxCall(url, params, null, onLoadSuccess, null);
+		function onLoadSuccess(data) { 
+			hideLoader();
+			if(!data[jsonRoot]){
+				showAlert("기간에 해당하는 데이터가 없습니다");
+				return;
+			} else {
+			$(gridId).jqGrid("setGridParam", {data : data[jsonRoot]});	
+			$(gridId).trigger("reloadGrid");
+			
+			drowChart();
+			}
+		}
+	}
+	
+	function drowChart(){
+		setChart2d('container','column',getChartOption());
+	};
+	function getChartOption(){
+		Highcharts.setOptions({
+			plotOptions: {
+				column: {
+					minPointLength: 3
+				}
+			}
+		});
+		var buffdata = $('#detail_list').getRowData(); 
+		var chartOpt = new Object();
+		chartOpt.xAxis = new Object();
+		chartOpt.xAxis = {
+		        categories: [], //그리드 컬럼들
+		        crosshair: true
+		             }
+		chartOpt.yAxis = new Object();
+		chartOpt.yAxis = {
+		        min: 0,
+		        minRange : 0.1,
+		        title: {
+		            text: null
+		        }
+		    }
+		chartOpt.series = new Array();
+		
+		$.each(buffdata,function(grid_index,grid_value){
+			var dataObject = {}; //시리즈 데이터
+			dataObject.name = grid_value.DT;
+			dataObject.data = [];
+			$.each(model,function(model_index,model_value){
+				if(model_value.index!="DT"){
+					if(grid_index==0){ //카테고리명 추가
+						chartOpt.xAxis.categories.push(model_value.label);
+					}
+					var key = model_value.index;
+					dataObject.data.push(parseInt(grid_value[key]));
+				}
+			});
+			chartOpt.series.push(dataObject);
+		});
+		return chartOpt;
+	};
+	
+	
+	//새로고침 버튼
+	$("#btn_refresh").click(function() {
+		window.location.reload();
+	});
+	
+	//Enter 검색
+	$("#inp_search_startdt, #inp_search_enddt").on("keydown", function(key) {
+		if(key.keyCode == 13) {
+			$("#btn_search").trigger("click");
+		}
+	});
+	
+	$("#sel_proccyclcd").on("change",function(){
+		if($(this).val() == "8"){//일별
+			datePicker();
+		} else if($(this).val() == "9"){//월별
+			monthPicker();
+		}
+	});
+};
+
+function datePicker(){
+	$("#inp_search_startdt,#inp_search_enddt").datepicker("destroy").val("");
+	initCalendar("inp_search_startdt", YEAR_FORMAT1, false);
+	initCalendar("inp_search_enddt", YEAR_FORMAT1, true);
+	var today = new Date();
+	var prev = new Date(Date.parse(today) - 1000 * 60 * 60 * 24 ); 
+	setCalendar("inp_search_startdt", YEAR_FORMAT1, prev);
+};
+
+function monthPicker(){
+	$("#inp_search_startdt,#inp_search_enddt").datepicker("destroy").val("");
+	var options = {
+        dateFormat: "yy-mm",
+        changeMonth: true,
+        changeYear: true,
+    };
+	var today = new Date();
+	var firstDate = new Date(today.getFullYear(), today.getMonth(),0) //현재월 1일
+	$("#inp_search_startdt").datepicker(options).datepicker("option",{showCurrentAtPos: 1});
+	$("#inp_search_enddt").datepicker(options);
+	setCalendar("inp_search_startdt", "yy-mm", firstDate);
+	setCalendar("inp_search_enddt", "yy-mm", today);
+};
+

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 외부연계정보  -->
+<mapper namespace="OUTSIDEINFO">
+
+	<!-- 교통카드 연계정보관리 - 교통카드및 현금수입금 조회 -->
+	<select id="selectCardCashList" parameterType="TbEchCardcashVO" resultType="TbEchCardcashVO">
+		SELECT * 
+		FROM TB_ECH_CARDCASH    
+		WHERE COLDT = #{coldt} 
+		ORDER BY COMPNM, JISA, ROUTEID
+	</select>
+	
+	<!-- 교통카드 연계정보관리 - 내역 삭제 -->
+	<delete id="deleteCardCash" parameterType="TbEchCardcashVO">
+		DELETE FROM TB_ECH_CARDCASH   WHERE COLDT = #{coldt}
+	</delete>
+	
+	<!-- 기상정보 수집이력조회 - 기상정보 수집이력검색 -->
+	<select id="selectWeatherCallList" parameterType="TbEchWeathercollVO" resultType="TbEchWeathercollVO">
+		SELECT 
+		    TO_CHAR(OCCURDT, 'YYYY/MM/DD HH24:MI:SS') OCCURDT,
+		    FC_CODE_CDNM('WEATHERTPCD', WEATHERTPCD) CUR_WEATHERTPNM, 
+		    MAX_TEMPER,
+		    MIN_TEMPER,
+		    CUR_TEMPER,
+		    WINDDIR,
+		    WINDSPD,
+		    RAINFALL,
+		    SNOWFALL,
+		    RAINPROBLT,
+		    WEATHERSTATUS,
+		    FOR_MAX_TEMPER,
+		    FOR_MIN_TEMPER,
+		    FOR_RAINPROBLT_M,
+		    FOR_RAINPROBLT_A,
+		    FOR_WEATHER,
+		    FC_CODE_CDNM('WEATHERTPCD', FOR_WEATHERTPCD) FOR_WEATHERTPNM,
+		    TOD_MAX_TEMPER,
+		    TOD_MIN_TEMPER,
+		    TOD_RAINPROBLT_M,
+		    TOD_RAINPROBLT_A,
+		    TOD_WEATHER,
+		    FC_CODE_CDNM('WEATHERTPCD', TOD_WEATHERTPCD) TOD_WEATHERTPNM
+		FROM TB_ECH_WEATHERCOLL 
+		WHERE OCCURDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS') 
+		                  AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS')
+		ORDER BY OCCURDT DESC
+	</select>
+	
+	<!-- 외부연계정보 - 연계정보 송수신이력조회 -->
+	<select id="selectLinkedOutsideInfoList" parameterType="TbEchLnkdsndrcvVO" resultType="TbEchLnkdsndrcvVO">
+		SELECT 
+		    TO_CHAR(COLLDT, 'YYYY/MM/DD HH24:MI:SS') COLLDT,
+		    FC_EXORG_ORGNM(RELATORGID) RELATORGNM, 
+		    RELATORGID,
+		    FC_CODE_CDNM('LNKDINFOTPCD', LNKDINFOTPCD) LNKDINFOTPCD,
+		    FC_CODE_CDNM('SNDRSLTCD', SNDRSLTCD) SNDRSLTCD,
+		    FC_CODE_CDNM('COMMERRCD',COMMERRCD) COMMERRCD 
+		FROM TB_ECH_LNKDSNDRCV 
+		WHERE COLLDT BETWEEN TO_DATE(#{search_startdt},'YYYYMMDDHH24MISS')
+		                 AND TO_DATE(#{search_enddt},'YYYYMMDDHH24MISS') 
+		<if test="lnkdinfotpcd != null and !lnkdinfotpcd.equalsIgnoreCase('')">
+		  And LNKDINFOTPCD = #{lnkdinfotpcd}
+		</if>
+		<if test="sndrsltcd != null and !sndrsltcd.equalsIgnoreCase('')">
+		  And SNDRSLTCD = #{sndrsltcd}
+		</if>  
+		Order by COLLDT
+	</select>
+	
+	
+	<!-- 외부연계정보 - 교통상황 연계정보 조회 - 돌발수집이력검색  -->
+	<select id="selectIncidRecordList" parameterType="TbEchExorgincidVO" resultType="TbEchExorgincidVO">
+		SELECT 
+		    INCIDID,
+		    UPD_REGSEQ,
+		    RELATORGID,
+		    INCIDTPCD,
+		    INCID_DETAIL, 
+		    FC_CODE_CDNM('INCIDTPCD', INCIDTPCD) INCIDTPNM, 
+		    FC_EXORG_ORGNM(RELATORGID) RELATORGNM, 
+		    TO_CHAR(INCID_OCCURDT,'YYYY-MM-DD HH24:MI:SS') INCID_OCCURDT,
+		    TO_CHAR(INCID_ENDDT,'YYYY-MM-DD HH24:MI:SS') INCID_ENDDT,
+		    TO_CHAR(COLLDT,'YYYY-MM-DD HH24:MI:SS') COLLDT 
+		FROM TB_ECH_EXORGINCID 
+		WHERE UPD_REGSEQ = '0' 
+		  AND INCID_OCCURDT BETWEEN TO_DATE(#{search_startdt},'YYYYMMDDHH24MISS') 
+		                        AND TO_DATE(#{search_enddt},'YYYYMMDDHH24MISS')
+		<if test="incidtpcd != null and !incidtpcd.equalsIgnoreCase('')">
+		  AND INCIDTPCD = #{incidtpcd}
+		</if> 
+		ORDER BY INCID_OCCURDT
+	</select>
+	
+	
+	<!-- 외부연계정보 - 교통상황 연계정보 조회 - 돌발변경이력검색  -->
+	<select id="selectIncidChangedRecordList" parameterType="TbEchExorgincidVO" resultType="TbEchExorgincidVO">
+		SELECT 
+		    INCIDID,
+		    UPD_REGSEQ,
+		    RELATORGID,
+		    INCIDTPCD,
+		    INCID_DETAIL, 
+		    FC_CODE_CDNM('INCIDTPCD', INCIDTPCD) INCIDTPNM, 
+		    FC_EXORG_ORGNM(RELATORGID) RELATORGNM, 
+		  	TO_CHAR(INCID_OCCURDT,'YYYY-MM-DD HH24:MI:SS') INCID_OCCURDT,
+		    TO_CHAR(INCID_ENDDT,'YYYY-MM-DD HH24:MI:SS') INCID_ENDDT,
+		    TO_CHAR(COLLDT,'YYYY-MM-DD HH24:MI:SS') COLLDT 
+		FROM TB_ECH_EXORGINCID 
+		WHERE INCIDID = #{incidid}
+		ORDER BY UPD_REGSEQ
+	</select>
+	
+	<!-- 외부연계정보 - 교통상황 연계정보 조회 - 관련링크검색 -->
+	<select id="selectIncidLinkInfoList" parameterType="TbAdmLinkVO" resultType="TbAdmLinkVO">
+		SELECT 
+		    INCIDID,
+		    UPD_REGSEQ,
+		    aa.LINKID, 
+		    bb.LINKNM, 
+		    bb.ROADNM 
+		FROM TB_ECH_INCIDLINK aa, 
+		     TB_ADM_LINK bb
+		WHERE INCIDID = #{incidid} 
+		AND aa.linkid = bb.linkid 
+		ORDER BY UPD_REGSEQ
+	</select>
+	
+	<!-- 외부연계정보 - 뉴스정보 수집이력조회 -->
+	<select id="selectNewScollList" parameterType="TbEchNewscollVO" resultType="TbEchNewscollVO">
+		SELECT 
+		    FC_EXORG_ORGNM(RELATORGID) RELATORGNM, 
+		    TO_CHAR(COLLDT, 'YYYY-MM-DD HH24:MI:SS') COLLDT, 
+		    NEWSCONTENT
+		FROM TB_ECH_NEWSCOLL
+		WHERE COLLDT BETWEEN TO_DATE(#{search_startdt}, 'YYYYMMDDHH24MISS')
+		                 AND TO_DATE(#{search_enddt}, 'YYYYMMDDHH24MISS')  
+	  <if test="relatorgid != null and !relatorgid.equalsIgnoreCase('')">
+		AND RELATORGID =#{relatorgid}
+	  </if>
+		ORDER BY COLLDT
+	</select>
+	
+	
+</mapper>

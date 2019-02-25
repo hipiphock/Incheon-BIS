@@ -1,0 +1,53 @@
+$(document).ready(function(){
+	appendLoader("로딩중...");
+	initBox();
+	initGrid();
+	initEvent();
+});
+
+
+function initBox(){
+	
+	// initializing first box - bus company
+	ajaxCall("./route/selectCompList.do", null, null, dealwithCompany, null);
+}
+
+//function for company selection box
+function dealwithCompany(data){
+	var parsedData = data.companyList;
+	var select = document.getElementById("busCompany");
+	for(var i in parsedData){
+		var opt = document.createElement("option");
+		opt.value = parsedData[i].compid;
+		opt.text = parsedData[i].compnm;
+		select.appendChild(opt);
+	}
+}
+
+function initGrid(){
+	
+}
+
+
+function initEvent(){
+	
+	$("#date_month_selector").change(function(){
+		if($("#date_month_selector option:selected").val() == 0){
+			console.log("dosmas");
+			var to_date = document.getElementsByClassName("in180");
+			to_date[0].type = "date";
+			to_date[1].type = "date";
+		}
+		else{
+			console.log("dosmas");
+			var to_month = document.getElementsByClassName("in180");
+			to_month[0].type = "month";
+			to_month[1].type = "month";
+		}
+	});
+	
+	// 새로고침
+	$("#btn_refresh").click(function(){
+		location.reload();
+	});
+}

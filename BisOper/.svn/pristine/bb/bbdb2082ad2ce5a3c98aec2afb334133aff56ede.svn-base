@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="EVALUATION">
+
+	<!-- 부당운행이력 -->
+	<select id="selectViolentOperHistList" parameterType="TbDmhTmspaceVO" resultType="TbDmhTmspaceVO">
+	SELECT 
+    	EVT_OCCURDT, 
+    	BUSID, 
+    	FC_BUS_CARREGNO(BUSID) CARNO, 
+    	ROUTEID ROUTEID, 
+    	FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO, 
+    	POSX, 
+    	POSY, 
+    	FC_BUS_COMPNM(BUSID) COMPNM,
+    	FC_BUS_COMPID(BUSID) COMPID,
+    	LLINKID, 
+    	PATHSEQ, 
+    	RUNVIOLTPCD,
+    	DECODE( RUNVIOLTPCD,            
+        	'13',   FC_NODE_NODENM(NODEID), 
+            '11',   FC_NODE_NODENM(NODEID), 
+            DECODE( SUBSTR(LINKNM, 1, INSTR(LINKNM, '~')-1),    
+                '........',       TO_CHAR(START_NODEID),           
+                '....',           TO_CHAR(START_NODEID),           
+                '',               TO_CHAR(START_NODEID),                   
+                SUBSTR(LINKNM, 1, INSTR(LINKNM, '~')-1) 
+            ) ||'~'||
+            DECODE ( 
+				SUBSTR(LINKNM, INSTR(LINKNM, '~')+1, LENGTH(LINKNM)),  
+                '........',        TO_CHAR(END_NODEID),           
+                '....',            TO_CHAR(END_NODEID),   
+                '',                TO_CHAR(END_NODEID),    
+                SUBSTR(LINKNM, INSTR(LINKNM, '~')+1, LENGTH(LINKNM)) 
+            ) 
+		) POSNM,
+    	FC_CODE_CDNM('RUNVIOLTPCD', RUNVIOLTPCD) RUNVIOLTYPE, 
+    	REAL_RUNORD, 
+    	PLAN_RUNORD 
+	FROM
+		TB_DMH_TMSPACE A, 
+    	TB_ADM_LINK B 
+	WHERE
+		A.LLINKID = B.LINKID(+)
+		<if test="evt_occurdt != null and !evt_occurdt.equalsIgnoreCase('')">
+		AND trunc(EVT_OCCURDT) = TO_DATE(TO_CHAR(#{evt_occurdt}), 'YYYY-MM-DD')
+        </if>
+        <if test="evttpcd != null and !evttpcd.equalsIgnoreCase('')">
+  		AND EVTTPCD = #{evttpcd}
+  		</if>
+  		<if test="busid != null and !busid.equalsIgnoreCase('')">
+  		AND A.BUSID = #{busid}
+  		</if>
+  		<if test="routeid != null and !routeid.equalsIgnoreCase('')">
+  		AND A.ROUTEID = #{routeid}
+  		</if>
+  		<if test="runvioltpcd != null and !runvioltpcd.equalsIgnoreCase('')">
+  		AND RUNVIOLTPCD = #{runvioltpcd}
+  		</if>
+	ORDER BY EVT_OCCURDT
+	</select>
+	
+	<!-- 하단구분 날짜 데이터(일별) -->
+	<select id="selectOperTiming_Date" parameterType="TbDmsRunonschedVO" resultType="TbDmsRunonschedVO">
+	SELECT DISTINCT 
+    	TO_CHAR(PROCDT, 'YYYY/MM/DD') DT                  
+	FROM TB_DMS_RUNONSCHED                              
+	WHERE PROCCYCLCD = #{proccyclcd}
+		AND PROCDT BETWEEN TO_DATE(#{start_dt}, 'YYYYMMDDHH24MISS')                  
+		AND TO_DATE(#{end_dt}, 'YYYYMMDDHH24MISS')  
+	ORDER BY DT
+	</select>
+	
+	<!-- 하단구분 날짜 데이터(월별) -->
+	<select id="selectOperTiming_Month" parameterType="TbDmsRunonschedVO" resultType="TbDmsRunonschedVO">
+	SELECT DISTINCT
+	    TO_CHAR(PROCDT, 'YYYY/MM') DT                  
+	FROM 
+	    TB_DMS_RUNONSCHED                                 
+	WHERE 
+	    PROCCYCLCD = #{proccyclcd}
+    	AND PROCDT BETWEEN TO_DATE(#{start_dt}, 'YYYYMMDDHH24MISS')
+    	AND TO_DATE(#{end_dt}, 'YYYYMMDDHH24MISS')  
+	ORDER BY DT;
+	</select>
+	
+	<!-- 하단구분 버스노선 데이터 (표에서 있는 모델 분류) -->
+	<select id="selectOperTiming_Route" parameterType="TbDmsRunonschedVO" resultType="TbDmsRunonschedVO">
+	SELECT DISTINCT 
+    	ROUTEID,
+    	FC_BUSROUTE_ROUTENO(ROUTEID) ROUTENO 
+	FROM TB_DMS_RUNONSCHED
+	WHERE COMPID = #{compid}
+  		AND PROCDT BETWEEN TO_DATE(#{start_dt}, 'YYYYMMDDHH24MISS') 
+		AND TO_DATE(#{end_dt}, 'YYYYMMDDHH24MISS') 
+		AND PROCCYCLCD = #{proccyclcd}
+	ORDER BY ROUTENO
+	</select>
+	
+	<!-- 하단구분 버스회사 데이터 (표에서 있는 모델 분류) -->
+	<select id="selectOperTiming_Comp" parameterType="TbDmsRunonschedVO" resultType="TbDmsRunonschedVO">
+	SELECT DISTINCT 
+    	COMPID,
+    	FC_BUSCOMP_COMPNM(COMPID) COMPNM 
+	FROM TB_DMS_RUNONSCHED
+	WHERE COMPID = #{compid}
+  		AND PROCDT BETWEEN TO_DATE(#{start_dt}, 'YYYYMMDDHH24MISS') 
+		AND TO_DATE(#{end_dt}, 'YYYYMMDDHH24MISS') 
+		AND PROCCYCLCD = #{proccyclcd}
+	ORDER BY COMPNM
+	</select>
+
+
+</mapper>

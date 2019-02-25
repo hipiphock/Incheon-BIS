@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <context:component-scan base-package="com.bis">
+       <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+
+	<context:property-placeholder location="classpath:/egovframework/grobal.properties" />
+ 
+    <bean id="propertyHolder" class="com.bis.prop.GrobalProps">
+    	<!-- 신규 -->   
+        <property name="ftpIp1"        value="${FTP_HOST1}"/>
+        <property name="ftpPort1"      value="${FTP_PORT1}"/>
+        <property name="ftpId1"        value="${FTP_ID1}"/>
+        <property name="ftpPw1"        value="${FTP_PW1}"/>
+        <!-- 광역 -->
+        <property name="ftpIp2"        value="${FTP_HOST2}"/>
+        <property name="ftpPort2"      value="${FTP_PORT2}"/>
+        <property name="ftpId2"        value="${FTP_ID2}"/>
+        <property name="ftpPw2"        value="${FTP_PW2}"/>
+        <!-- 인천 -->
+        <property name="ftpIp3"        value="${FTP_HOST3}"/>
+        <property name="ftpPort3"      value="${FTP_PORT3}"/>
+        <property name="ftpId3"        value="${FTP_ID3}"/>
+        <property name="ftpPw3"        value="${FTP_PW3}"/>
+        <!-- 확대 -->
+        <property name="ftpIp4"        value="${FTP_HOST4}"/>
+        <property name="ftpPort4"      value="${FTP_PORT4}"/>
+        <property name="ftpId4"        value="${FTP_ID4}"/>
+        <property name="ftpPw4"        value="${FTP_PW4}"/>
+        <!-- 광역2 -->
+        <property name="ftpIp5"        value="${FTP_HOST5}"/>
+        <property name="ftpPort5"      value="${FTP_PORT5}"/>
+        <property name="ftpId5"        value="${FTP_ID5}"/>
+        <property name="ftpPw5"        value="${FTP_PW5}"/>
+        <!-- 신규2 -->   
+        <property name="ftpIp6"        value="${FTP_HOST6}"/>
+        <property name="ftpPort6"      value="${FTP_PORT6}"/>
+        <property name="ftpId6"        value="${FTP_ID6}"/>
+        <property name="ftpPw6"        value="${FTP_PW6}"/>
+        
+        <!-- 중계서버 -->
+        <property name="relayIp"      value="${RELAY_HOST}"/>
+        <property name="relayPort"    value="${RELAY_PORT}"/>
+        
+        <property name="bitDir"       value="${BIT_DIR}"/>
+        <property name="camDir"       value="${CAM_DIR}"/>
+        
+        <property name="scenImgDir"   value="${SCEN_IMG_DIR}"/>
+        <property name="scenVideoDir" value="${SCEN_VIDEO_DIR}"/>
+        <property name="scenPromoDir" value="${SCEN_PROMO_DIR}"/>
+        
+        <property name="tempfile"     value="${TEMP_FILE}"/>
+    </bean>	
+
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>classpath:/egovframework/message/message-common</value>
+				<value>classpath:/egovframework/rte/fdl/idgnr/messages/idgnr</value>
+				<value>classpath:/egovframework/rte/fdl/property/messages/properties</value>
+			</list>
+		</property>
+		<property name="cacheSeconds">
+			<value>60</value>
+		</property>
+	</bean>
+	
+	<bean id="leaveaTrace" class="egovframework.rte.fdl.cmmn.trace.LeaveaTrace">
+		<property name="traceHandlerServices">
+			<list>
+				<ref bean="traceHandlerService" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="traceHandlerService" class="egovframework.rte.fdl.cmmn.trace.manager.DefaultTraceHandleManager">
+		<property name="reqExpMatcher">
+			<ref bean="antPathMater" />
+		</property>
+		<property name="patterns">
+			<list>
+				<value>*</value>
+			</list>
+		</property>
+		<property name="handlers">
+			<list>
+				<ref bean="defaultTraceHandler" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="antPathMater" class="org.springframework.util.AntPathMatcher" />
+	<bean id="defaultTraceHandler" class="egovframework.rte.fdl.cmmn.trace.handler.DefaultTraceHandler" />
+	
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+	 
+</beans>

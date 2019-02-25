@@ -1,0 +1,94 @@
+package com.bis.service.impl;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.bis.dao.EvaluationDAO;
+import com.bis.service.EvaluationService;
+import com.bis.vo.re.TbAdmBusCompVO;
+import com.bis.vo.re.TbAdmBusstopVO;
+import com.bis.vo.re.TbDmhTmspaceVO;
+import com.bis.vo.re.TbDmsRunonschedVO;
+
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+
+/**
+ * 
+ * <PRE>
+ * System Name 	  : 인천 BIS / 운행서비스평가
+ * Business Name  : 
+ * Class Name 	  : EvaluationService.java
+ * Description 	  : 
+ * Modification History 
+ * 수정일			수정자		수정내용
+ * ----------   ---------   -------------------------------
+ * 2019.01.18	박주언		created new file
+ * </PRE>
+ * 
+ * @version 1.0
+ * @author Copyright (C) 2017 by IncheonBis All right reserved.
+ */
+@Service("evaluationService")
+public class EvaluationServiceImpl extends EgovAbstractServiceImpl implements EvaluationService{
+	
+	@Resource(name = "evaluationDAO")
+	private EvaluationDAO evaluationDAO;
+
+	public List<TbDmhTmspaceVO> selectViolentOperHistList(TbDmhTmspaceVO vo) throws SQLException {
+		return evaluationDAO.selectViolentOperHistList(vo);
+	}
+
+	// 운행평가 - 운행정시성통계조회
+	public List<Map<String, String>> selectOperTiming(TbDmsRunonschedVO vo) throws SQLException {
+		
+		List<Map<String, String>> resultMapList = new ArrayList<Map<String, String>>();
+		List<Map<String, Object>> valueMapList = new ArrayList<Map<String, Object>>();
+		
+		// 우선적으로 "구분" column을 가져온다.
+		// "구분" column은 날짜이다.
+		resultMapList = evaluationDAO.selectOperTimingDate(vo);
+		if(resultMapList.size() <= 0){
+			return null;
+		}
+		
+		// case: company selected - get routeid
+		if(vo.getCompid() != null && !vo.getCompid().equals("")){
+			// get route list
+			List<TbDmsRunonschedVO> routeList = evaluationDAO.selectOperTimingRoute(vo);
+			for(TbDmsRunonschedVO elements : routeList){
+				String key = elements.getRouteid();
+				System.out.println("Route id : " + key);
+				vo.setRouteid(key);
+				vo.setCompid("");
+				valueMapList = evaluationDAO.selectOperTimingRouteStaTistics(vo);
+				for(int i = 0; i < resultMapList.size(); i++){
+					String val = String.valueOf(valueMapList.get(i).get(key));
+					resultMapList.get(i).put(key, val);
+				}
+			}
+		}
+		
+		// case: no company selected - get all of the company
+		else{
+			// get company list
+			List<TbDmsRunonschedVO> compList = evaluationDAO.selectOperTimingComp(vo);
+			for(TbDmsRunonschedVO elements : compList){
+				String key = elements.getCompid();
+				System.out.println("Company id : " + key);
+				elements.setCompid(key);
+				valueMapList = evaluationDAO.selectOperTimingCompStaTistics(vo);
+				for(int i = 0; i < valueMapList.size(); i++){
+					String val = String.valueOf(valueMapList.get(i).get(key));
+					resultMapList.get(i).put(key, val);
+				}
+			}
+		}
+		return resultMapList;
+	}
+}
